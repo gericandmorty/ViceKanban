@@ -18,6 +18,7 @@ interface Task {
   title: string;
   description: string;
   status: string;
+  order: number;
   creator: {
     _id: string;
     username: string;

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Layout, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import Cookies from 'js-cookie';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -34,6 +35,7 @@ export default function RegisterPage() {
         throw new Error(data.message || 'Registration failed');
       }
 
+      Cookies.set('user_name', data.username, { expires: 1 });
       setIsSuccess(true);
       setTimeout(() => {
         router.push('/auth/login');

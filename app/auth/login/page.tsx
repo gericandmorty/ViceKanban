@@ -34,7 +34,9 @@ export default function LoginPage() {
       }
 
       Cookies.set('access_token', data.access_token, { expires: 1 });
-      router.push('/home');
+      Cookies.set('user_name', data.username, { expires: 1 });
+      Cookies.set('user_id', data.userId, { expires: 1 });
+      router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please try again.');
     } finally {

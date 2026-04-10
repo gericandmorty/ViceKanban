@@ -2,34 +2,20 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { ArrowRight, Layout, Shield, Zap, MarkGithub } from 'lucide-react';
+import { Layout, Shield, Zap } from 'lucide-react';
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
       {/* Navigation */}
       <nav className="sticky top-0 z-50 w-full bg-header-bg text-header-text py-4 px-6 md:px-12 flex items-center justify-between border-b border-border-default/20">
-        <div className="flex items-center gap-4">
-          <Layout size={32} className="text-white" />
-          <div className="flex items-center gap-4 hidden md:flex">
-            <span className="font-semibold text-lg">ViceKanBan</span>
-            <nav className="flex gap-4 text-sm font-medium opacity-80">
-              <Link href="#" className="hover:text-white transition-colors">Product</Link>
-              <Link href="#" className="hover:text-white transition-colors">Solutions</Link>
-              <Link href="#" className="hover:text-white transition-colors">Pricing</Link>
-            </nav>
-          </div>
+        <div className="flex items-center gap-3">
+          <Image src="/icon_vice.png" alt="ViceKanBan Logo" width={32} height={32} className="rounded" />
+          <span className="font-semibold text-lg hidden md:block">ViceKanBan</span>
         </div>
         <div className="flex items-center gap-4">
-          <div className="relative hidden sm:block">
-            <input 
-              type="text" 
-              placeholder="Search or jump to..." 
-              className="bg-[#0d1117] border border-border-default/30 rounded-md py-1 px-3 text-sm w-60 focus:w-80 transition-all focus:outline-none focus:bg-background focus:text-foreground"
-            />
-            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] border border-border-default/30 rounded px-1.5 py-0.5 opacity-50">/</span>
-          </div>
           <Link href="/auth/login" className="text-sm font-semibold hover:opacity-80 transition-opacity">Sign in</Link>
           <Link href="/auth/register" className="border border-white/30 rounded-md px-3 py-1.5 text-sm font-semibold hover:bg-white/10 transition-colors">Sign up</Link>
         </div>
@@ -55,19 +41,7 @@ export default function LandingPage() {
             ViceKanBan is a simple, collaborative project management tool that helps teams 
             organize work, track progress, and ship products faster.
           </motion.p>
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="flex flex-col sm:flex-row gap-4"
-          >
-            <Link href="/auth/register" className="btn btn-primary h-12 px-8 text-lg rounded-lg">
-              Get started for free
-            </Link>
-            <Link href="#" className="btn btn-outline h-12 px-8 text-lg rounded-lg border-border-default">
-              Contact sales
-            </Link>
-          </motion.div>
+
         </div>
         <div className="flex-1 w-full max-w-xl">
           <motion.div 
@@ -120,7 +94,7 @@ export default function LandingPage() {
       <footer className="py-20 px-6 md:px-12 max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-12 border-t border-border-default mt-20 opacity-70">
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <Layout size={24} />
+            <Image src="/icon_vice.png" alt="ViceKanBan Logo" width={24} height={24} className="rounded" />
             <span className="font-bold">ViceKanBan</span>
           </div>
           <p className="text-sm max-w-xs">Connecting developers around the world to build better software together.</p>

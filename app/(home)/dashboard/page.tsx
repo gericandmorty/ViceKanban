@@ -230,22 +230,6 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            {!detailedOrg && (
-              <button 
-                onClick={() => setIsOrgModalOpen(true)}
-                className="btn btn-primary py-1.5 px-3 text-xs flex items-center gap-2"
-              >
-                <Plus size={14} /> New Organization
-              </button>
-            )}
-            {detailedOrg && !currentProject && isOrgOwner && (
-              <button 
-                onClick={() => setIsProjectModalOpen(true)}
-                className="btn btn-primary py-1.5 px-3 text-xs flex items-center gap-2"
-              >
-                <Plus size={14} /> New Project
-              </button>
-            )}
           </div>
         </div>
 
@@ -279,8 +263,8 @@ export default function DashboardPage() {
           </div>
         ) : !detailedOrg ? (
           /* "Home" View with Organizations and Invitations */
-          <div className="w-full max-w-5xl mx-auto py-12 px-6 space-y-12 overflow-y-auto h-full">
-            
+          <div className="w-full max-w-4xl mx-auto py-8 px-6 space-y-8 overflow-y-auto h-full">
+
             {/* Pending Invitations Section */}
             <AnimatePresence>
               {invitations.length > 0 && (
@@ -288,36 +272,36 @@ export default function DashboardPage() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="space-y-4"
+                  className="rounded-lg border border-accent/30 bg-accent/5 overflow-hidden"
                 >
-                  <div className="flex items-center gap-2 px-1">
-                    <Bell className="text-accent animate-bounce" size={18} />
-                    <h3 className="text-lg font-bold">New Invitations ({invitations.length})</h3>
+                  <div className="flex items-center gap-2 px-4 py-3 border-b border-accent/20">
+                    <Bell className="text-accent" size={14} />
+                    <span className="text-sm font-semibold text-accent">Pending invitations ({invitations.length})</span>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="divide-y divide-border-default">
                     {invitations.map((inv) => (
-                      <div key={inv._id} className="bg-background border-2 border-accent/20 rounded-xl p-5 flex items-center justify-between shadow-sm">
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center text-white font-bold">
+                      <div key={inv._id} className="flex items-center justify-between px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-md bg-accent flex items-center justify-center text-white font-bold text-sm">
                             {inv.name.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <p className="text-xs text-zinc-500">You've been invited to join</p>
-                            <h4 className="font-bold text-lg leading-tight">{inv.name}</h4>
+                            <p className="text-sm font-semibold">{inv.name}</p>
+                            <p className="text-xs text-zinc-500">You've been invited to join this organization</p>
                           </div>
                         </div>
                         <div className="flex gap-2">
                           <button 
                             onClick={() => handleAcceptInvite(inv._id, inv.name)}
-                            className="btn btn-primary w-8 h-8 rounded-full flex items-center justify-center p-0"
+                            className="btn btn-primary py-1 px-3 text-xs flex items-center gap-1"
                           >
-                            <Check size={18} />
+                            <Check size={12} /> Accept
                           </button>
                           <button 
                             onClick={() => handleDeclineInvite(inv._id)}
-                            className="btn btn-outline border-zinc-200 w-8 h-8 rounded-full flex items-center justify-center p-0"
+                            className="text-xs text-zinc-500 hover:text-red-500 transition-colors px-2"
                           >
-                            <X size={18} />
+                            Decline
                           </button>
                         </div>
                       </div>
@@ -328,56 +312,59 @@ export default function DashboardPage() {
             </AnimatePresence>
 
             {/* Organizations List */}
-            <div className="space-y-6">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold">Your Organizations</h2>
+                <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">Your Organizations</h2>
                 <button 
                   onClick={() => setIsOrgModalOpen(true)}
-                  className="btn btn-primary py-2 px-4 text-sm"
+                  className="btn btn-primary py-1 px-3 text-xs flex items-center gap-1.5"
                 >
-                  Create new
+                  <Plus size={12} /> New organization
                 </button>
               </div>
 
               {organizations.length === 0 ? (
-                <div className="bg-background border border-border-default rounded-xl p-12 text-center space-y-4">
-                  <div className="w-16 h-16 bg-bg-subtle border border-border-default rounded-2xl flex items-center justify-center mx-auto shadow-sm text-zinc-400">
-                    <Plus size={32} />
+                <div className="rounded-lg border border-border-default border-dashed bg-background p-12 text-center space-y-3">
+                  <div className="w-12 h-12 rounded-xl bg-bg-subtle border border-border-default flex items-center justify-center mx-auto text-zinc-500">
+                    <Plus size={24} />
                   </div>
-                  <h3 className="text-xl font-semibold">Ready to collaborate?</h3>
-                  <p className="text-zinc-500 max-w-sm mx-auto">
-                    Create an organization to start managing projects and teams all in one place.
-                  </p>
+                  <div>
+                    <h3 className="font-semibold text-sm">Create your first organization</h3>
+                    <p className="text-xs text-zinc-500 mt-1">Organizations are shared spaces where teams can collaborate on projects.</p>
+                  </div>
                   <button 
                     onClick={() => setIsOrgModalOpen(true)}
-                    className="btn btn-primary py-2 px-8 mt-4"
+                    className="btn btn-primary py-1.5 px-5 text-sm mt-2"
                   >
-                    Create Organization
+                    Create an organization
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-4">
+                <div className="rounded-lg border border-border-default bg-background overflow-hidden divide-y divide-border-default">
                   {organizations.map((org) => (
-                    <motion.div
+                    <div
                       key={org._id}
-                      whileHover={{ scale: 1.005, borderColor: 'var(--accent)' }}
                       onClick={() => handleSelectOrg(org._id)}
-                      className="flex items-center justify-between p-5 bg-background border border-border-default rounded-xl cursor-pointer shadow-sm transition-all group"
+                      className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors group hover:bg-bg-subtle ${
+                        orgIdFromUrl === org._id ? 'bg-bg-subtle' : ''
+                      }`}
                     >
-                      <div className="flex items-center gap-5">
-                        <div className="w-12 h-12 rounded-xl bg-bg-subtle border border-border-default flex items-center justify-center text-xl font-bold text-accent shadow-inner">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-md flex items-center justify-center text-sm font-bold ${
+                          orgIdFromUrl === org._id ? 'bg-accent text-white' : 'bg-bg-subtle text-accent border border-border-default'
+                        }`}>
                           {org.name.charAt(0).toUpperCase()}
                         </div>
-                        <div className="space-y-1">
-                          <h4 className="font-bold text-lg group-hover:text-accent transition-colors">{org.name}</h4>
-                          <div className="flex items-center gap-4 text-xs text-zinc-500">
-                            <span className="flex items-center gap-1"><Shield size={12} /> Member</span>
-                            <span className="flex items-center gap-1"><Users size={12} /> {org.members?.length || 1} Members</span>
+                        <div>
+                          <p className="text-sm font-semibold group-hover:text-accent transition-colors">{org.name}</p>
+                          <div className="flex items-center gap-3 mt-0.5">
+                            <span className="text-[11px] text-zinc-500 flex items-center gap-1"><Shield size={10} /> Member</span>
+                            <span className="text-[11px] text-zinc-500 flex items-center gap-1"><Users size={10} /> {org.members?.length || 1} members</span>
                           </div>
                         </div>
                       </div>
-                      <ChevronRight className="text-zinc-300 group-hover:text-accent group-hover:translate-x-1 transition-all" size={24} />
-                    </motion.div>
+                      <ChevronRight size={16} className="text-zinc-400 group-hover:text-accent group-hover:translate-x-0.5 transition-all" />
+                    </div>
                   ))}
                 </div>
               )}
@@ -398,57 +385,56 @@ export default function DashboardPage() {
                 />
               ) : (
                 /* Projects Selection List in Org */
-                <div className="space-y-8 overflow-y-auto h-full pr-1">
+                <div className="space-y-4 overflow-y-auto h-full pr-1">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-3xl font-extrabold mb-1">Projects in {detailedOrg.name}</h2>
-                      <p className="text-zinc-500 text-lg">Select a project to view the Kanban board.</p>
-                    </div>
-                    <button 
-                      onClick={() => setIsProjectModalOpen(true)}
-                      className="btn btn-primary flex items-center gap-2 px-6 py-2"
-                    >
-                      <Plus size={18} /> New Project
-                    </button>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {projects.map((project) => (
-                      <motion.div
-                        key={project._id}
-                        whileHover={{ y: -4, borderColor: 'var(--accent)' }}
-                        onClick={() => handleSelectProject(project._id)}
-                        className="bg-background border border-border-default rounded-xl p-6 cursor-pointer shadow-sm group border-b-4 border-b-transparent hover:border-b-accent transition-all"
+                    <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">Projects</h2>
+                    {isOrgOwner && (
+                      <button 
+                        onClick={() => setIsProjectModalOpen(true)}
+                        className="btn btn-primary py-1 px-3 text-xs flex items-center gap-1.5"
                       >
-                        <div className="flex items-center gap-3 mb-4">
-                           <div className="w-10 h-10 rounded-lg bg-bg-subtle flex items-center justify-center text-accent">
-                             <Layout size={20} />
-                           </div>
-                           <h3 className="font-bold text-lg group-hover:text-accent transition-colors">{project.name}</h3>
+                        <Plus size={12} /> New project
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="rounded-lg border border-border-default bg-background overflow-hidden divide-y divide-border-default">
+                    {projects.map((project) => (
+                      <div
+                        key={project._id}
+                        onClick={() => handleSelectProject(project._id)}
+                        className="flex items-center justify-between px-4 py-3 cursor-pointer transition-colors group hover:bg-bg-subtle"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-8 h-8 rounded-md bg-bg-subtle border border-border-default flex items-center justify-center text-accent flex-shrink-0">
+                            <Kanban size={14} />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold group-hover:text-accent transition-colors">{project.name}</p>
+                            {project.description && (
+                              <p className="text-[11px] text-zinc-500 truncate max-w-xs">{project.description}</p>
+                            )}
+                          </div>
                         </div>
-                        <p className="text-sm text-zinc-500 line-clamp-2 h-10 mb-6">
-                          {project.description || 'No description provided.'}
-                        </p>
-                        <div className="flex justify-between items-center text-xs text-zinc-400">
-                          <span className="flex items-center gap-1"><Clock size={12} /> Updated recently</span>
-                          <span className="flex items-center gap-1 font-bold text-accent group-hover:translate-x-1 transition-transform">
-                            Open Board <ChevronRight size={14} />
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                          <span className="hidden sm:flex items-center gap-1 text-[11px] text-zinc-500">
+                            <Clock size={10} /> Updated recently
                           </span>
+                          <ChevronRight size={14} className="text-zinc-400 group-hover:text-accent transition-colors" />
                         </div>
-                      </motion.div>
+                      </div>
                     ))}
-                    <div 
-                      onClick={() => setIsProjectModalOpen(true)}
-                      className="bg-background border-2 border-border-default border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center space-y-4 hover:border-accent hover:bg-accent/5 transition-all cursor-pointer group"
-                    >
-                      <div className="w-12 h-12 rounded-full bg-bg-subtle flex items-center justify-center text-zinc-400 group-hover:text-accent group-hover:scale-110 transition-all">
-                        <Plus size={24} />
+                    {isOrgOwner && (
+                      <div
+                        onClick={() => setIsProjectModalOpen(true)}
+                        className="flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors group hover:bg-bg-subtle"
+                      >
+                        <div className="w-8 h-8 rounded-md border border-border-default border-dashed flex items-center justify-center text-zinc-500 group-hover:text-accent group-hover:border-accent transition-colors flex-shrink-0">
+                          <Plus size={14} />
+                        </div>
+                        <p className="text-sm text-zinc-500 group-hover:text-accent transition-colors">Create a new project...</p>
                       </div>
-                      <div>
-                        <h3 className="font-bold">Create a project</h3>
-                        <p className="text-sm text-zinc-500">Launch a new workspace.</p>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               )

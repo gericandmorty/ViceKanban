@@ -41,19 +41,7 @@ export default function LandingPage() {
             ViceKanBan is a simple, collaborative project management tool that helps teams 
             organize work, track progress, and ship products faster.
           </motion.p>
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="flex flex-col sm:flex-row gap-4"
-          >
-            <Link href="/auth/register" className="btn btn-primary h-12 px-8 text-lg rounded-lg">
-              Get started for free
-            </Link>
-            <Link href="#" className="btn btn-outline h-12 px-8 text-lg rounded-lg border-border-default">
-              Contact sales
-            </Link>
-          </motion.div>
+
         </div>
         <div className="flex-1 w-full max-w-xl">
           <motion.div 

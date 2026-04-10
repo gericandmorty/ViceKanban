@@ -282,7 +282,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
     // Permission check
     if (newStatus === 'reviewed' && !isOwnerOrCreator) {
       toast.error('Only owners or curators can move tasks to Reviewed');
-      fetchTasks(); // Revert local optimistic change
+      refreshTasks(); // Revert local optimistic change
       return;
     }
 
@@ -379,6 +379,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
               onAddTask={(col.id === 'todo' && isOwnerOrCreator) ? () => setShowTaskForm({status: col.id}) : undefined}
               onDeleteTask={(task) => setTaskToConfirmDelete(task)}
               onTaskClick={setInspectingTask}
+              isOwnerOrCreator={isOwnerOrCreator}
               isLocked={col.id === 'reviewed' && !isOwnerOrCreator}
             />
           ))}

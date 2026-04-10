@@ -14,6 +14,7 @@ interface Task {
   title: string;
   description: string;
   status: string;
+  order: number;
   creator: {
     _id: string;
     username: string;
@@ -29,7 +30,7 @@ interface KanbanColumnProps {
   title: string;
   tasks: Task[];
   onAddTask?: () => void;
-  onDeleteTask?: (taskId: string) => void;
+  onDeleteTask?: (task: Task) => void;
   onTaskClick?: (task: Task) => void;
   isOwnerOrCreator: boolean;
   isLocked?: boolean;

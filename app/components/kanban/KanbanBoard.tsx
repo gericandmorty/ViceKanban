@@ -75,6 +75,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
   const [taskToConfirmDelete, setTaskToConfirmDelete] = useState<Task | null>(null);
   const [currentUserAvatar, setCurrentUserAvatar] = useState<string | null>(null);
   const [filterOnlyMe, setFilterOnlyMe] = useState(false);
+  const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
   const currentUserId = Cookies.get('user_id');
 
   const fetchMyProfile = useCallback(async () => {
@@ -525,9 +526,9 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
               initial={{ scale: 0.95, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              className="relative w-full max-w-sm bg-background border border-border-default rounded-xl shadow-2xl overflow-hidden"
+              className="relative w-full max-w-sm bg-background border border-border-default rounded-xl shadow-2xl"
             >
-              <div className="px-6 py-4 border-b border-border-default flex items-center justify-between bg-bg-subtle">
+              <div className="px-6 py-4 border-b border-border-default flex items-center justify-between bg-bg-subtle rounded-t-xl">
                 <h3 className="font-bold flex items-center gap-2">
                   <Plus size={16} className="text-accent" />
                   Add New Task
@@ -568,19 +569,74 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-zinc-500 uppercase">Assign To</label>
                     <div className="relative">
-                      <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={14} />
-                      <select 
-                        value={newTaskAssignee}
-                        onChange={(e) => setNewTaskAssignee(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 bg-background border border-border-default rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-accent transition-all appearance-none cursor-pointer"
+                      <div 
+                        onClick={() => setIsAssigneeDropdownOpen(!isAssigneeDropdownOpen)}
+                        className="w-full pl-9 pr-4 py-2 bg-background border border-border-default rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-accent transition-all cursor-pointer flex items-center justify-between group"
                       >
-                        <option value="">Unassigned</option>
-                        {members.map((member: any) => (
-                          <option key={member.user._id} value={member.user._id}>
-                            {member.user.username}
-                          </option>
-                        ))}
-                      </select>
+                        <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 group-hover:text-accent transition-colors" size={14} />
+                        <span className="truncate">
+                          {newTaskAssignee ? (
+                            members.find(m => m.user._id === newTaskAssignee)?.user?.username || 'Selected User'
+                          ) : (
+                            <span className="text-zinc-500">Unassigned</span>
+                          )}
+                        </span>
+                        <div className={`transition-transform duration-200 ${isAssigneeDropdownOpen ? 'rotate-180' : ''}`}>
+                          <Send size={10} className="rotate-90 text-zinc-500" />
+                        </div>
+                      </div>
+
+                      {/* Custom Dropdown List */}
+                      <AnimatePresence>
+                        {isAssigneeDropdownOpen && (
+                          <>
+                            <div 
+                              className="fixed inset-0 z-[120]" 
+                              onClick={() => setIsAssigneeDropdownOpen(false)}
+                            />
+                            <motion.div 
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              className="absolute left-0 right-0 mt-1 bg-[#161b22] border border-[#30363d] rounded-lg shadow-xl z-[130] overflow-hidden"
+                            >
+                              <div className="max-h-[160px] overflow-y-auto custom-scrollbar py-1">
+                                <div 
+                                  onClick={() => {
+                                    setNewTaskAssignee('');
+                                    setIsAssigneeDropdownOpen(false);
+                                  }}
+                                  className={`px-4 py-2 text-sm cursor-pointer hover:bg-[#1f6feb] transition-colors flex items-center gap-2 ${!newTaskAssignee ? 'bg-[#1f6feb]/20 text-[#58a6ff]' : 'text-[#8b949e]'}`}
+                                >
+                                  <div className="w-5 h-5 rounded-full border border-dashed border-[#30363d] flex items-center justify-center text-[10px]">
+                                    <X size={10} />
+                                  </div>
+                                  Unassigned
+                                </div>
+                                {members.map((member: any) => (
+                                  <div 
+                                    key={member.user._id}
+                                    onClick={() => {
+                                      setNewTaskAssignee(member.user._id);
+                                      setIsAssigneeDropdownOpen(false);
+                                    }}
+                                    className={`px-4 py-2 text-sm cursor-pointer hover:bg-[#1f6feb] hover:text-white transition-colors flex items-center gap-2 ${newTaskAssignee === member.user._id ? 'bg-[#1f6feb]/20 text-[#58a6ff]' : 'text-[#f0f6fc]'}`}
+                                  >
+                                    <div className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] font-bold overflow-hidden relative border border-[#30363d]">
+                                      {member.user.avatarUrl ? (
+                                        <Image src={member.user.avatarUrl} alt={member.user.username} fill sizes="20px" className="object-cover" />
+                                      ) : (
+                                        member.user.username.charAt(0).toUpperCase()
+                                      )}
+                                    </div>
+                                    <span className="truncate">{member.user.username}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </motion.div>
+                          </>
+                        )}
+                      </AnimatePresence>
                     </div>
                   </div>
                 )}

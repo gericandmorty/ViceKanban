@@ -11,23 +11,45 @@ import {
   ChevronDown,
   LogOut,
   Loader2,
-  Bell
+  Bell,
+  X as CloseIcon
 } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { useRouter, useSearchParams } from 'next/navigation';
 import CreateOrgModal from '@/app/components/modals/CreateOrgModal';
 import Image from 'next/image';
+import { useSidebar } from '@/app/context/SidebarContext';
 
 export default function Sidebar() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentOrgId = searchParams.get('orgId');
+  const { isSidebarOpen, closeSidebar } = useSidebar();
 
   const [organizations, setOrganizations] = useState<any[]>([]);
   const [invitationCount, setInvitationCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [username, setUsername] = useState('User');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  const fetchUserData = useCallback(async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const token = Cookies.get('access_token');
+      const response = await fetch(`${apiUrl}/user/me`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setUsername(data.username);
+        setAvatarUrl(data.avatarUrl);
+        Cookies.set('user_name', data.username);
+      }
+    } catch (error) {
+      console.error('Failed to fetch user data:', error);
+    }
+  }, []);
 
   const fetchOrganizations = useCallback(async () => {
     try {
@@ -66,13 +88,15 @@ export default function Sidebar() {
   useEffect(() => {
     fetchOrganizations();
     fetchInvitationCount();
-    const storedUsername = Cookies.get('user_name');
-    if (storedUsername) setUsername(storedUsername);
+    fetchUserData();
     
     // Refresh counts periodically
-    const interval = setInterval(fetchInvitationCount, 30000);
+    const interval = setInterval(() => {
+      fetchInvitationCount();
+      fetchUserData();
+    }, 30000);
     return () => clearInterval(interval);
-  }, [fetchOrganizations, fetchInvitationCount]);
+  }, [fetchOrganizations, fetchInvitationCount, fetchUserData]);
 
   const handleLogout = () => {
     Cookies.remove('access_token');
@@ -85,22 +109,43 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-64 border-r border-border-default bg-bg-subtle hidden lg:flex flex-col h-screen sticky top-0">
-      <div className="p-4 border-b border-border-default flex items-center justify-between">
+    <>
+      {/* Mobile Backdrop */}
+      {isSidebarOpen && (
         <div 
-          onClick={handleGoHome}
-          className="flex items-center gap-3 cursor-pointer group"
-        >
-          <Image src="/icon_vice.png" alt="Logo" width={32} height={32} className="rounded group-hover:opacity-80 transition-opacity" />
-          <span className="font-semibold text-sm group-hover:text-accent transition-colors">Project Management</span>
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[90] lg:hidden"
+          onClick={closeSidebar}
+        />
+      )}
+
+      <aside className={`
+        fixed lg:sticky top-0 left-0 h-screen transition-all duration-300 z-[100]
+        w-64 border-r border-border-default bg-bg-subtle flex flex-col
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        <div className="p-4 border-b border-border-default flex items-center justify-between">
+          <div 
+            onClick={() => { handleGoHome(); closeSidebar(); }}
+            className="flex items-center gap-3 cursor-pointer group"
+          >
+            <Image src="/icon_vice.png" alt="Logo" width={32} height={32} style={{ height: 'auto' }} className="rounded group-hover:opacity-80 transition-opacity" />
+            <span className="font-semibold text-sm group-hover:text-accent transition-colors">ViceKanBan</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={closeSidebar}
+              className="lg:hidden p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded transition-colors"
+            >
+              <CloseIcon size={18} />
+            </button>
+            <div className="relative">
+              <ChevronDown size={14} className="text-zinc-400" />
+              {invitationCount > 0 && !currentOrgId && (
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-accent rounded-full animate-pulse" />
+              )}
+            </div>
+          </div>
         </div>
-        <div className="relative">
-          <ChevronDown size={14} className="text-zinc-400" />
-          {invitationCount > 0 && !currentOrgId && (
-            <div className="absolute -top-1 -right-1 w-2 h-2 bg-accent rounded-full animate-pulse" />
-          )}
-        </div>
-      </div>
       
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         <div className="relative">
@@ -131,10 +176,11 @@ export default function Sidebar() {
               <p className="px-2 text-[11px] text-zinc-500 italic">No organizations found</p>
             ) : (
               organizations.map((org) => (
-                <Link 
-                  key={org._id} 
-                  href={`/dashboard?orgId=${org._id}`} 
-                  className={`flex items-center gap-3 px-2 py-1.5 rounded-md text-sm cursor-pointer transition-colors ${
+                  <Link 
+                    key={org._id} 
+                    href={`/dashboard?orgId=${org._id}`} 
+                    onClick={closeSidebar}
+                    className={`flex items-center gap-3 px-2 py-1.5 rounded-md text-sm cursor-pointer transition-colors ${
                     currentOrgId === org._id 
                       ? 'bg-border-default border border-border-default font-semibold' 
                       : 'hover:bg-border-default/50'
@@ -155,7 +201,7 @@ export default function Sidebar() {
         {/* Dynamic Invitations Link in Sidebar if pending */}
         {!currentOrgId && invitationCount > 0 && (
           <div 
-            onClick={handleGoHome}
+            onClick={() => { handleGoHome(); closeSidebar(); }}
             className="flex items-center justify-between px-2 py-2 bg-accent/5 border border-accent/10 rounded-lg cursor-pointer hover:bg-accent/10 transition-all group"
           >
             <div className="flex items-center gap-3">
@@ -171,13 +217,19 @@ export default function Sidebar() {
       </div>
 
       <div className="p-4 border-t border-border-default space-y-1">
-        <div 
-          onClick={handleGoHome}
+        <Link
+          href="/profile"
           className="flex items-center gap-3 px-2 py-1.5 rounded-md text-sm cursor-pointer hover:bg-border-default/50 font-medium transition-colors group"
         >
-          <div className="w-5 h-5 bg-gradient-to-tr from-purple-500 to-blue-500 rounded-full flex-shrink-0" />
+          {avatarUrl ? (
+            <div className="w-5 h-5 rounded-full overflow-hidden relative border border-border-default">
+              <Image src={avatarUrl} alt="Avatar" fill sizes="20px" className="object-cover" />
+            </div>
+          ) : (
+            <div className="w-5 h-5 bg-gradient-to-tr from-purple-500 to-blue-500 rounded-full flex-shrink-0" />
+          )}
           <span className="truncate group-hover:text-accent font-bold">{username}</span>
-        </div>
+        </Link>
         <div 
           onClick={handleLogout}
           className="flex items-center gap-3 px-2 py-1.5 rounded-md text-sm cursor-pointer hover:bg-red-500/10 hover:text-red-500 transition-colors"
@@ -193,5 +245,6 @@ export default function Sidebar() {
         onSuccess={fetchOrganizations}
       />
     </aside>
+    </>
   );
 }

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Layout, Loader2, AlertCircle } from 'lucide-react';
+import { Layout, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import Cookies from 'js-cookie';
 
 export default function LoginPage() {
@@ -13,6 +13,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +53,7 @@ export default function LoginPage() {
 
       <h1 className="text-2xl font-light tracking-tight text-foreground mb-4">Sign in to ViceKanBan</h1>
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-[308px]"
@@ -67,9 +68,9 @@ export default function LoginPage() {
             )}
 
             <div className="space-y-1.5">
-              <label className="text-sm font-normal text-foreground">Username or email address</label>
-              <input 
-                type="email" 
+              <label className="text-sm font-normal text-foreground">Email address</label>
+              <input
+                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -82,16 +83,25 @@ export default function LoginPage() {
                 <label className="text-sm font-normal text-foreground">Password</label>
                 <Link href="#" className="text-xs text-accent hover:underline">Forgot password?</Link>
               </div>
-              <input 
-                type="password" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full bg-background border border-border-default rounded-md py-[5px] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition-all"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full bg-background border border-border-default rounded-md py-[5px] pl-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-foreground transition-colors"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
 
-            <button 
+            <button
               type="submit"
               disabled={isLoading}
               className="btn btn-primary w-full py-1.5 mt-2"

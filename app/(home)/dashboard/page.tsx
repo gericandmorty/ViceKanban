@@ -14,7 +14,8 @@ import {
   Check,
   X,
   Bell,
-  Kanban
+  Kanban,
+  Menu
 } from 'lucide-react';
 import CreateOrgModal from '@/app/components/modals/CreateOrgModal';
 import CreateProjectModal from '@/app/components/modals/CreateProjectModal';
@@ -23,10 +24,12 @@ import KanbanBoard from '@/app/components/kanban/KanbanBoard';
 import Cookies from 'js-cookie';
 import { useSearchParams, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { useSidebar } from '@/app/context/SidebarContext';
 
 export default function DashboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { toggleSidebar } = useSidebar();
   const orgIdFromUrl = searchParams.get('orgId');
   const projectIdFromUrl = searchParams.get('projectId');
 
@@ -200,9 +203,15 @@ export default function DashboardPage() {
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header */}
       <header className="border-b border-border-default bg-background sticky top-0 z-40">
-        <div className="px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="px-4 md:px-6 py-3 md:py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="flex items-center gap-2 text-xl">
+            <button 
+              onClick={toggleSidebar}
+              className="lg:hidden p-2 -ml-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+            >
+              <Menu size={20} />
+            </button>
+            <div className="flex items-center gap-2 text-lg md:text-xl">
               <Layout size={20} className="text-zinc-400" />
               <span 
                 onClick={handleGoHome}
@@ -234,7 +243,7 @@ export default function DashboardPage() {
         </div>
 
         {detailedOrg && (
-          <div className="px-6 flex gap-8 items-end">
+          <div className="px-4 md:px-6 flex gap-4 md:gap-8 items-end overflow-x-auto no-scrollbar">
             {['Board', 'Members', 'Settings'].map((tab) => (
               <button
                 key={tab}
@@ -372,7 +381,7 @@ export default function DashboardPage() {
           </div>
         ) : (
           /* Organization Workspace View */
-          <div className="w-full h-full max-w-full mx-auto py-4 px-6 overflow-hidden flex flex-col">
+          <div className="w-full h-full max-w-full mx-auto py-2 md:py-4 px-2 md:px-6 overflow-hidden flex flex-col">
             {activeTab === 'Members' ? (
               <MembersTable org={detailedOrg} onRefresh={() => fetchOrgDetails(orgIdFromUrl as string)} />
             ) : activeTab === 'Board' ? (

@@ -20,6 +20,7 @@ import Cookies from 'js-cookie';
 import toast from 'react-hot-toast';
 import ConfirmationModal from '../ui/ConfirmationModal';
 import Image from 'next/image';
+import { API_URL } from '@/app/utils/api';
 
 interface User {
   _id: string;
@@ -59,7 +60,7 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
 
     setIsInviting(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = API_URL;
       const token = Cookies.get('access_token');
 
       const response = await fetch(`${apiUrl}/organizations/${org._id}/invite`, {
@@ -93,7 +94,7 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
     const { id: userId, username } = removalTarget;
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = API_URL;
       const token = Cookies.get('access_token');
 
       const response = await fetch(`${apiUrl}/organizations/${org._id}/members/${userId}`, {

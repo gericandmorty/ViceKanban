@@ -19,6 +19,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import CreateOrgModal from '@/app/components/modals/CreateOrgModal';
 import Image from 'next/image';
 import { useSidebar } from '@/app/context/SidebarContext';
+import { API_URL } from '@/app/utils/api';
 
 export default function Sidebar() {
   const router = useRouter();
@@ -35,7 +36,7 @@ export default function Sidebar() {
 
   const fetchUserData = useCallback(async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = API_URL;
       const token = Cookies.get('access_token');
       const response = await fetch(`${apiUrl}/user/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -53,7 +54,7 @@ export default function Sidebar() {
 
   const fetchOrganizations = useCallback(async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = API_URL;
       const token = Cookies.get('access_token');
       const response = await fetch(`${apiUrl}/organizations`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -71,7 +72,7 @@ export default function Sidebar() {
 
   const fetchInvitationCount = useCallback(async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = API_URL;
       const token = Cookies.get('access_token');
       const response = await fetch(`${apiUrl}/organizations/invitations`, {
         headers: { 'Authorization': `Bearer ${token}` }

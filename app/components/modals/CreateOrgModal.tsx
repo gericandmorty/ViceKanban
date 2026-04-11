@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader2, Layout } from 'lucide-react';
 import Cookies from 'js-cookie';
+import { API_URL } from '@/app/utils/api';
 
 interface CreateOrgModalProps {
   isOpen: boolean;
@@ -22,7 +23,7 @@ export default function CreateOrgModal({ isOpen, onClose, onSuccess }: CreateOrg
     setError('');
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = API_URL;
       const token = Cookies.get('access_token');
 
       const response = await fetch(`${apiUrl}/organizations`, {

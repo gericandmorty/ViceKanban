@@ -6,6 +6,7 @@ import Cookies from 'js-cookie';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import ConfirmationModal from '../ui/ConfirmationModal';
+import { API_URL } from '@/app/utils/api';
 
 interface OrganizationSettingsProps {
   org: any;
@@ -132,7 +133,7 @@ function LeaveOrgSection({ org, onRefresh }: { org: any, onRefresh: () => void }
   const handleLeave = async () => {
     setIsLeaving(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = API_URL;
       const token = Cookies.get('access_token');
       const response = await fetch(`${apiUrl}/organizations/${org._id}/leave`, {
         method: 'POST',

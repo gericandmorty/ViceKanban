@@ -26,6 +26,7 @@ import { Loader2, Plus, X, Type, FileText, User as UserIcon, Trash2, MessageSqua
 import { motion, AnimatePresence } from 'framer-motion';
 import Cookies from 'js-cookie';
 import toast from 'react-hot-toast';
+import { API_URL } from '@/app/utils/api';
 import ConfirmationModal from '../ui/ConfirmationModal';
 import Image from 'next/image';
 
@@ -75,7 +76,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
 
   const fetchMyProfile = useCallback(async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = API_URL;
       const token = Cookies.get('access_token');
       const response = await fetch(`${apiUrl}/user/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -91,7 +92,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
 
   const fetchData = useCallback(async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = API_URL;
       const token = Cookies.get('access_token');
       
       // Fetch Board and Tasks in parallel
@@ -125,7 +126,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
   const fetchComments = useCallback(async (taskId: string) => {
     setIsFetchingComments(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = API_URL;
       const token = Cookies.get('access_token');
       const response = await fetch(`${apiUrl}/comments/task/${taskId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -155,7 +156,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
     if (!newCommentContent.trim() || !inspectingTask) return;
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = API_URL;
       const token = Cookies.get('access_token');
       const response = await fetch(`${apiUrl}/comments`, {
         method: 'POST',
@@ -185,7 +186,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
     const taskId = taskToConfirmDelete._id;
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = API_URL;
       const token = Cookies.get('access_token');
       const response = await fetch(`${apiUrl}/tasks/${taskId}`, {
         method: 'DELETE',
@@ -311,7 +312,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
 
     // Update backend
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = API_URL;
       const token = Cookies.get('access_token');
       const response = await fetch(`${apiUrl}/tasks/${activeId}/status`, {
         method: 'PATCH',
@@ -341,7 +342,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
 
     setIsCreatingTask(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = API_URL;
       const token = Cookies.get('access_token');
       const response = await fetch(`${apiUrl}/tasks`, {
         method: 'POST',

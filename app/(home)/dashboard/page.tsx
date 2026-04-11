@@ -131,15 +131,52 @@ export default function DashboardPage() {
   }, [fetchOrganizations, fetchInvitations]);
 
   useEffect(() => {
+    let isCurrent = true;
+    
     // Reset state immediately whenever orgId changes to prevent stale data "ghosting"
     setDetailedOrg(null);
     setProjects([]);
     setActiveTab('Board');
 
-    if (orgIdFromUrl) {
-      fetchOrgDetails(orgIdFromUrl);
-    }
-  }, [orgIdFromUrl, fetchOrgDetails]);
+    const loadData = async () => {
+      if (!orgIdFromUrl) return;
+      
+      setIsDetailLoading(true);
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+        const token = Cookies.get('access_token');
+        
+        // Fetch org details
+        const orgRes = await fetch(`${apiUrl}/organizations/${orgIdFromUrl}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!orgRes.ok || !isCurrent) return;
+        const orgData = await orgRes.json();
+        setDetailedOrg(orgData);
+
+        // Fetch projects for this org
+        const projRes = await fetch(`${apiUrl}/organizations/${orgIdFromUrl}/projects`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (projRes.ok && isCurrent) {
+          const projData = await projRes.json();
+          setProjects(projData);
+        }
+      } catch (error) {
+        console.error('Failed to load dashboard data:', error);
+      } finally {
+        if (isCurrent) setIsDetailLoading(false);
+      }
+    };
+
+    loadData();
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [orgIdFromUrl]);
 
   const handleAcceptInvite = async (orgId: string, orgName: string) => {
     try {

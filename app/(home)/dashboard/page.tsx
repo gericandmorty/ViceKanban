@@ -264,8 +264,10 @@ export default function DashboardPage() {
   // Permission Checks
   const currentUserId = Cookies.get('user_id');
   const isOrgOwner = detailedOrg?.owner?._id === currentUserId || detailedOrg?.owner === currentUserId;
+  const isCoOwner = detailedOrg?.members?.some((m: any) => (m.user?._id || m.user) === currentUserId && m.role === 'co-owner');
+  const isAdmin = isOrgOwner || isCoOwner;
   const isProjectCreator = currentProject?.creator?._id === currentUserId || currentProject?.creator === currentUserId;
-  const isOwnerOrCreator = isOrgOwner || isProjectCreator;
+  const isOwnerOrCreator = isAdmin || isProjectCreator;
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -472,7 +474,14 @@ export default function DashboardPage() {
         ) : (
           /* Organization Workspace View */
           <div className="w-full flex-1 min-h-0 max-w-full mx-auto py-2 md:py-4 px-2 md:pr-4 md:pl-6 overflow-y-auto flex flex-col custom-scrollbar">
-            {activeTab === 'Members' ? (
+            {!detailedOrg ? (
+              <div className="flex-1 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-2">
+                  <Loader2 className="animate-spin text-accent" size={24} />
+                  <p className="text-sm text-zinc-500">Loading organization workspace...</p>
+                </div>
+              </div>
+            ) : activeTab === 'Members' ? (
               <MembersTable org={detailedOrg} onRefresh={() => fetchOrgDetails(orgIdFromUrl as string)} />
             ) : activeTab === 'Board' ? (
               <div className="flex-1 flex flex-col min-h-0">
@@ -489,7 +498,7 @@ export default function DashboardPage() {
                 <div className="space-y-4 overflow-y-auto h-full pr-1">
                   <div className="flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">Projects</h2>
-                    {isMounted && isOrgOwner && (
+                    {isMounted && isAdmin && (
                       <button 
                         onClick={() => setIsProjectModalOpen(true)}
                         className="btn btn-primary py-1 px-3 text-xs flex items-center gap-1.5"
@@ -525,7 +534,7 @@ export default function DashboardPage() {
                         </div>
                       </div>
                     ))}
-                    {isMounted && isOrgOwner && (
+                    {isMounted && isAdmin && (
                       <div
                         onClick={() => setIsProjectModalOpen(true)}
                         className="flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors group hover:bg-bg-subtle"
@@ -543,7 +552,8 @@ export default function DashboardPage() {
           ) : (
               <OrganizationSettings 
                 org={detailedOrg} 
-                isOwner={isOrgOwner} 
+                isOwner={isOrgOwner}
+                isAdmin={isAdmin} 
                 onRefresh={() => fetchOrgDetails(orgIdFromUrl as string)} 
               />
             )}

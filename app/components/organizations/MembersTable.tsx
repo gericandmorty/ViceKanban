@@ -53,6 +53,8 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [removalTarget, setRemovalTarget] = useState<{ id: string, username: string } | null>(null);
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [isUpdatingRole, setIsUpdatingRole] = useState<string | null>(null);
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,11 +82,66 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
           setInviteSuccess(false);
           setShowInviteForm(false);
         }, 2000);
+      } else {
+        const data = await response.json();
+        toast.error(data.message || 'Invitation failed');
       }
     } catch (error) {
-      console.error('Invitation failed:', error);
+      toast.error('Connection error');
     } finally {
       setIsInviting(false);
+    }
+  };
+
+  const handleRoleUpdate = async (userId: string, newRole: string) => {
+    setIsUpdatingRole(userId);
+    try {
+      const apiUrl = API_URL;
+      const token = Cookies.get('access_token');
+
+      const response = await fetch(`${apiUrl}/organizations/${org._id}/members/${userId}/role`, {
+        method: 'POST', // Changed to POST to match the controller update
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ role: newRole })
+      });
+
+      if (response.ok) {
+        toast.success(`Role updated successfully`);
+        onRefresh();
+      } else {
+        const data = await response.json();
+        toast.error(data.message || 'Failed to update role');
+      }
+    } catch (error) {
+      toast.error('Connection error');
+    } finally {
+      setIsUpdatingRole(null);
+      setActiveMenuId(null);
+    }
+  };
+
+  const handleCancelInvite = async (email: string) => {
+    try {
+      const apiUrl = API_URL;
+      const token = Cookies.get('access_token');
+
+      const response = await fetch(`${apiUrl}/organizations/${org._id}/invitations/${encodeURIComponent(email)}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        toast.success(`Invitation to ${email} cancelled`);
+        onRefresh();
+      } else {
+        const data = await response.json();
+        toast.error(data.message || 'Failed to cancel invitation');
+      }
+    } catch (error) {
+      toast.error('Something went wrong');
     }
   };
 
@@ -111,11 +168,16 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
       }
     } catch (error) {
       toast.error('Something went wrong');
+    } finally {
+      setRemovalTarget(null);
     }
   };
 
   const currentUserId = Cookies.get('user_id');
-  const isOwner = org.members.find(m => m.user._id === currentUserId)?.role === 'owner';
+  const userRole = org.members.find(m => m.user._id === currentUserId)?.role;
+  const isOwner = userRole === 'owner';
+  const isCoOwner = userRole === 'co-owner';
+  const isAdmin = isOwner || isCoOwner;
 
   const filteredMembers = org.members.filter(m => 
     m.user.username.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -186,8 +248,8 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
       )}
 
       {/* GitHub Themed Members Table */}
-      <div className="bg-[#0d1117] border border-[#30363d] rounded-md overflow-hidden shadow-sm">
-        <div className="px-4 py-3 border-b border-[#30363d] bg-[#0d1117]">
+      <div className="bg-[#0d1117] border border-[#30363d] rounded-md shadow-sm">
+        <div className="px-4 py-3 border-b border-[#30363d] bg-[#161b22] rounded-t-md">
           <div className="flex items-center justify-between">
             <span className="text-[14px] font-semibold text-[#f0f6fc]">
               {org.members.length + org.invitedEmails.length} members
@@ -195,20 +257,20 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-visible">
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-[#30363d] text-[12px] font-semibold text-[#8b949e] bg-[#0d1117]">
-                <th className="px-4 py-2.5 w-3/4">Member</th>
-                <th className="px-4 py-2.5">Role</th>
-                <th className="px-4 py-2.5 text-right"></th>
+                <th className="px-4 py-3 w-3/4 font-semibold">Member</th>
+                <th className="px-4 py-3 font-semibold">Role</th>
+                <th className="px-4 py-3 text-right"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#30363d]">
               {/* Active Members */}
-              {filteredMembers.map((member) => (
-                <tr key={member.user._id} className="hover:bg-bg-subtle transition-colors group">
-                  <td className="px-4 py-4">
+              {filteredMembers.map((member, index) => (
+                <tr key={member.user._id} className={`hover:bg-bg-subtle transition-colors group ${index === filteredMembers.length - 1 && filteredInvites.length === 0 ? 'rounded-b-md' : ''}`}>
+                  <td className={`px-4 py-4 ${index === filteredMembers.length - 1 && filteredInvites.length === 0 ? 'rounded-bl-md' : ''}`}>
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 font-semibold border border-border-default overflow-hidden relative">
                         {member.user.avatarUrl ? (
@@ -234,22 +296,89 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-2">
-                       <span className={`text-[12px] font-medium capitalize ${member.role === 'owner' ? 'text-[#f78166] font-semibold' : 'text-[#8b949e]'}`}>
-                        {member.role === 'owner' ? 'Owner' : member.role}
+                      <span className={`text-[12px] font-medium capitalize ${
+                        member.role === 'owner' ? 'text-[#f78166] font-semibold' : 
+                        member.role === 'co-owner' ? 'text-[#ffad33] font-semibold' : 
+                        'text-[#8b949e]'
+                      }`}>
+                        {member.role === 'owner' ? 'Owner' : 
+                         member.role === 'co-owner' ? 'Co-owner' : 
+                         'Developer'}
                       </span>
                     </div>
                   </td>
-                  <td className="px-4 py-4 text-right">
-                    {isOwner && member.user._id !== currentUserId && (
-                      <button 
-                        onClick={() => setRemovalTarget({ id: member.user._id, username: member.user.username })}
-                        className="p-1.5 opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-all flex items-center gap-2 ml-auto"
-                        title="Remove from organization"
-                      >
-                        <UserMinus size={15} />
-                        <span className="text-[10px] font-bold uppercase">Remove</span>
-                      </button>
-                    )}
+                  <td className={`px-4 py-4 text-right ${index === filteredMembers.length - 1 && filteredInvites.length === 0 ? 'rounded-br-md' : ''}`}>
+                    <div className="flex justify-end items-center">
+                      {/* 3-Dot Dropdown for Member Actions */}
+                      {isOwner && member.user._id !== currentUserId && (
+                        <div className="relative inline-block text-left">
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveMenuId(activeMenuId === member.user._id ? null : member.user._id);
+                            }}
+                            className={`p-1.5 rounded-md transition-all flex items-center justify-center ${
+                              activeMenuId === member.user._id 
+                                ? 'bg-[#30363d] text-[#f0f6fc]' 
+                                : 'text-[#8b949e] hover:bg-[#21262d] hover:text-[#f0f6fc] border border-transparent hover:border-[#30363d]'
+                            }`}
+                          >
+                            {isUpdatingRole === member.user._id ? (
+                              <Loader2 className="animate-spin" size={16} />
+                            ) : (
+                              <MoreVertical size={16} />
+                            )}
+                          </button>
+
+                          {activeMenuId === member.user._id && (
+                            <>
+                              <div 
+                                className="fixed inset-0 z-40" 
+                                onClick={() => setActiveMenuId(null)}
+                              />
+                              <div className="absolute right-0 mt-2 w-44 bg-[#161b22] border border-[#30363d] rounded-md shadow-[0_8px_24px_rgba(0,0,0,0.5)] z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-right">
+                                <div className="py-1">
+                                  <div className="px-3 py-1.5 border-b border-[#30363d] mb-1">
+                                    <p className="text-[10px] uppercase font-bold text-[#8b949e] tracking-wider">Manage Member</p>
+                                  </div>
+                                  
+                                  {member.role === 'developer' ? (
+                                    <button 
+                                      onClick={() => handleRoleUpdate(member.user._id, 'co-owner')}
+                                      className="w-full text-left px-3 py-2 text-xs text-[#f0f6fc] hover:bg-[#1f6feb] flex items-center gap-2 transition-colors"
+                                    >
+                                      <Shield size={14} className="text-[#ffad33]" />
+                                      Promote to Co-owner
+                                    </button>
+                                  ) : member.role === 'co-owner' ? (
+                                    <button 
+                                      onClick={() => handleRoleUpdate(member.user._id, 'developer')}
+                                      className="w-full text-left px-3 py-2 text-xs text-[#f0f6fc] hover:bg-[#1f6feb] flex items-center gap-2 transition-colors"
+                                    >
+                                      <UserCheck size={14} className="text-[#8b949e]" />
+                                      Demote to Developer
+                                    </button>
+                                  ) : null}
+
+                                  <div className="border-t border-[#30363d] mt-1 pt-1">
+                                    <button 
+                                      onClick={() => {
+                                        setRemovalTarget({ id: member.user._id, username: member.user.username });
+                                        setActiveMenuId(null);
+                                      }}
+                                      className="w-full text-left px-3 py-2 text-xs text-[#f85149] hover:bg-[#f85149] hover:text-white flex items-center gap-2 transition-colors"
+                                    >
+                                      <UserMinus size={14} />
+                                      Remove from Org
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -279,9 +408,15 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
                     </div>
                   </td>
                   <td className="px-4 py-4 text-right">
-                     <button className="p-1 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-500 transition-all">
-                      <X size={16} />
-                    </button>
+                    {isAdmin && (
+                      <button 
+                        onClick={() => handleCancelInvite(email)}
+                        title="Cancel invitation"
+                        className="p-1 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-500 transition-all"
+                      >
+                        <X size={16} />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

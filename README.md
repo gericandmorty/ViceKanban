@@ -43,7 +43,7 @@ Users register and log in through the auth pages. Upon successful login, the bac
 
 ### Organizations
 
-After logging in, users land on the dashboard. The first step is to create or join an Organization. An Organization is a shared workspace — similar to a GitHub organization — that can contain multiple projects and multiple members. The owner of an organization can invite other registered users by their username. Invited users will see a pending invitation on their dashboard, which they can accept or decline.
+After logging in, users land on the dashboard. The first step is to create or join an Organization. An Organization is a shared workspace — similar to a GitHub organization — that can contain multiple projects and multiple members. The owner or a co-owner of an organization can invite other registered users by their **email address**. Invited users will see a pending invitation on their dashboard, which they can accept or decline. Administrators can also revoke pending invitations at any time.
 
 ### Projects
 
@@ -56,15 +56,20 @@ The Kanban board is the core of the application. Each board has four columns rep
 - **To Do** — work that has been defined but not started
 - **In Progress** — work that is actively being developed
 - **Done** — work that is complete from the developer's perspective
-- **Reviewed** — work that has been reviewed and signed off (restricted to org owners and project creators)
+- **Reviewed** — work that has been reviewed and signed off (restricted to administrators: owners and co-owners)
 
-Tasks can be created directly from a column. Each task has a title, description, an assignee (any member of the org), and a status. Tasks can be dragged and dropped between columns to update their status. Drag permissions are enforced: a task can only be moved by the org owner, the project creator, the task creator, or the assigned user.
+Tasks can be created directly from a column by administrators or the project creator. Each task has a title, description, an assignee (any member of the org), and a status. Tasks can be dragged and dropped between columns to update their status. Drag permissions are enforced: a task can only be moved by an administrator, the project creator, the task creator, or the assigned user. Moving a task into the **Reviewed** column is strictly restricted to administrators and project creators.
 
 Clicking on a task card expands a detail view where users can edit, comment, and reply to comments in a discussion-style thread. Destructive actions such as deleting a task or removing a member are gated behind a confirmation modal to prevent mistakes.
 
 ### Member Management
 
-The Members tab inside an organization lists all current members with their roles. The organization owner can remove members directly from this view. Removed members lose access to all projects within that organization.
+The Members tab inside an organization lists all current members with their roles: **Owner**, **Co-owner**, and **Developer**. 
+- **Owner**: Full access, including member removal and role management.
+- **Co-owner**: Administrative access to manage projects, create tasks, and update organization settings. Restricted from removing members or changing roles.
+- **Developer**: Standard access to view projects and manage assigned tasks.
+
+The organization owner can remove members or manage permissions directly from this view. Removed members lose access to all projects within that organization immediately. Pending invitations can also be revoked by administrators if needed.
 
 ---
 

@@ -11,6 +11,10 @@ export interface Notification {
   link?: string;
   isRead: boolean;
   createdAt: string;
+  sender?: {
+    username: string;
+    avatarUrl?: string;
+  };
 }
 
 export function useNotifications() {

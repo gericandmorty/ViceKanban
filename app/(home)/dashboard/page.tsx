@@ -55,7 +55,7 @@ export default function DashboardPage() {
 
   const fetchUserProfile = useCallback(async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = API_URL;
       const token = Cookies.get('access_token');
       const response = await fetch(`${apiUrl}/user/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -72,7 +72,7 @@ export default function DashboardPage() {
 
   const fetchInvitations = useCallback(async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = API_URL;
       const token = Cookies.get('access_token');
       const response = await fetch(`${apiUrl}/organizations/invitations`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -88,7 +88,7 @@ export default function DashboardPage() {
 
   const fetchOrganizations = useCallback(async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = API_URL;
       const token = Cookies.get('access_token');
       const response = await fetch(`${apiUrl}/organizations`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -106,7 +106,7 @@ export default function DashboardPage() {
 
   const fetchProjects = useCallback(async (orgId: string) => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = API_URL;
       const token = Cookies.get('access_token');
       const response = await fetch(`${apiUrl}/organizations/${orgId}/projects`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -123,7 +123,7 @@ export default function DashboardPage() {
   const fetchOrgDetails = useCallback(async (id: string) => {
     setIsDetailLoading(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = API_URL;
       const token = Cookies.get('access_token');
       const response = await fetch(`${apiUrl}/organizations/${id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -160,6 +160,9 @@ export default function DashboardPage() {
       }
       
       setIsDetailLoading(true);
+      // Brief delay to ensure the loader is visible and state resets (lazy loader effect)
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
       try {
         const apiUrl = API_URL;
         const token = Cookies.get('access_token');
@@ -204,7 +207,7 @@ export default function DashboardPage() {
 
   const handleAcceptInvite = async (orgId: string, orgName: string) => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = API_URL;
       const token = Cookies.get('access_token');
       const response = await fetch(`${apiUrl}/organizations/${orgId}/accept`, {
         method: 'POST',
@@ -225,7 +228,7 @@ export default function DashboardPage() {
 
   const handleDeclineInvite = async (orgId: string) => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = API_URL;
       const token = Cookies.get('access_token');
       const response = await fetch(`${apiUrl}/organizations/${orgId}/decline`, {
         method: 'DELETE',
@@ -339,18 +342,25 @@ export default function DashboardPage() {
         )}
       </header>
 
-      {/* Main Content Area (Keyed by orgId to force clean unmounts) */}
-      <div 
-        key={orgIdFromUrl || 'overview'}
-        className="flex-1 min-h-0 flex flex-col bg-[#fafafa] dark:bg-[#0d1117]"
-      >
-        {isLoading || (orgIdFromUrl && isDetailLoading) ? (
-          <div className="flex-1 flex items-center justify-center">
-            <Loader2 className="animate-spin text-accent" size={32} />
-          </div>
-        ) : !detailedOrg ? (
+      {/* Content Area */}
+      <div className="flex-1 min-h-0 flex flex-col bg-[#fafafa] dark:bg-[#0d1117] relative">
+        {/* Top Progress Loader (The "Lines" loader) */}
+        <AnimatePresence>
+          {(isLoading || isDetailLoading) && (
+            <motion.div 
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: '100%', opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.8, ease: "easeInOut" }}
+              className="absolute top-0 left-0 h-[2px] bg-accent z-50 shadow-[0_0_8px_rgba(47,129,247,0.5)]"
+            />
+          )}
+        </AnimatePresence>
+
+        {!detailedOrg && !isLoading && !isDetailLoading ? (
           /* "Home" View with Organizations and Invitations */
           <div className="w-full max-w-4xl mx-auto py-8 px-6 space-y-8 overflow-y-auto h-full">
+
 
             {/* Pending Invitations Section */}
             <AnimatePresence>
@@ -402,12 +412,14 @@ export default function DashboardPage() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">Your Organizations</h2>
-                <button 
-                  onClick={() => setIsOrgModalOpen(true)}
-                  className="btn btn-primary py-1 px-3 text-xs flex items-center gap-1.5"
-                >
-                  <Plus size={12} /> New organization
-                </button>
+                {isMounted && (
+                  <button 
+                    onClick={() => setIsOrgModalOpen(true)}
+                    className="btn btn-primary py-1 px-3 text-xs flex items-center gap-1.5"
+                  >
+                    <Plus size={12} /> New organization
+                  </button>
+                )}
               </div>
 
               {organizations.length === 0 ? (
@@ -463,19 +475,21 @@ export default function DashboardPage() {
             {activeTab === 'Members' ? (
               <MembersTable org={detailedOrg} onRefresh={() => fetchOrgDetails(orgIdFromUrl as string)} />
             ) : activeTab === 'Board' ? (
-              projectIdFromUrl ? (
-                /* Kanban View */
-                <KanbanBoard 
-                  projectId={projectIdFromUrl} 
-                  isOwnerOrCreator={isOwnerOrCreator} 
-                  members={detailedOrg.members}
-                />
-              ) : (
+              <div className="flex-1 flex flex-col min-h-0">
+                {projectIdFromUrl ? (
+                  /* Kanban View with its own inner key for clean project switches */
+                  <KanbanBoard 
+                    key={projectIdFromUrl}
+                    projectId={projectIdFromUrl} 
+                    isOwnerOrCreator={isOwnerOrCreator} 
+                    members={detailedOrg.members}
+                  />
+                ) : (
                 /* Projects Selection List in Org */
                 <div className="space-y-4 overflow-y-auto h-full pr-1">
                   <div className="flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">Projects</h2>
-                    {isOrgOwner && (
+                    {isMounted && isOrgOwner && (
                       <button 
                         onClick={() => setIsProjectModalOpen(true)}
                         className="btn btn-primary py-1 px-3 text-xs flex items-center gap-1.5"
@@ -511,7 +525,7 @@ export default function DashboardPage() {
                         </div>
                       </div>
                     ))}
-                    {isOrgOwner && (
+                    {isMounted && isOrgOwner && (
                       <div
                         onClick={() => setIsProjectModalOpen(true)}
                         className="flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors group hover:bg-bg-subtle"
@@ -524,8 +538,9 @@ export default function DashboardPage() {
                     )}
                   </div>
                 </div>
-              )
-            ) : (
+              )}
+            </div>
+          ) : (
               <OrganizationSettings 
                 org={detailedOrg} 
                 isOwner={isOrgOwner} 

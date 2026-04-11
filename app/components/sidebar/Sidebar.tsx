@@ -216,27 +216,31 @@ export default function Sidebar() {
 
       </div>
 
-      <div className="p-4 border-t border-border-default space-y-1">
+      <div className="p-4 border-t border-border-default space-y-2 mt-auto">
         <Link
           href="/profile"
-          className="flex items-center gap-3 px-2 py-1.5 rounded-md text-sm cursor-pointer hover:bg-border-default/50 font-medium transition-colors group"
+          className="flex items-center gap-3 px-3 py-2 rounded-md text-sm cursor-pointer hover:bg-border-default transition-all group overflow-hidden"
         >
-          {avatarUrl ? (
-            <div className="w-5 h-5 rounded-full overflow-hidden relative border border-border-default">
-              <Image src={avatarUrl} alt="Avatar" fill sizes="20px" className="object-cover" />
-            </div>
-          ) : (
-            <div className="w-5 h-5 bg-gradient-to-tr from-purple-500 to-blue-500 rounded-full flex-shrink-0" />
-          )}
-          <span className="truncate group-hover:text-accent font-bold">{username}</span>
+          <div className="flex-shrink-0">
+            {avatarUrl ? (
+              <div className="w-6 h-6 rounded-full overflow-hidden relative border border-border-default">
+                <Image src={avatarUrl} alt="Avatar" fill sizes="24px" className="object-cover" />
+              </div>
+            ) : (
+              <div className="w-6 h-6 bg-gradient-to-tr from-[#2f81f7] to-[#f78166] rounded-full flex items-center justify-center text-[10px] text-white font-bold uppercase">
+                {username.charAt(0)}
+              </div>
+            )}
+          </div>
+          <span className="truncate group-hover:text-accent font-semibold transition-colors flex-1">{username}</span>
         </Link>
-        <div 
+        <button 
           onClick={handleLogout}
-          className="flex items-center gap-3 px-2 py-1.5 rounded-md text-sm cursor-pointer hover:bg-red-500/10 hover:text-red-500 transition-colors"
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm cursor-pointer hover:bg-red-500/10 hover:text-red-500 transition-colors"
         >
-          <LogOut size={14} />
+          <LogOut size={16} />
           <span>Logout</span>
-        </div>
+        </button>
       </div>
 
       <CreateOrgModal 

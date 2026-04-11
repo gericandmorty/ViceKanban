@@ -15,7 +15,8 @@ import {
   X,
   Bell,
   Kanban,
-  Menu
+  Menu,
+  User as UserIcon
 } from 'lucide-react';
 import CreateOrgModal from '@/app/components/modals/CreateOrgModal';
 import CreateProjectModal from '@/app/components/modals/CreateProjectModal';
@@ -253,11 +254,11 @@ export default function DashboardPage() {
             >
               <Menu size={20} />
             </button>
-            <div className="flex items-center gap-1.5 text-[15px] md:text-lg min-w-0 flex-1 font-normal text-[#8b949e]">
-              <Layout size={16} className="shrink-0" />
+            <div className="flex items-center gap-1.5 text-[14px] md:text-[15px] min-w-0 flex-1 font-normal text-[#8b949e]">
+              <UserIcon size={14} className="shrink-0" />
               <span 
                 onClick={handleGoHome}
-                className="hover:underline cursor-pointer transition-colors truncate"
+                className="hover:text-[#f0f6fc] cursor-pointer transition-colors truncate"
               >
                 {username}
               </span>
@@ -296,7 +297,7 @@ export default function DashboardPage() {
                 onClick={() => setActiveTab(tab)}
                 className={`flex items-center gap-2 py-2.5 text-sm font-medium border-b-2 transition-all relative ${
                   activeTab === tab 
-                    ? 'border-accent text-foreground' 
+                    ? 'border-[#f78166] text-foreground' 
                     : 'border-transparent text-[#8b949e] hover:text-foreground hover:border-[#30363d]'
                 }`}
               >
@@ -313,7 +314,7 @@ export default function DashboardPage() {
       {/* Main Content Area (Keyed by orgId to force clean unmounts) */}
       <div 
         key={orgIdFromUrl || 'overview'}
-        className="flex-1 flex flex-col overflow-hidden bg-[#fafafa] dark:bg-[#0d1117]"
+        className="flex-1 min-h-0 flex flex-col bg-[#fafafa] dark:bg-[#0d1117]"
       >
         {isLoading || (orgIdFromUrl && isDetailLoading) ? (
           <div className="flex-1 flex items-center justify-center">
@@ -430,7 +431,7 @@ export default function DashboardPage() {
           </div>
         ) : (
           /* Organization Workspace View */
-          <div className="w-full h-full max-w-full mx-auto py-2 md:py-4 px-2 md:px-6 overflow-hidden flex flex-col">
+          <div className="w-full flex-1 min-h-0 max-w-full mx-auto py-2 md:py-4 px-2 md:pr-4 md:pl-6 overflow-y-auto flex flex-col custom-scrollbar">
             {activeTab === 'Members' ? (
               <MembersTable org={detailedOrg} onRefresh={() => fetchOrgDetails(orgIdFromUrl as string)} />
             ) : activeTab === 'Board' ? (

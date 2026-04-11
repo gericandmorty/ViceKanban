@@ -5,10 +5,8 @@
   --background: #ffffff;
   --foreground: #1f2328;
   --bg-subtle: #f6f8fa;
-  --border-default: #d0d7de;
   --accent-fg: #0969da;
-  --success-fg: #1a7f37;
-  --accent-fg: #f78166; /* GitHub orange-red underline */
+  --tab-accent: #f78166; /* GitHub orange-red underline */
   --success-fg: #238636;
   --header-bg: #010409;
   --header-text: #ffffff;
@@ -36,7 +34,8 @@
     --foreground: #e6edf3;
     --bg-subtle: #161b22;
     --border-default: #30363d;
-    --accent-fg: #f78166;
+    --accent-fg: #2f81f7;
+    --tab-accent: #f78166;
     --success-fg: #238636;
     --header-bg: #010409;
     --header-text: #ffffff;
@@ -94,7 +93,7 @@ body {
 /* Custom Scrollbars */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(128, 128, 128, 0.3) transparent;
+  scrollbar-color: rgba(128, 128, 128, 0.4) transparent;
 }
 
 ::-webkit-scrollbar {
@@ -107,10 +106,22 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(128, 128, 128, 0.3);
-  border-radius: 6px;
+  background-color: rgba(128, 128, 128, 0.4);
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(128, 128, 128, 0.5);
+  background-color: rgba(128, 128, 128, 0.6);
+}
+
+/* Hide scrollbar but keep functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }

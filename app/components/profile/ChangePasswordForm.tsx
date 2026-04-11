@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Lock, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { toast } from 'sonner';
+import { API_URL } from '@/app/utils/api';
 
 export default function ChangePasswordForm() {
   const [formData, setFormData] = useState({
@@ -28,7 +29,7 @@ export default function ChangePasswordForm() {
 
     setIsSubmitting(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = API_URL;
       const token = Cookies.get('access_token');
       
       const response = await fetch(`${apiUrl}/auth/change-password`, {

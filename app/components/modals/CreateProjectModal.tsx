@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Cookies from 'js-cookie';
+import { API_URL } from '@/app/utils/api';
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -36,7 +37,7 @@ export default function CreateProjectModal({
     setError('');
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = API_URL;
       const token = Cookies.get('access_token');
       
       const response = await fetch(`${apiUrl}/organizations/${orgId}/projects`, {

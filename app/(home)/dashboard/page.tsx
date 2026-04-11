@@ -27,6 +27,7 @@ import Cookies from 'js-cookie';
 import { useSearchParams, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { useSidebar } from '@/app/context/SidebarContext';
+import { API_URL } from '@/app/utils/api';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -51,6 +52,23 @@ export default function DashboardPage() {
 
   // Auth/Permissions
   const [userId, setUserId] = useState<string | null>(null);
+
+  const fetchUserProfile = useCallback(async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const token = Cookies.get('access_token');
+      const response = await fetch(`${apiUrl}/user/me`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setUsername(data.username);
+        Cookies.set('user_name', data.username);
+      }
+    } catch (error) {
+      console.error('Failed to fetch user data in dashboard:', error);
+    }
+  }, []);
 
   const fetchInvitations = useCallback(async () => {
     try {
@@ -126,9 +144,10 @@ export default function DashboardPage() {
     setIsMounted(true);
     fetchOrganizations();
     fetchInvitations();
+    fetchUserProfile(); // Ensure name is loaded from API even if cookie is missing
     const storedUsername = Cookies.get('user_name');
     if (storedUsername) setUsername(storedUsername);
-  }, [fetchOrganizations, fetchInvitations]);
+  }, [fetchOrganizations, fetchInvitations, fetchUserProfile]);
 
   useEffect(() => {
     let isCurrent = true;
@@ -143,7 +162,7 @@ export default function DashboardPage() {
       
       setIsDetailLoading(true);
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+        const apiUrl = API_URL;
         const token = Cookies.get('access_token');
         
         // Fetch org details
@@ -256,11 +275,11 @@ export default function DashboardPage() {
               <UserIcon size={14} className="shrink-0 text-[#8b949e]" />
               <span 
                 onClick={handleGoHome}
-                className="text-[#8b949e] hover:text-[#f0f6fc] cursor-pointer transition-colors truncate"
+                className="text-[#8b949e] hover:text-[#f0f6fc] cursor-pointer transition-colors max-w-[120px] truncate"
               >
                 {username}
               </span>
-              <span className="shrink-0 mx-1 text-[#8b949e]">/</span>
+              <span className="shrink-0 mx-2 text-[#484f58]">/</span>
               <div className="flex items-center gap-1.5 min-w-0 truncate">
                 {orgIdFromUrl ? (
                   detailedOrg ? (
@@ -274,7 +293,7 @@ export default function DashboardPage() {
                       </span>
                       {currentProject && (
                         <>
-                           <span className="shrink-0 mx-1 text-[#8b949e]">/</span>
+                           <span className="shrink-0 mx-2 text-[#484f58]">/</span>
                            <span className="font-semibold text-[#f0f6fc] truncate" title={currentProject.name}>{currentProject.name}</span>
                         </>
                       )}

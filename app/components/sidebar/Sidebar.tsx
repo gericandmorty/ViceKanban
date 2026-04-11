@@ -12,14 +12,18 @@ import {
   LogOut,
   Loader2,
   Bell,
-  X as CloseIcon
+  X as CloseIcon,
+  CheckCircle2
 } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { useRouter, useSearchParams } from 'next/navigation';
 import CreateOrgModal from '@/app/components/modals/CreateOrgModal';
 import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useSidebar } from '@/app/context/SidebarContext';
 import { API_URL } from '@/app/utils/api';
+import { useNotifications } from '@/app/hooks/useNotifications';
+import NotificationPopover from './NotificationPopover';
 
 export default function Sidebar() {
   const router = useRouter();
@@ -33,6 +37,8 @@ export default function Sidebar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [username, setUsername] = useState('User');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
 
   const fetchUserData = useCallback(async () => {
     try {
@@ -139,11 +145,30 @@ export default function Sidebar() {
             >
               <CloseIcon size={18} />
             </button>
-            <div className="relative">
-              <ChevronDown size={14} className="text-zinc-400" />
-              {invitationCount > 0 && !currentOrgId && (
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-accent rounded-full animate-pulse" />
-              )}
+            <div className="relative flex items-center gap-2">
+              <button 
+                onClick={() => setIsNotifOpen(!isNotifOpen)}
+                className={`p-2 rounded-md transition-all relative ${
+                  isNotifOpen ? 'bg-border-default text-accent shadow-inner' : 'hover:bg-border-default/80 text-zinc-500'
+                }`}
+              >
+                <Bell size={16} className={unreadCount > 0 ? 'animate-wiggle' : ''} />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#2f81f7] rounded-full border border-bg-subtle" />
+                )}
+              </button>
+
+              <AnimatePresence>
+                {isNotifOpen && (
+                  <NotificationPopover 
+                    notifications={notifications}
+                    onMarkRead={markAsRead}
+                    onDelete={deleteNotification}
+                    onMarkAllAsRead={markAllAsRead}
+                    onClose={() => setIsNotifOpen(false)}
+                  />
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>

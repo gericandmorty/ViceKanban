@@ -70,6 +70,8 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [taskToConfirmDelete, setTaskToConfirmDelete] = useState<Task | null>(null);
   const [currentUserAvatar, setCurrentUserAvatar] = useState<string | null>(null);
+  const [filterOnlyMe, setFilterOnlyMe] = useState(false);
+  const currentUserId = Cookies.get('user_id');
 
   const fetchMyProfile = useCallback(async () => {
     try {
@@ -382,7 +384,34 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
   }
 
   return (
-    <div className="flex-1 overflow-hidden h-full pb-2">
+    <div className="flex-1 overflow-hidden h-full pb-2 flex flex-col">
+      {/* Board Toolbar */}
+      <div className="flex items-center justify-between px-2 mb-4">
+        <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900/50 p-1 rounded-lg border border-border-default/50 self-start">
+          <button 
+            onClick={() => setFilterOnlyMe(false)}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+              !filterOnlyMe 
+                ? 'bg-background shadow-sm text-foreground' 
+                : 'text-zinc-500 hover:text-foreground'
+            }`}
+          >
+            All Tasks
+          </button>
+          <button 
+            onClick={() => setFilterOnlyMe(true)}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-2 ${
+              filterOnlyMe 
+                ? 'bg-accent text-white shadow-sm' 
+                : 'text-zinc-500 hover:text-foreground'
+            }`}
+          >
+            <UserIcon size={12} />
+            Assigned to me
+          </button>
+        </div>
+      </div>
+
       <DndContext 
         sensors={sensors}
         collisionDetection={closestCorners}
@@ -390,20 +419,27 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex gap-4 md:gap-6 h-full px-2 overflow-x-auto overflow-y-hidden no-scrollbar snap-x snap-mandatory pb-4">
-          {board?.columns.map((col) => (
-            <KanbanColumn 
-              key={col.id}
-              id={col.id}
-              title={col.title}
-              tasks={tasks.filter(t => t.status === col.id)}
-              onAddTask={(col.id === 'todo' && isOwnerOrCreator) ? () => setShowTaskForm({status: col.id}) : undefined}
-              onDeleteTask={(task) => setTaskToConfirmDelete(task)}
-              onTaskClick={setInspectingTask}
-              isOwnerOrCreator={isOwnerOrCreator}
-              isLocked={col.id === 'reviewed' && !isOwnerOrCreator}
-            />
-          ))}
+        <div className="flex-1 flex gap-4 md:gap-6 px-2 overflow-x-auto overflow-y-hidden no-scrollbar snap-x snap-mandatory pb-4 min-h-0">
+          {board?.columns.map((col) => {
+            const columnTasks = tasks.filter(t => t.status === col.id);
+            const displayTasks = filterOnlyMe 
+              ? columnTasks.filter(t => t.assignee?._id === currentUserId)
+              : columnTasks;
+
+            return (
+              <KanbanColumn 
+                key={col.id}
+                id={col.id}
+                title={col.title}
+                tasks={displayTasks}
+                onAddTask={(col.id === 'todo' && isOwnerOrCreator) ? () => setShowTaskForm({status: col.id}) : undefined}
+                onDeleteTask={(task) => setTaskToConfirmDelete(task)}
+                onTaskClick={setInspectingTask}
+                isOwnerOrCreator={isOwnerOrCreator}
+                isLocked={col.id === 'reviewed' && !isOwnerOrCreator}
+              />
+            );
+          })}
         </div>
 
         <DragOverlay>

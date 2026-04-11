@@ -131,11 +131,13 @@ export default function DashboardPage() {
   }, [fetchOrganizations, fetchInvitations]);
 
   useEffect(() => {
+    // Reset state immediately whenever orgId changes to prevent stale data "ghosting"
+    setDetailedOrg(null);
+    setProjects([]);
+    setActiveTab('Board');
+
     if (orgIdFromUrl) {
       fetchOrgDetails(orgIdFromUrl);
-    } else {
-      setDetailedOrg(null);
-      setProjects([]);
     }
   }, [orgIdFromUrl, fetchOrgDetails]);
 

@@ -79,9 +79,9 @@ export default function CreateProjectModal({
             initial={{ scale: 0.95, opacity: 0, y: 10 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 10 }}
-            className="relative w-full max-w-md bg-background border border-border-default rounded-xl shadow-2xl overflow-hidden"
+            className="relative w-full max-w-md bg-background border border-border-default rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
           >
-            <div className="px-6 py-4 border-b border-border-default flex items-center justify-between bg-bg-subtle">
+            <div className="px-6 py-4 border-b border-border-default flex items-center justify-between bg-bg-subtle shrink-0">
               <div className="flex items-center gap-2">
                 <Layout size={18} className="text-accent" />
                 <h2 className="font-bold">Create New Project</h2>
@@ -91,7 +91,7 @@ export default function CreateProjectModal({
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto">
               {error && (
                 <div className="p-3 bg-red-100 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-md flex items-center gap-2 text-red-800 dark:text-red-400 text-xs">
                   <AlertCircle size={14} className="shrink-0" />

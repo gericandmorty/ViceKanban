@@ -128,52 +128,54 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
       {/* Search and Action Bar */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="relative w-full sm:w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={14} />
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+        <div className="relative w-full sm:w-80 order-2 sm:order-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8b949e]" size={14} />
           <input 
             type="text"
             placeholder="Search members..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-1.5 bg-background border border-border-default rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-accent transition-all"
+            className="w-full pl-9 pr-4 py-[5px] bg-[#0d1117] border border-[#30363d] rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#1f6feb] transition-all placeholder:text-[#484f58]"
           />
         </div>
         
-        {!showInviteForm ? (
-          <button 
-            onClick={() => setShowInviteForm(true)}
-            className="btn btn-primary px-3 py-1.5 text-xs flex items-center gap-2"
-          >
-            <Plus size={14} /> Invite member
-          </button>
-        ) : (
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <form onSubmit={handleInvite} className="flex gap-2 flex-1">
-              <input 
-                autoFocus
-                type="email" 
-                placeholder="Email address" 
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                className="flex-1 sm:w-60 px-3 py-1.5 bg-background border border-border-default rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-accent transition-all"
-              />
-              <button 
-                type="submit" 
-                disabled={isInviting || !inviteEmail}
-                className="btn btn-primary px-3 py-1.5 text-xs disabled:opacity-50"
-              >
-                {isInviting ? <Loader2 className="animate-spin" size={14} /> : 'Send Invite'}
-              </button>
-            </form>
+        <div className="order-1 sm:order-2 ml-auto">
+          {!showInviteForm ? (
             <button 
-              onClick={() => setShowInviteForm(false)}
-              className="p-1.5 text-zinc-500 hover:text-foreground transition-colors"
+              onClick={() => setShowInviteForm(true)}
+              className="bg-[#238636] hover:bg-[#2ea043] text-[#ffffff] px-4 py-[5px] rounded-md text-xs font-semibold flex items-center gap-2 transition-colors border border-[rgba(240,246,252,0.1)]"
             >
-              <X size={16} />
+              <Plus size={14} /> Invite member
             </button>
-          </div>
-        )}
+          ) : (
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <form onSubmit={handleInvite} className="flex gap-2 flex-1">
+                <input 
+                  autoFocus
+                  type="email" 
+                  placeholder="Email address" 
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  className="flex-1 sm:w-60 px-3 py-[5px] bg-[#0d1117] border border-[#30363d] rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#1f6feb] transition-all"
+                />
+                <button 
+                  type="submit" 
+                  disabled={isInviting || !inviteEmail}
+                  className="bg-[#238636] hover:bg-[#2ea043] text-[#ffffff] px-3 py-[5px] rounded-md text-xs font-semibold disabled:opacity-50"
+                >
+                  {isInviting ? <Loader2 className="animate-spin" size={14} /> : 'Send Invite'}
+                </button>
+              </form>
+              <button 
+                onClick={() => setShowInviteForm(false)}
+                className="p-1.5 text-[#8b949e] hover:text-[#f0f6fc] transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {inviteSuccess && (
@@ -183,10 +185,10 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
       )}
 
       {/* GitHub Themed Members Table */}
-      <div className="bg-background border border-border-default rounded-md overflow-hidden shadow-sm">
-        <div className="px-4 py-3 border-b border-border-default bg-background/50">
+      <div className="bg-[#0d1117] border border-[#30363d] rounded-md overflow-hidden shadow-sm">
+        <div className="px-4 py-3 border-b border-[#30363d] bg-[#0d1117]">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold">
+            <span className="text-[14px] font-semibold text-[#f0f6fc]">
               {org.members.length + org.invitedEmails.length} members
             </span>
           </div>
@@ -195,13 +197,13 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-border-default text-[12px] font-semibold text-zinc-500 bg-background">
-                <th className="px-4 py-3 w-3/4">Member</th>
-                <th className="px-4 py-3">Role</th>
-                <th className="px-4 py-3 text-right"></th>
+              <tr className="border-b border-[#30363d] text-[12px] font-semibold text-[#8b949e] bg-[#0d1117]">
+                <th className="px-4 py-2.5 w-3/4">Member</th>
+                <th className="px-4 py-2.5">Role</th>
+                <th className="px-4 py-2.5 text-right"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border-default">
+            <tbody className="divide-y divide-[#30363d]">
               {/* Active Members */}
               {filteredMembers.map((member) => (
                 <tr key={member.user._id} className="hover:bg-bg-subtle transition-colors group">
@@ -220,10 +222,10 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
                         )}
                       </div>
                       <div className="flex flex-col">
-                        <span className="font-bold text-sm text-foreground hover:text-accent cursor-pointer transition-colors leading-none mb-1">
+                        <span className="font-bold text-[14px] text-[#f0f6fc] hover:text-[#58a6ff] hover:underline cursor-pointer transition-colors leading-tight">
                           {member.user.username}
                         </span>
-                        <span className="text-xs text-zinc-500 leading-none">
+                        <span className="text-[12px] text-[#8b949e]">
                           {member.user.email}
                         </span>
                       </div>
@@ -231,8 +233,8 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-2">
-                       <span className={`text-xs font-medium capitalize ${member.role === 'owner' ? 'text-orange-500' : 'text-zinc-400'}`}>
-                        {member.role}
+                       <span className={`text-[12px] font-medium capitalize ${member.role === 'owner' ? 'text-[#f78166] font-semibold' : 'text-[#8b949e]'}`}>
+                        {member.role === 'owner' ? 'Owner' : member.role}
                       </span>
                     </div>
                   </td>
@@ -259,11 +261,11 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
                       <div className="w-9 h-9 rounded-full bg-transparent flex items-center justify-center text-zinc-600 font-bold border border-border-default border-dashed text-xs">
                         ?
                       </div>
-                      <div className="flex flex-col opacity-60">
-                        <span className="font-semibold text-sm text-foreground italic">
+                      <div className="flex flex-col opacity-70">
+                        <span className="font-semibold text-[14px] text-[#f0f6fc] italic">
                           Invitation sent...
                         </span>
-                        <span className="text-xs text-zinc-500">
+                        <span className="text-[12px] text-[#8b949e]">
                           {email}
                         </span>
                       </div>
@@ -271,8 +273,8 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-zinc-500">Developer</span>
-                      <span className="text-[10px] uppercase font-bold text-zinc-500 border border-border-default px-1.5 py-0.5 rounded leading-none">Pending</span>
+                      <span className="text-[12px] text-[#8b949e]">Developer</span>
+                      <span className="text-[10px] uppercase font-bold text-[#8b949e] bg-[#21262d] border border-[#30363d] px-1.5 py-0.5 rounded leading-none">PENDING</span>
                     </div>
                   </td>
                   <td className="px-4 py-4 text-right">

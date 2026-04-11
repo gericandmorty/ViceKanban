@@ -40,7 +40,7 @@ export default function CreateProjectModal({
       const apiUrl = API_URL;
       const token = Cookies.get('access_token');
       
-      const response = await fetch(`${apiUrl}/organizations/${orgId}/projects`, {
+      const response = await fetch(`${apiUrl}/projects/org/${orgId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

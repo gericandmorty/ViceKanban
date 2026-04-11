@@ -22,6 +22,7 @@ import CreateOrgModal from '@/app/components/modals/CreateOrgModal';
 import CreateProjectModal from '@/app/components/modals/CreateProjectModal';
 import MembersTable from '@/app/components/organizations/MembersTable';
 import OrganizationSettings from '@/app/components/organizations/OrganizationSettings';
+import ProjectSettings from '@/app/components/organizations/ProjectSettings';
 import KanbanBoard from '@/app/components/kanban/KanbanBoard';
 import Cookies from 'js-cookie';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -108,7 +109,7 @@ export default function DashboardPage() {
     try {
       const apiUrl = API_URL;
       const token = Cookies.get('access_token');
-      const response = await fetch(`${apiUrl}/organizations/${orgId}/projects`, {
+      const response = await fetch(`${apiUrl}/projects/org/${orgId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
@@ -183,7 +184,7 @@ export default function DashboardPage() {
                                  (projectIdFromUrl && !projects.find(p => p._id === projectIdFromUrl));
 
         if (needsProjectFetch || detailedOrg?._id !== orgIdFromUrl) {
-          const projRes = await fetch(`${apiUrl}/organizations/${orgIdFromUrl}/projects`, {
+          const projRes = await fetch(`${apiUrl}/projects/org/${orgIdFromUrl}`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           if (projRes.ok && isCurrent) {
@@ -549,13 +550,27 @@ export default function DashboardPage() {
                 </div>
               )}
             </div>
-          ) : (
-              <OrganizationSettings 
-                org={detailedOrg} 
-                isOwner={isOrgOwner}
-                isAdmin={isAdmin} 
-                onRefresh={() => fetchOrgDetails(orgIdFromUrl as string)} 
-              />
+            ) : (
+              currentProject ? (
+                <ProjectSettings 
+                  project={currentProject} 
+                  orgId={orgIdFromUrl as string}
+                  isAdmin={isAdmin} 
+                  isCreator={isProjectCreator}
+                  onRefresh={() => {
+                    fetchProjects(orgIdFromUrl as string);
+                    // Force a local update to currentProject reference if needed, 
+                    // though fetchProjects + re-render handles it.
+                  }} 
+                />
+              ) : (
+                <OrganizationSettings 
+                  org={detailedOrg} 
+                  isOwner={isOrgOwner}
+                  isAdmin={isAdmin} 
+                  onRefresh={() => fetchOrgDetails(orgIdFromUrl as string)} 
+                />
+              )
             )}
           </div>
         )}

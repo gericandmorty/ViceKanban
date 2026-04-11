@@ -35,9 +35,9 @@ export default function LoginPage() {
         throw new Error(data.message || 'Login failed');
       }
 
-      Cookies.set('access_token', data.access_token, { expires: 1 });
-      Cookies.set('user_name', data.username, { expires: 1 });
-      Cookies.set('user_id', data.userId, { expires: 1 });
+      Cookies.set('access_token', data.access_token, { expires: 7 });
+      Cookies.set('user_name', data.username, { expires: 7 });
+      Cookies.set('user_id', data.userId, { expires: 7 });
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please try again.');

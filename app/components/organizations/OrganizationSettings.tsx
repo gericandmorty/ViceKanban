@@ -11,10 +11,11 @@ import { API_URL } from '@/app/utils/api';
 interface OrganizationSettingsProps {
   org: any;
   isOwner: boolean;
+  isAdmin: boolean;
   onRefresh: () => void;
 }
 
-export default function OrganizationSettings({ org, isOwner, onRefresh }: OrganizationSettingsProps) {
+export default function OrganizationSettings({ org, isOwner, isAdmin, onRefresh }: OrganizationSettingsProps) {
   const [name, setName] = useState(org.name);
   const [description, setDescription] = useState(org.description || '');
   const [isUpdating, setIsUpdating] = useState(false);
@@ -73,7 +74,7 @@ export default function OrganizationSettings({ org, isOwner, onRefresh }: Organi
                 type="text" 
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                disabled={!isOwner || isUpdating}
+                disabled={!isAdmin || isUpdating}
                 className="w-full px-3 py-[5px] bg-[#0d1117] border border-[#30363d] rounded-md text-[14px] text-[#f0f6fc] focus:outline-none focus:ring-1 focus:ring-[#1f6feb] transition-all disabled:opacity-50"
               />
             </div>
@@ -88,7 +89,7 @@ export default function OrganizationSettings({ org, isOwner, onRefresh }: Organi
               <textarea 
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                disabled={!isOwner || isUpdating}
+                disabled={!isAdmin || isUpdating}
                 placeholder="Add a description for your organization..."
                 className="w-full px-3 py-[7px] bg-[#0d1117] border border-[#30363d] rounded-md text-[14px] text-[#f0f6fc] focus:outline-none focus:ring-1 focus:ring-[#1f6feb] transition-all min-h-[120px] resize-none disabled:opacity-50"
               />
@@ -96,7 +97,7 @@ export default function OrganizationSettings({ org, isOwner, onRefresh }: Organi
           </div>
 
           <div className="px-6 py-4 bg-[#161b22]/30 flex justify-end gap-3 items-center">
-            {isOwner && (
+            {isAdmin && (
               <>
                 <button 
                   type="button"

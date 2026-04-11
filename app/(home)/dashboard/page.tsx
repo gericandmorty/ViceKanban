@@ -157,12 +157,13 @@ export default function DashboardPage() {
       if (!orgIdFromUrl) {
         setDetailedOrg(null);
         setProjects([]);
+        // Stop any loading state if we're just going home
+        setIsDetailLoading(false);
+        setIsLoading(false); 
         return;
       }
       
       setIsDetailLoading(true);
-      // Brief delay to ensure the loader is visible and state resets (lazy loader effect)
-      await new Promise(resolve => setTimeout(resolve, 300));
       
       try {
         const apiUrl = API_URL;
@@ -183,7 +184,7 @@ export default function DashboardPage() {
         const needsProjectFetch = projects.length === 0 || 
                                  (projectIdFromUrl && !projects.find(p => p._id === projectIdFromUrl));
 
-        if (needsProjectFetch || detailedOrg?._id !== orgIdFromUrl) {
+        if (needsProjectFetch || (detailedOrg?._id !== orgIdFromUrl)) {
           const projRes = await fetch(`${apiUrl}/projects/org/${orgIdFromUrl}`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
@@ -195,7 +196,10 @@ export default function DashboardPage() {
       } catch (error) {
         console.error('Failed to load dashboard data:', error);
       } finally {
-        if (isCurrent) setIsDetailLoading(false);
+        if (isCurrent) {
+          setIsDetailLoading(false);
+          setIsLoading(false); // Also clear main loading if set
+        }
       }
     };
 
@@ -258,6 +262,10 @@ export default function DashboardPage() {
 
   const handleGoHome = () => {
     router.push('/dashboard');
+    setDetailedOrg(null);
+    setProjects([]);
+    setActiveTab('Board');
+    setIsDetailLoading(false);
   };
 
   const currentProject = projects.find(p => p._id === projectIdFromUrl);
@@ -296,7 +304,7 @@ export default function DashboardPage() {
                   detailedOrg ? (
                     <>
                       <span 
-                        onClick={() => router.push(`/dashboard?orgId=${orgIdFromUrl}`)} 
+                        onClick={() => handleSelectOrg(orgIdFromUrl)} 
                         className={`cursor-pointer hover:underline truncate ${!currentProject ? 'font-semibold text-[#f0f6fc]' : 'text-[#8b949e]'}`}
                         title={detailedOrg.name}
                       >

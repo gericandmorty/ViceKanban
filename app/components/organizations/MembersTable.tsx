@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Mail, 
   User as UserIcon, 
@@ -55,6 +55,13 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
   const [removalTarget, setRemovalTarget] = useState<{ id: string, username: string } | null>(null);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [isUpdatingRole, setIsUpdatingRole] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
+
+  // Reset to page 1 when searching
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -188,6 +195,18 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
     email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Pagination Logic
+  const allVisibleItems = [
+    ...filteredMembers.map(m => ({ type: 'member' as const, data: m, id: m.user._id })),
+    ...filteredInvites.map(e => ({ type: 'invite' as const, data: e, id: e }))
+  ];
+
+  const totalPages = Math.ceil(allVisibleItems.length / ITEMS_PER_PAGE);
+  const paginatedItems = allVisibleItems.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
       {/* Search and Action Bar */}
@@ -267,168 +286,191 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#30363d]">
-              {/* Active Members */}
-              {filteredMembers.map((member, index) => (
-                <tr key={member.user._id} className={`hover:bg-bg-subtle transition-colors group ${index === filteredMembers.length - 1 && filteredInvites.length === 0 ? 'rounded-b-md' : ''}`}>
-                  <td className={`px-4 py-4 ${index === filteredMembers.length - 1 && filteredInvites.length === 0 ? 'rounded-bl-md' : ''}`}>
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 font-semibold border border-border-default overflow-hidden relative">
-                        {member.user.avatarUrl ? (
-                          <Image
-                            src={member.user.avatarUrl}
-                            alt={member.user.username}
-                            fill
-                            className="object-cover"
-                          />
-                        ) : (
-                          member.user.username.charAt(0).toUpperCase()
-                        )}
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="font-bold text-[14px] text-[#f0f6fc] hover:text-[#58a6ff] hover:underline cursor-pointer transition-colors leading-tight">
-                          {member.user.username}
-                        </span>
-                        <span className="text-[12px] text-[#8b949e]">
-                          {member.user.email}
-                        </span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-2">
-                      <span className={`text-[12px] font-medium capitalize ${
-                        member.role === 'owner' ? 'text-[#f78166] font-semibold' : 
-                        member.role === 'co-owner' ? 'text-[#ffad33] font-semibold' : 
-                        'text-[#8b949e]'
-                      }`}>
-                        {member.role === 'owner' ? 'Owner' : 
-                         member.role === 'co-owner' ? 'Co-owner' : 
-                         'Developer'}
-                      </span>
-                    </div>
-                  </td>
-                  <td className={`px-4 py-4 text-right ${index === filteredMembers.length - 1 && filteredInvites.length === 0 ? 'rounded-br-md' : ''}`}>
-                    <div className="flex justify-end items-center">
-                      {/* 3-Dot Dropdown for Member Actions */}
-                      {isOwner && member.user._id !== currentUserId && (
-                        <div className="relative inline-block text-left">
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveMenuId(activeMenuId === member.user._id ? null : member.user._id);
-                            }}
-                            className={`p-1.5 rounded-md transition-all flex items-center justify-center ${
-                              activeMenuId === member.user._id 
-                                ? 'bg-[#30363d] text-[#f0f6fc]' 
-                                : 'text-[#8b949e] hover:bg-[#21262d] hover:text-[#f0f6fc] border border-transparent hover:border-[#30363d]'
-                            }`}
-                          >
-                            {isUpdatingRole === member.user._id ? (
-                              <Loader2 className="animate-spin" size={16} />
-                            ) : (
-                              <MoreVertical size={16} />
-                            )}
-                          </button>
-
-                          {activeMenuId === member.user._id && (
-                            <>
-                              <div 
-                                className="fixed inset-0 z-40" 
-                                onClick={() => setActiveMenuId(null)}
-                              />
-                              <div className="absolute right-0 mt-2 w-44 bg-[#161b22] border border-[#30363d] rounded-md shadow-[0_8px_24px_rgba(0,0,0,0.5)] z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-right">
-                                <div className="py-1">
-                                  <div className="px-3 py-1.5 border-b border-[#30363d] mb-1">
-                                    <p className="text-[10px] uppercase font-bold text-[#8b949e] tracking-wider">Manage Member</p>
-                                  </div>
-                                  
-                                  {member.role === 'developer' ? (
-                                    <button 
-                                      onClick={() => handleRoleUpdate(member.user._id, 'co-owner')}
-                                      className="w-full text-left px-3 py-2 text-xs text-[#f0f6fc] hover:bg-[#1f6feb] flex items-center gap-2 transition-colors"
-                                    >
-                                      <Shield size={14} className="text-[#ffad33]" />
-                                      Promote to Co-owner
-                                    </button>
-                                  ) : member.role === 'co-owner' ? (
-                                    <button 
-                                      onClick={() => handleRoleUpdate(member.user._id, 'developer')}
-                                      className="w-full text-left px-3 py-2 text-xs text-[#f0f6fc] hover:bg-[#1f6feb] flex items-center gap-2 transition-colors"
-                                    >
-                                      <UserCheck size={14} className="text-[#8b949e]" />
-                                      Demote to Developer
-                                    </button>
-                                  ) : null}
-
-                                  <div className="border-t border-[#30363d] mt-1 pt-1">
-                                    <button 
-                                      onClick={() => {
-                                        setRemovalTarget({ id: member.user._id, username: member.user.username });
-                                        setActiveMenuId(null);
-                                      }}
-                                      className="w-full text-left px-3 py-2 text-xs text-[#f85149] hover:bg-[#f85149] hover:text-white flex items-center gap-2 transition-colors"
-                                    >
-                                      <UserMinus size={14} />
-                                      Remove from Org
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                            </>
+              {/* Paginated Combined Content */}
+              {paginatedItems.map((item, index) => (
+                item.type === 'member' ? (
+                  <tr key={item.id} className={`hover:bg-bg-subtle transition-colors group ${index === paginatedItems.length - 1 ? 'rounded-b-md' : ''}`}>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 font-semibold border border-border-default overflow-hidden relative">
+                          {item.data.user.avatarUrl ? (
+                            <Image
+                              src={item.data.user.avatarUrl}
+                              alt={item.data.user.username}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            item.data.user.username.charAt(0).toUpperCase()
                           )}
                         </div>
+                        <div className="flex flex-col">
+                          <span className="font-bold text-[14px] text-[#f0f6fc] hover:text-[#58a6ff] hover:underline cursor-pointer transition-colors leading-tight">
+                            {item.data.user.username}
+                          </span>
+                          <span className="text-[12px] text-[#8b949e]">
+                            {item.data.user.email}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[12px] font-medium capitalize ${
+                          item.data.role === 'owner' ? 'text-[#f78166] font-semibold' : 
+                          item.data.role === 'co-owner' ? 'text-[#ffad33] font-semibold' : 
+                          'text-[#8b949e]'
+                        }`}>
+                          {item.data.role === 'owner' ? 'Owner' : 
+                          item.data.role === 'co-owner' ? 'Co-owner' : 
+                          'Developer'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 text-right">
+                      <div className="flex justify-end items-center">
+                        {isOwner && item.data.user._id !== currentUserId && (
+                          <div className="relative inline-block text-left">
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveMenuId(activeMenuId === item.data.user._id ? null : item.data.user._id);
+                              }}
+                              className={`p-1.5 rounded-md transition-all flex items-center justify-center ${
+                                activeMenuId === item.data.user._id 
+                                  ? 'bg-[#30363d] text-[#f0f6fc]' 
+                                  : 'text-[#8b949e] hover:bg-[#21262d] hover:text-[#f0f6fc] border border-transparent hover:border-[#30363d]'
+                              }`}
+                            >
+                              {isUpdatingRole === item.data.user._id ? (
+                                <Loader2 className="animate-spin" size={16} />
+                              ) : (
+                                <MoreVertical size={16} />
+                              )}
+                            </button>
+
+                            {activeMenuId === item.data.user._id && (
+                              <>
+                                <div 
+                                  className="fixed inset-0 z-40" 
+                                  onClick={() => setActiveMenuId(null)}
+                                />
+                                <div className="absolute right-0 mt-2 w-44 bg-[#161b22] border border-[#30363d] rounded-md shadow-[0_8px_24px_rgba(0,0,0,0.5)] z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-right">
+                                  <div className="py-1">
+                                    <div className="px-3 py-1.5 border-b border-[#30363d] mb-1">
+                                      <p className="text-[10px] uppercase font-bold text-[#8b949e] tracking-wider">Manage Member</p>
+                                    </div>
+                                    
+                                    {item.data.role === 'developer' ? (
+                                      <button 
+                                        onClick={() => handleRoleUpdate(item.data.user._id, 'co-owner')}
+                                        className="w-full text-left px-3 py-2 text-xs text-[#f0f6fc] hover:bg-[#1f6feb] flex items-center gap-2 transition-colors"
+                                      >
+                                        <Shield size={14} className="text-[#ffad33]" />
+                                        Promote to Co-owner
+                                      </button>
+                                    ) : item.data.role === 'co-owner' ? (
+                                      <button 
+                                        onClick={() => handleRoleUpdate(item.data.user._id, 'developer')}
+                                        className="w-full text-left px-3 py-2 text-xs text-[#f0f6fc] hover:bg-[#1f6feb] flex items-center gap-2 transition-colors"
+                                      >
+                                        <UserCheck size={14} className="text-[#8b949e]" />
+                                        Demote to Developer
+                                      </button>
+                                    ) : null}
+
+                                    <div className="border-t border-[#30363d] mt-1 pt-1">
+                                      <button 
+                                        onClick={() => {
+                                          setRemovalTarget({ id: item.data.user._id, username: item.data.user.username });
+                                          setActiveMenuId(null);
+                                        }}
+                                        className="w-full text-left px-3 py-2 text-xs text-[#f85149] hover:bg-[#f85149] hover:text-white flex items-center gap-2 transition-colors"
+                                      >
+                                        <UserMinus size={14} />
+                                        Remove from Org
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  <tr key={item.id} className="hover:bg-bg-subtle transition-colors group">
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-transparent flex items-center justify-center text-zinc-600 font-bold border border-border-default border-dashed text-xs">
+                          ?
+                        </div>
+                        <div className="flex flex-col opacity-70">
+                          <span className="font-semibold text-[14px] text-[#f0f6fc] italic">
+                            Invitation sent...
+                          </span>
+                          <span className="text-[12px] text-[#8b949e]">
+                            {item.data}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[12px] text-[#8b949e]">Developer</span>
+                        <span className="text-[10px] uppercase font-bold text-[#8b949e] bg-[#21262d] border border-[#30363d] px-1.5 py-0.5 rounded leading-none">PENDING</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 text-right">
+                      {isAdmin && (
+                        <button 
+                          onClick={() => handleCancelInvite(item.data as string)}
+                          title="Cancel invitation"
+                          className="p-1 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-500 transition-all"
+                        >
+                          <X size={16} />
+                        </button>
                       )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              
-              {/* Pending Invites */}
-              {filteredInvites.map((email) => (
-                <tr key={email} className="hover:bg-bg-subtle transition-colors group">
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-transparent flex items-center justify-center text-zinc-600 font-bold border border-border-default border-dashed text-xs">
-                        ?
-                      </div>
-                      <div className="flex flex-col opacity-70">
-                        <span className="font-semibold text-[14px] text-[#f0f6fc] italic">
-                          Invitation sent...
-                        </span>
-                        <span className="text-[12px] text-[#8b949e]">
-                          {email}
-                        </span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[12px] text-[#8b949e]">Developer</span>
-                      <span className="text-[10px] uppercase font-bold text-[#8b949e] bg-[#21262d] border border-[#30363d] px-1.5 py-0.5 rounded leading-none">PENDING</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4 text-right">
-                    {isAdmin && (
-                      <button 
-                        onClick={() => handleCancelInvite(email)}
-                        title="Cancel invitation"
-                        className="p-1 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-500 transition-all"
-                      >
-                        <X size={16} />
-                      </button>
-                    )}
-                  </td>
-                </tr>
+                    </td>
+                  </tr>
+                )
               ))}
             </tbody>
           </table>
           
-          {filteredMembers.length === 0 && filteredInvites.length === 0 && (
+          {paginatedItems.length === 0 && (
             <div className="p-12 text-center text-zinc-500 text-sm">
               No members match your search.
             </div>
           )}
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="px-4 py-3 border-t border-[#30363d] flex items-center justify-between bg-[#161b22] rounded-b-md">
+            <div className="flex gap-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 border border-[#30363d] rounded-md text-[12px] font-medium text-[#c9d1d9] hover:bg-[#30363d] disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 border border-[#30363d] rounded-md text-[12px] font-medium text-[#c9d1d9] hover:bg-[#30363d] disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+              >
+                Next
+              </button>
+            </div>
+            <div className="text-[12px] text-[#8b949e]">
+              Page <span className="text-[#f0f6fc] font-semibold">{currentPage}</span> of <span className="text-[#f0f6fc] font-semibold">{totalPages}</span>
+            </div>
+          </div>
+        )}
       </div>
 
       <ConfirmationModal 

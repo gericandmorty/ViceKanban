@@ -152,36 +152,41 @@ export default function DashboardPage() {
   useEffect(() => {
     let isCurrent = true;
     
-    // Reset state immediately whenever orgId changes to prevent stale data "ghosting"
-    setDetailedOrg(null);
-    setProjects([]);
-    setActiveTab('Board');
-
     const loadData = async () => {
-      if (!orgIdFromUrl) return;
+      if (!orgIdFromUrl) {
+        setDetailedOrg(null);
+        setProjects([]);
+        return;
+      }
       
       setIsDetailLoading(true);
       try {
         const apiUrl = API_URL;
         const token = Cookies.get('access_token');
         
-        // Fetch org details
-        const orgRes = await fetch(`${apiUrl}/organizations/${orgIdFromUrl}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (!orgRes.ok || !isCurrent) return;
-        const orgData = await orgRes.json();
-        setDetailedOrg(orgData);
+        // Always fetch org details if missing or org changed
+        if (!detailedOrg || detailedOrg._id !== orgIdFromUrl) {
+          const orgRes = await fetch(`${apiUrl}/organizations/${orgIdFromUrl}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (orgRes.ok && isCurrent) {
+            const orgData = await orgRes.json();
+            setDetailedOrg(orgData);
+          }
+        }
 
-        // Fetch projects for this org
-        const projRes = await fetch(`${apiUrl}/organizations/${orgIdFromUrl}/projects`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (projRes.ok && isCurrent) {
-          const projData = await projRes.json();
-          setProjects(projData);
+        // Always fetch projects if they are missing or if the current project isn't in the list
+        const needsProjectFetch = projects.length === 0 || 
+                                 (projectIdFromUrl && !projects.find(p => p._id === projectIdFromUrl));
+
+        if (needsProjectFetch || detailedOrg?._id !== orgIdFromUrl) {
+          const projRes = await fetch(`${apiUrl}/organizations/${orgIdFromUrl}/projects`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (projRes.ok && isCurrent) {
+            const projData = await projRes.json();
+            setProjects(projData);
+          }
         }
       } catch (error) {
         console.error('Failed to load dashboard data:', error);
@@ -195,7 +200,7 @@ export default function DashboardPage() {
     return () => {
       isCurrent = false;
     };
-  }, [orgIdFromUrl]);
+  }, [orgIdFromUrl, projectIdFromUrl]);
 
   const handleAcceptInvite = async (orgId: string, orgName: string) => {
     try {

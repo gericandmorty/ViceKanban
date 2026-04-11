@@ -386,11 +386,11 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
   return (
     <div className="flex-1 overflow-hidden h-full pb-2 flex flex-col">
       {/* Board Toolbar */}
-      <div className="flex items-center justify-between px-2 mb-4">
-        <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900/50 p-1 rounded-lg border border-border-default/50 self-start">
+      <div className="flex items-center justify-between px-2 mb-3 md:mb-4 shrink-0">
+        <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-900/50 p-1 rounded-lg border border-border-default/50 self-start">
           <button 
             onClick={() => setFilterOnlyMe(false)}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+            className={`px-3 py-1.5 text-[10px] md:text-xs font-semibold rounded-md transition-all ${
               !filterOnlyMe 
                 ? 'bg-background shadow-sm text-foreground' 
                 : 'text-zinc-500 hover:text-foreground'
@@ -400,14 +400,14 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
           </button>
           <button 
             onClick={() => setFilterOnlyMe(true)}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-2 ${
+            className={`px-3 py-1.5 text-[10px] md:text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${
               filterOnlyMe 
                 ? 'bg-accent text-white shadow-sm' 
                 : 'text-zinc-500 hover:text-foreground'
             }`}
           >
             <UserIcon size={12} />
-            Assigned to me
+            My Tasks
           </button>
         </div>
       </div>
@@ -419,7 +419,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex-1 flex gap-4 md:gap-6 px-2 overflow-x-auto overflow-y-hidden no-scrollbar snap-x snap-mandatory pb-4 min-h-0">
+        <div className="flex-1 flex gap-3 md:gap-6 px-2 overflow-x-auto overflow-y-hidden no-scrollbar snap-x snap-mandatory pb-4 min-h-0 touch-pan-x">
           {board?.columns.map((col) => {
             const columnTasks = tasks.filter(t => t.status === col.id);
             const displayTasks = filterOnlyMe 

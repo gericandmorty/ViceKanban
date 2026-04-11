@@ -8,7 +8,9 @@
   --border-default: #d0d7de;
   --accent-fg: #0969da;
   --success-fg: #1a7f37;
-  --header-bg: #24292f;
+  --accent-fg: #f78166; /* GitHub orange-red underline */
+  --success-fg: #238636;
+  --header-bg: #010409;
   --header-text: #ffffff;
   
   --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
@@ -34,7 +36,7 @@
     --foreground: #e6edf3;
     --bg-subtle: #161b22;
     --border-default: #30363d;
-    --accent-fg: #2f81f7;
+    --accent-fg: #f78166;
     --success-fg: #238636;
     --header-bg: #010409;
     --header-text: #ffffff;

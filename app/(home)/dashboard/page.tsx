@@ -20,6 +20,7 @@ import {
 import CreateOrgModal from '@/app/components/modals/CreateOrgModal';
 import CreateProjectModal from '@/app/components/modals/CreateProjectModal';
 import MembersTable from '@/app/components/organizations/MembersTable';
+import OrganizationSettings from '@/app/components/organizations/OrganizationSettings';
 import KanbanBoard from '@/app/components/kanban/KanbanBoard';
 import Cookies from 'js-cookie';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -29,7 +30,7 @@ import { useSidebar } from '@/app/context/SidebarContext';
 export default function DashboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar, closeSidebar } = useSidebar();
   const orgIdFromUrl = searchParams.get('orgId');
   const projectIdFromUrl = searchParams.get('projectId');
 
@@ -218,8 +219,10 @@ export default function DashboardPage() {
   };
 
   const handleSelectOrg = (id: string) => {
+    // Explicitly navigate to the org root, ensuring any previous projectId is stripped
     router.push(`/dashboard?orgId=${id}`);
     setActiveTab('Board');
+    closeSidebar(); // Ensure sidebar closes on mobile selection
   };
 
   const handleSelectProject = (projectId: string) => {
@@ -250,30 +253,34 @@ export default function DashboardPage() {
             >
               <Menu size={20} />
             </button>
-            <div className="flex items-center gap-2 text-lg md:text-xl">
-              <Layout size={20} className="text-zinc-400" />
+            <div className="flex items-center gap-1.5 text-[15px] md:text-lg min-w-0 flex-1 font-normal text-[#8b949e]">
+              <Layout size={16} className="shrink-0" />
               <span 
                 onClick={handleGoHome}
-                className="font-medium text-accent hover:underline cursor-pointer transition-colors"
+                className="hover:underline cursor-pointer transition-colors truncate"
               >
                 {username}
               </span>
-              <span className="text-zinc-400">/</span>
-              <span className="font-bold flex items-center gap-2">
+              <span className="shrink-0 mx-1">/</span>
+              <div className="flex items-center gap-1.5 min-w-0 truncate">
                 {detailedOrg ? (
                   <>
-                    <span onClick={() => router.push(`/dashboard?orgId=${orgIdFromUrl}`)} className="cursor-pointer hover:text-accent">
+                    <span 
+                      onClick={() => router.push(`/dashboard?orgId=${orgIdFromUrl}`)} 
+                      className={`cursor-pointer hover:underline truncate ${!currentProject ? 'font-semibold text-[#f0f6fc]' : ''}`}
+                      title={detailedOrg.name}
+                    >
                       {detailedOrg.name} 
                     </span>
                     {currentProject && (
                       <>
-                         <span className="text-zinc-400">/</span>
-                         <span className="text-foreground">{currentProject.name}</span>
+                         <span className="shrink-0 mx-1">/</span>
+                         <span className="font-semibold text-[#f0f6fc] truncate" title={currentProject.name}>{currentProject.name}</span>
                       </>
                     )}
                   </>
-                ) : 'Organizations'}
-              </span>
+                ) : <span className="font-semibold text-[#f0f6fc]">Organizations</span>}
+              </div>
             </div>
           </div>
 
@@ -282,20 +289,20 @@ export default function DashboardPage() {
         </div>
 
         {detailedOrg && (
-          <div className="px-4 md:px-6 flex gap-4 md:gap-8 items-end overflow-x-auto no-scrollbar">
+          <div className="px-4 md:px-6 flex gap-4 md:gap-8 items-end overflow-x-auto no-scrollbar border-b border-border-default">
             {['Board', 'Members', 'Settings'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex items-center gap-2 py-3 text-sm font-medium border-b-2 transition-all ${
+                className={`flex items-center gap-2 py-2.5 text-sm font-medium border-b-2 transition-all relative ${
                   activeTab === tab 
-                    ? 'border-orange-500 text-foreground' 
-                    : 'border-transparent text-zinc-500 hover:text-foreground hover:border-zinc-300'
+                    ? 'border-accent text-foreground' 
+                    : 'border-transparent text-[#8b949e] hover:text-foreground hover:border-[#30363d]'
                 }`}
               >
-                {tab === 'Board' && <Kanban size={16} />}
-                {tab === 'Members' && <Users size={16} />}
-                {tab === 'Settings' && <Layout size={16} />}
+                {tab === 'Board' && <Kanban size={16} className="opacity-70" />}
+                {tab === 'Members' && <Users size={16} className="opacity-70" />}
+                {tab === 'Settings' && <Layout size={16} className="opacity-70" />}
                 {tab}
               </button>
             ))}
@@ -303,8 +310,11 @@ export default function DashboardPage() {
         )}
       </header>
 
-      {/* Main Content Area (Fixed height, children handle overflow) */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-[#fafafa] dark:bg-[#0d1117]">
+      {/* Main Content Area (Keyed by orgId to force clean unmounts) */}
+      <div 
+        key={orgIdFromUrl || 'overview'}
+        className="flex-1 flex flex-col overflow-hidden bg-[#fafafa] dark:bg-[#0d1117]"
+      >
         {isLoading || (orgIdFromUrl && isDetailLoading) ? (
           <div className="flex-1 flex items-center justify-center">
             <Loader2 className="animate-spin text-accent" size={32} />
@@ -487,9 +497,11 @@ export default function DashboardPage() {
                 </div>
               )
             ) : (
-              <div className="p-12 text-center text-zinc-500 border border-border-default rounded-xl bg-background border-dashed">
-                Settings View coming soon...
-              </div>
+              <OrganizationSettings 
+                org={detailedOrg} 
+                isOwner={isOrgOwner} 
+                onRefresh={() => fetchOrgDetails(orgIdFromUrl as string)} 
+              />
             )}
           </div>
         )}

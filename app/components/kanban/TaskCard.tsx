@@ -12,6 +12,7 @@ import {
   Trash2
 } from 'lucide-react';
 import Cookies from 'js-cookie';
+import Image from 'next/image';
 
 interface Task {
   _id: string;
@@ -22,10 +23,12 @@ interface Task {
   creator: {
     _id: string;
     username: string;
+    avatarUrl?: string;
   };
   assignee?: {
     _id: string;
     username: string;
+    avatarUrl?: string;
   };
 }
 
@@ -121,8 +124,18 @@ export default function TaskCard({ task, onDelete, onClick, isOwnerOrCreator }: 
           </div>
           <div className="flex items-center gap-2">
             {task.assignee ? (
-              <div className="w-6 h-6 rounded-full bg-accent border border-accent/20 flex items-center justify-center text-[9px] font-bold text-white shadow-sm" title={`Assigned to ${task.assignee.username}`}>
-                {task.assignee.username.charAt(0).toUpperCase()}
+              <div className="w-6 h-6 rounded-full bg-accent border border-accent/20 flex items-center justify-center text-[9px] font-bold text-white shadow-sm overflow-hidden relative" title={`Assigned to ${task.assignee.username}`}>
+                {task.assignee.avatarUrl ? (
+                  <Image 
+                    src={task.assignee.avatarUrl} 
+                    alt={task.assignee.username} 
+                    fill 
+                    sizes="24px"
+                    className="object-cover"
+                  />
+                ) : (
+                  task.assignee.username.charAt(0).toUpperCase()
+                )}
               </div>
             ) : (
               <div className="w-6 h-6 rounded-full bg-zinc-800 border border-border-default flex items-center justify-center text-[9px] font-bold text-zinc-500 italic" title="Unassigned">

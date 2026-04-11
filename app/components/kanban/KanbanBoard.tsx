@@ -27,6 +27,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Cookies from 'js-cookie';
 import toast from 'react-hot-toast';
 import ConfirmationModal from '../ui/ConfirmationModal';
+import Image from 'next/image';
 
 interface Task {
   _id: string;
@@ -37,10 +38,12 @@ interface Task {
   creator: {
     username: string;
     _id: string;
+    avatarUrl?: string;
   };
   assignee?: {
     username: string;
     _id: string;
+    avatarUrl?: string;
   };
 }
 
@@ -66,6 +69,23 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
   const [newCommentContent, setNewCommentContent] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [taskToConfirmDelete, setTaskToConfirmDelete] = useState<Task | null>(null);
+  const [currentUserAvatar, setCurrentUserAvatar] = useState<string | null>(null);
+
+  const fetchMyProfile = useCallback(async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const token = Cookies.get('access_token');
+      const response = await fetch(`${apiUrl}/user/me`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setCurrentUserAvatar(data.avatarUrl);
+      }
+    } catch (error) {
+      console.error('Failed to fetch my profile:', error);
+    }
+  }, []);
 
   const fetchData = useCallback(async () => {
     try {
@@ -97,7 +117,8 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+    fetchMyProfile();
+  }, [fetchData, fetchMyProfile]);
 
   const fetchComments = useCallback(async (taskId: string) => {
     setIsFetchingComments(true);
@@ -369,7 +390,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex gap-6 h-full px-2 overflow-y-hidden">
+        <div className="flex gap-4 md:gap-6 h-full px-2 overflow-x-auto overflow-y-hidden no-scrollbar snap-x snap-mandatory pb-4">
           {board?.columns.map((col) => (
             <KanbanColumn 
               key={col.id}
@@ -536,8 +557,12 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-zinc-400 uppercase">Creator</label>
                     <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center text-[8px] font-bold">
-                        {inspectingTask.creator.username.charAt(0).toUpperCase()}
+                      <div className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center text-[8px] font-bold overflow-hidden relative border border-border-default">
+                        {inspectingTask.creator.avatarUrl ? (
+                          <Image src={inspectingTask.creator.avatarUrl} alt={inspectingTask.creator.username} fill sizes="20px" className="object-cover" />
+                        ) : (
+                          inspectingTask.creator.username.charAt(0).toUpperCase()
+                        )}
                       </div>
                       <span className="text-sm font-medium">{inspectingTask.creator.username}</span>
                     </div>
@@ -547,8 +572,12 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
                     <div className="flex items-center gap-2">
                       {(inspectingTask as any).assignee ? (
                         <>
-                          <div className="w-5 h-5 rounded-full bg-accent flex items-center justify-center text-[8px] font-bold text-white">
-                            {(inspectingTask as any).assignee.username.charAt(0).toUpperCase()}
+                          <div className="w-5 h-5 rounded-full bg-accent flex items-center justify-center text-[8px] font-bold text-white overflow-hidden relative border border-accent/20">
+                            {(inspectingTask as any).assignee.avatarUrl ? (
+                              <Image src={(inspectingTask as any).assignee.avatarUrl} alt={(inspectingTask as any).assignee.username} fill sizes="20px" className="object-cover" />
+                            ) : (
+                              (inspectingTask as any).assignee.username.charAt(0).toUpperCase()
+                            )}
                           </div>
                           <span className="text-sm font-medium">{(inspectingTask as any).assignee.username}</span>
                         </>
@@ -598,8 +627,12 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
                           <div key={comment._id} className="space-y-3">
                             {/* Main Comment */}
                             <div className="flex gap-3 group">
-                              <div className="w-8 h-8 rounded-full bg-zinc-800 flex-shrink-0 flex items-center justify-center text-[10px] font-bold border border-border-default shadow-sm">
-                                {comment.author.username.charAt(0).toUpperCase()}
+                              <div className="w-8 h-8 rounded-full bg-zinc-800 flex-shrink-0 flex items-center justify-center text-[10px] font-bold border border-border-default shadow-sm overflow-hidden relative">
+                                {comment.author.avatarUrl ? (
+                                  <Image src={comment.author.avatarUrl} alt={comment.author.username} fill sizes="32px" className="object-cover" />
+                                ) : (
+                                  comment.author.username.charAt(0).toUpperCase()
+                                )}
                               </div>
                               <div className="flex-1 space-y-1">
                                 <div className="flex items-center gap-2">
@@ -624,8 +657,12 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
                                 <div className="p-1 text-zinc-600">
                                   <CornerDownRight size={14} />
                                 </div>
-                                <div className="w-6 h-6 rounded-full bg-accent/20 flex-shrink-0 flex items-center justify-center text-[8px] font-bold text-accent border border-accent/20">
-                                  {reply.author.username.charAt(0).toUpperCase()}
+                                <div className="w-6 h-6 rounded-full bg-accent/20 flex-shrink-0 flex items-center justify-center text-[8px] font-bold text-accent border border-accent/20 overflow-hidden relative">
+                                  {reply.author.avatarUrl ? (
+                                    <Image src={reply.author.avatarUrl} alt={reply.author.username} fill sizes="24px" className="object-cover" />
+                                  ) : (
+                                    reply.author.username.charAt(0).toUpperCase()
+                                  )}
                                 </div>
                                 <div className="flex-1 space-y-1">
                                   <div className="flex items-center gap-2">
@@ -668,8 +705,12 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
                   {!replyingTo && (
                     <div className="pt-2">
                       <div className="flex gap-3">
-                        <div className="w-8 h-8 rounded-full bg-zinc-800 flex-shrink-0 flex items-center justify-center text-[10px] font-bold border border-border-default shadow-sm opacity-50">
-                          ?
+                        <div className="w-8 h-8 rounded-full bg-zinc-800 flex-shrink-0 flex items-center justify-center text-[10px] font-bold border border-border-default shadow-sm overflow-hidden relative">
+                          {currentUserAvatar ? (
+                            <Image src={currentUserAvatar} alt="My Avatar" fill sizes="32px" className="object-cover" />
+                          ) : (
+                            '?'
+                          )}
                         </div>
                         <div className="flex-1 space-y-2">
                           <textarea 

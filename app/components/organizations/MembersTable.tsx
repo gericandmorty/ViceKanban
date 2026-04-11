@@ -19,11 +19,13 @@ import {
 import Cookies from 'js-cookie';
 import toast from 'react-hot-toast';
 import ConfirmationModal from '../ui/ConfirmationModal';
+import Image from 'next/image';
 
 interface User {
   _id: string;
   username: string;
   email: string;
+  avatarUrl?: string;
 }
 
 interface Member {
@@ -205,8 +207,17 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
                 <tr key={member.user._id} className="hover:bg-bg-subtle transition-colors group">
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 font-semibold border border-border-default overflow-hidden">
-                        {member.user.username.charAt(0).toUpperCase()}
+                      <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 font-semibold border border-border-default overflow-hidden relative">
+                        {member.user.avatarUrl ? (
+                          <Image
+                            src={member.user.avatarUrl}
+                            alt={member.user.username}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          member.user.username.charAt(0).toUpperCase()
+                        )}
                       </div>
                       <div className="flex flex-col">
                         <span className="font-bold text-sm text-foreground hover:text-accent cursor-pointer transition-colors leading-none mb-1">

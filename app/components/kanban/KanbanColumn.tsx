@@ -56,7 +56,7 @@ export default function KanbanColumn({
   });
 
   return (
-    <div className="flex flex-col w-[calc(25%-18px)] h-full bg-[#f6f8fa]/50 dark:bg-[#161b22]/50 rounded-lg p-2 flex-shrink-0 border border-border-default/50">
+    <div className="flex flex-col w-[280px] md:w-[calc(25%-18px)] h-full bg-[#f6f8fa]/50 dark:bg-[#161b22]/50 rounded-lg p-2 flex-shrink-0 border border-border-default/50 snap-center">
       <div className="flex items-center justify-between mb-3 px-2">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-bold text-foreground capitalize">{title.replace('_', ' ')}</h3>

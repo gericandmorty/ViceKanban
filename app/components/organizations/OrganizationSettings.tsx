@@ -25,7 +25,7 @@ export default function OrganizationSettings({ org, isOwner, onRefresh }: Organi
 
     setIsUpdating(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = API_URL;
       const token = Cookies.get('access_token');
       const response = await fetch(`${apiUrl}/organizations/${org._id}`, {
         method: 'POST',

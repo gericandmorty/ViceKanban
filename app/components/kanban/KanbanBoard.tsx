@@ -68,7 +68,10 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
   const [comments, setComments] = useState<any[]>([]);
   const [isFetchingComments, setIsFetchingComments] = useState(false);
   const [newCommentContent, setNewCommentContent] = useState('');
+  const [isSendingComment, setIsSendingComment] = useState(false);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingContent, setEditingContent] = useState('');
   const [taskToConfirmDelete, setTaskToConfirmDelete] = useState<Task | null>(null);
   const [currentUserAvatar, setCurrentUserAvatar] = useState<string | null>(null);
   const [filterOnlyMe, setFilterOnlyMe] = useState(false);
@@ -153,8 +156,9 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
   }, [inspectingTask, fetchComments]);
 
   const handleCreateComment = async (parentId?: string) => {
-    if (!newCommentContent.trim() || !inspectingTask) return;
+    if (!newCommentContent.trim() || !inspectingTask || isSendingComment) return;
 
+    setIsSendingComment(true);
     try {
       const apiUrl = API_URL;
       const token = Cookies.get('access_token');
@@ -175,9 +179,63 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
         setNewCommentContent('');
         setReplyingTo(null);
         fetchComments(inspectingTask._id);
+      } else {
+        toast.error('Failed to post comment');
       }
     } catch (error) {
-      toast.error('Failed to post comment');
+      toast.error('Connection error');
+    } finally {
+      setIsSendingComment(false);
+    }
+  };
+
+  const handleUpdateComment = async (commentId: string) => {
+    if (!editingContent.trim() || !inspectingTask) return;
+
+    try {
+      const apiUrl = API_URL;
+      const token = Cookies.get('access_token');
+      const response = await fetch(`${apiUrl}/comments/${commentId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ content: editingContent })
+      });
+
+      if (response.ok) {
+        setEditingCommentId(null);
+        setEditingContent('');
+        fetchComments(inspectingTask._id);
+        toast.success('Comment updated');
+      } else {
+        toast.error('Failed to update comment');
+      }
+    } catch (error) {
+      toast.error('Connection error');
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!inspectingTask) return;
+
+    try {
+      const apiUrl = API_URL;
+      const token = Cookies.get('access_token');
+      const response = await fetch(`${apiUrl}/comments/${commentId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        fetchComments(inspectingTask._id);
+        toast.success('Comment deleted');
+      } else {
+        toast.error('Failed to delete comment');
+      }
+    } catch (error) {
+      toast.error('Connection error');
     }
   };
 
@@ -549,77 +607,76 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="bg-background border border-border-default w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
             >
-              {/* Modal Header */}
-              <div className="flex items-center justify-between px-6 py-4 border-b border-border-default bg-bg-subtle">
+              <div className="flex items-center justify-between px-6 py-3 border-b border-[#30363d] bg-[#161b22]">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-accent/10 rounded-lg text-accent">
-                    <FileText size={20} />
+                  <div className="p-1.5 border border-[#30363d] rounded-md text-[#8b949e] bg-[#0d1117]">
+                    <FileText size={18} />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold">Task Details</h2>
-                    <p className="text-[10px] text-zinc-500 font-mono uppercase tracking-wider">ID: {inspectingTask._id}</p>
+                    <h2 className="text-[14px] font-semibold text-[#f0f6fc]">Task Details</h2>
+                    <p className="text-[10px] text-[#8b949e] font-mono uppercase tracking-wider">ID: {inspectingTask._id}</p>
                   </div>
                 </div>
                 <button 
                   onClick={() => setInspectingTask(null)}
-                  className="p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+                  className="p-1 px-2 text-[#8b949e] hover:text-[#f0f6fc] hover:bg-[#30363d]/50 rounded-md transition-all"
                 >
-                  <X size={20} />
+                  <X size={18} />
                 </button>
               </div>
 
               {/* Modal Body */}
-              <div className="flex-1 overflow-y-auto p-8 space-y-8">
+              <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-10 bg-[#0d1117]">
                 {/* Title Section */}
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Title</label>
-                  <h1 className="text-2xl font-extrabold text-foreground leading-tight">
+                <div className="space-y-1">
+                  <label className="text-[12px] font-semibold text-[#8b949e]">Title</label>
+                  <h1 className="text-[24px] font-bold text-[#f0f6fc] tracking-tight">
                     {inspectingTask.title}
                   </h1>
                 </div>
 
                 {/* Meta Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 py-6 border-y border-border-default/50">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-zinc-400 uppercase">Status</label>
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 py-8 border-y border-[#30363d]">
+                  <div className="space-y-2">
+                    <label className="text-[12px] font-semibold text-[#8b949e]">Status</label>
                     <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${
-                        inspectingTask.status === 'reviewed' ? 'bg-green-500' :
-                        inspectingTask.status === 'done' ? 'bg-accent' :
-                        inspectingTask.status === 'in_progress' ? 'bg-blue-500' : 'bg-zinc-400'
+                      <div className={`w-2.5 h-2.5 rounded-full ${
+                        inspectingTask.status === 'reviewed' ? 'bg-[#3fb950]' :
+                        inspectingTask.status === 'done' ? 'bg-[#238636]' :
+                        inspectingTask.status === 'in_progress' ? 'bg-[#1f6feb]' : 'bg-[#8b949e]'
                       }`} />
-                      <span className="text-sm font-semibold capitalize">{inspectingTask.status.replace('_', ' ')}</span>
+                      <span className="text-[14px] font-medium text-[#f0f6fc] capitalize">{inspectingTask.status.replace('_', ' ')}</span>
                     </div>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-zinc-400 uppercase">Creator</label>
+                  <div className="space-y-2">
+                    <label className="text-[12px] font-semibold text-[#8b949e]">Creator</label>
                     <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center text-[8px] font-bold overflow-hidden relative border border-border-default">
+                      <div className="w-6 h-6 rounded-full bg-[#161b22] flex items-center justify-center text-[10px] font-bold overflow-hidden relative border border-[#30363d] shadow-sm">
                         {inspectingTask.creator.avatarUrl ? (
-                          <Image src={inspectingTask.creator.avatarUrl} alt={inspectingTask.creator.username} fill sizes="20px" className="object-cover" />
+                          <Image src={inspectingTask.creator.avatarUrl} alt={inspectingTask.creator.username} fill sizes="24px" className="object-cover" />
                         ) : (
                           inspectingTask.creator.username.charAt(0).toUpperCase()
                         )}
                       </div>
-                      <span className="text-sm font-medium">{inspectingTask.creator.username}</span>
+                      <span className="text-[14px] font-medium text-[#f0f6fc]">{inspectingTask.creator.username}</span>
                     </div>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-zinc-400 uppercase">Assignee</label>
+                  <div className="space-y-2">
+                    <label className="text-[12px] font-semibold text-[#8b949e]">Assignee</label>
                     <div className="flex items-center gap-2">
                       {(inspectingTask as any).assignee ? (
                         <>
-                          <div className="w-5 h-5 rounded-full bg-accent flex items-center justify-center text-[8px] font-bold text-white overflow-hidden relative border border-accent/20">
+                          <div className="w-6 h-6 rounded-full bg-[#1f6feb]/10 flex items-center justify-center text-[10px] font-bold text-[#1f6feb] overflow-hidden relative border border-[#1f6feb]/20 shadow-sm">
                             {(inspectingTask as any).assignee.avatarUrl ? (
-                              <Image src={(inspectingTask as any).assignee.avatarUrl} alt={(inspectingTask as any).assignee.username} fill sizes="20px" className="object-cover" />
+                              <Image src={(inspectingTask as any).assignee.avatarUrl} alt={(inspectingTask as any).assignee.username} fill sizes="24px" className="object-cover" />
                             ) : (
                               (inspectingTask as any).assignee.username.charAt(0).toUpperCase()
                             )}
                           </div>
-                          <span className="text-sm font-medium">{(inspectingTask as any).assignee.username}</span>
+                          <span className="text-[14px] font-medium text-[#f0f6fc]">{(inspectingTask as any).assignee.username}</span>
                         </>
                       ) : (
-                        <span className="text-sm text-zinc-500 italic">Unassigned</span>
+                        <span className="text-[14px] text-[#8b949e] italic font-normal">Unassigned</span>
                       )}
                     </div>
                   </div>
@@ -627,109 +684,209 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
 
                 {/* Description */}
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Type size={14} className="text-zinc-400" />
-                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Description</label>
+                  <div className="flex items-center gap-2 px-1">
+                    <Type size={16} className="text-[#8b949e]" />
+                    <label className="text-[14px] font-semibold text-[#f0f6fc]">Description</label>
                   </div>
-                  <div className="bg-bg-subtle border border-border-default rounded-xl p-5 min-h-[120px]">
+                  <div className="bg-[#010409] border border-[#30363d] rounded-lg p-5 min-h-[120px] shadow-inner">
                     {inspectingTask.description ? (
-                      <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap">
+                      <p className="text-[14px] text-[#f0f6fc] leading-[1.6] whitespace-pre-wrap font-normal">
                         {inspectingTask.description}
                       </p>
                     ) : (
-                      <p className="text-sm text-zinc-400 italic">No description provided for this task.</p>
+                      <p className="text-[13px] text-[#8b949e] italic">No description provided for this task.</p>
                     )}
                   </div>
                 </div>
 
                 {/* Discussion Section */}
-                <div className="space-y-6 pt-6 border-t border-border-default/50">
-                  <div className="flex items-center gap-2">
-                    <MessageSquare size={14} className="text-zinc-400" />
-                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Discussion</label>
+                <div className="space-y-6 pt-10 border-t border-[#30363d]">
+                  <div className="flex items-center gap-2 px-1">
+                    <MessageSquare size={16} className="text-[#8b949e]" />
+                    <label className="text-[14px] font-semibold text-[#f0f6fc]">Activity</label>
                   </div>
 
                   {/* Comment List */}
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {isFetchingComments ? (
-                      <div className="flex justify-center py-4">
-                        <Loader2 className="animate-spin text-zinc-400" size={20} />
+                      <div className="flex justify-center py-6">
+                        <Loader2 className="animate-spin text-[#8b949e]" size={24} />
                       </div>
                     ) : comments.length === 0 ? (
-                      <p className="text-xs text-zinc-500 italic px-1">No comments yet. Start a discussion below.</p>
+                      <p className="text-[13px] text-[#8b949e] italic px-1">No comments yet. Start a discussion below.</p>
                     ) : (
-                      <div className="space-y-4">
-                        {/* Separate flat comments into threaded structure */}
+                      <div className="space-y-8">
                         {comments.filter(c => !c.parentComment).map((comment) => (
-                          <div key={comment._id} className="space-y-3">
+                          <div key={comment._id} className="space-y-4">
                             {/* Main Comment */}
-                            <div className="flex gap-3 group">
-                              <div className="w-8 h-8 rounded-full bg-zinc-800 flex-shrink-0 flex items-center justify-center text-[10px] font-bold border border-border-default shadow-sm overflow-hidden relative">
+                            <div className="flex gap-4">
+                              <div className="w-10 h-10 rounded-full bg-[#161b22] flex-shrink-0 flex items-center justify-center text-[11px] font-bold border border-[#30363d] shadow-sm overflow-hidden relative mt-1">
                                 {comment.author.avatarUrl ? (
-                                  <Image src={comment.author.avatarUrl} alt={comment.author.username} fill sizes="32px" className="object-cover" />
+                                  <Image src={comment.author.avatarUrl} alt={comment.author.username} fill sizes="40px" className="object-cover" />
                                 ) : (
                                   comment.author.username.charAt(0).toUpperCase()
                                 )}
                               </div>
-                              <div className="flex-1 space-y-1">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm font-bold">{comment.author.username}</span>
-                                  <span className="text-[10px] text-zinc-500">{new Date(comment.createdAt).toLocaleDateString()}</span>
+                              <div className="flex-1 border border-[#30363d] rounded-lg overflow-hidden bg-[#0d1117] shadow-sm transition-shadow hover:shadow-md">
+                                  <div className="bg-[#161b22] px-4 py-2.5 border-b border-[#30363d] flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[14px] font-semibold text-[#f0f6fc]">{comment.author.username}</span>
+                                    <span className="text-[12px] text-[#8b949e]">commented on {new Date(comment.createdAt).toLocaleDateString()}</span>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    {comment.author._id === currentUserId && (
+                                      <>
+                                        <button 
+                                          onClick={() => {
+                                            setEditingCommentId(comment._id);
+                                            setEditingContent(comment.content);
+                                          }}
+                                          className="text-[12px] font-semibold text-[#8b949e] hover:text-accent transition-colors"
+                                        >
+                                          Edit
+                                        </button>
+                                        <button 
+                                          onClick={() => handleDeleteComment(comment._id)}
+                                          className="text-[12px] font-semibold text-[#8b949e] hover:text-red-500 transition-colors"
+                                        >
+                                          Delete
+                                        </button>
+                                      </>
+                                    )}
+                                    <button 
+                                      onClick={() => setReplyingTo(replyingTo === comment._id ? null : comment._id)}
+                                      className="text-[12px] font-semibold text-[#8b949e] hover:text-[#1f6feb] transition-colors"
+                                    >
+                                      Reply
+                                    </button>
+                                  </div>
                                 </div>
-                                <div className="bg-bg-subtle border border-border-default rounded-lg p-3 text-sm text-zinc-300">
-                                  {comment.content}
+                                <div className="px-4 py-3.5 text-[14px] text-[#f0f6fc] leading-[1.6]">
+                                  {editingCommentId === comment._id ? (
+                                    <div className="space-y-3">
+                                      <textarea 
+                                        autoFocus
+                                        value={editingContent}
+                                        onChange={(e) => setEditingContent(e.target.value)}
+                                        className="w-full bg-[#010409] border border-[#30363d] rounded-md px-3 py-2 text-[14px] text-[#f0f6fc] outline-none min-h-[100px] resize-none focus:ring-1 focus:ring-accent"
+                                      />
+                                      <div className="flex justify-end gap-2">
+                                        <button 
+                                          onClick={() => setEditingCommentId(null)}
+                                          className="px-3 py-1.5 text-[12px] font-semibold text-[#8b949e] hover:text-[#f0f6fc]"
+                                        >
+                                          Cancel
+                                        </button>
+                                        <button 
+                                          onClick={() => handleUpdateComment(comment._id)}
+                                          className="px-4 py-1.5 bg-[#238636] text-white text-[12px] font-bold rounded-md hover:bg-[#2ea043]"
+                                        >
+                                          Update
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    comment.content
+                                  )}
                                 </div>
-                                <button 
-                                  onClick={() => setReplyingTo(replyingTo === comment._id ? null : comment._id)}
-                                  className="text-[10px] text-zinc-500 hover:text-accent font-bold px-1 transition-colors"
-                                >
-                                  Reply
-                                </button>
                               </div>
                             </div>
 
                             {/* Replies */}
                             {comments.filter(r => r.parentComment === comment._id).map((reply) => (
-                              <div key={reply._id} className="flex gap-3 ml-11">
-                                <div className="p-1 text-zinc-600">
-                                  <CornerDownRight size={14} />
-                                </div>
-                                <div className="w-6 h-6 rounded-full bg-accent/20 flex-shrink-0 flex items-center justify-center text-[8px] font-bold text-accent border border-accent/20 overflow-hidden relative">
+                              <div key={reply._id} className="flex gap-4 ml-14">
+                                <div className="w-8 h-8 rounded-full bg-[#161b22] flex-shrink-0 flex items-center justify-center text-[9px] font-bold border border-[#30363d] shadow-sm overflow-hidden relative mt-1">
                                   {reply.author.avatarUrl ? (
-                                    <Image src={reply.author.avatarUrl} alt={reply.author.username} fill sizes="24px" className="object-cover" />
+                                    <Image src={reply.author.avatarUrl} alt={reply.author.username} fill sizes="32px" className="object-cover" />
                                   ) : (
                                     reply.author.username.charAt(0).toUpperCase()
                                   )}
                                 </div>
-                                <div className="flex-1 space-y-1">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-[12px] font-bold">{reply.author.username}</span>
-                                    <span className="text-[9px] text-zinc-500">{new Date(reply.createdAt).toLocaleDateString()}</span>
+                                <div className="flex-1 border border-[#30363d] rounded-lg overflow-hidden bg-[#0d1117] shadow-sm">
+                                  <div className="bg-[#161b22]/50 px-3 py-2 border-b border-[#30363d] flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[13px] font-semibold text-[#f0f6fc]">{reply.author.username}</span>
+                                      <span className="text-[11px] text-[#8b949e]">{new Date(reply.createdAt).toLocaleDateString()}</span>
+                                    </div>
+                                    {reply.author._id === currentUserId && (
+                                      <div className="flex items-center gap-3">
+                                        <button 
+                                          onClick={() => {
+                                            setEditingCommentId(reply._id);
+                                            setEditingContent(reply.content);
+                                          }}
+                                          className="text-[11px] font-semibold text-[#8b949e] hover:text-accent transition-colors"
+                                        >
+                                          Edit
+                                        </button>
+                                        <button 
+                                          onClick={() => handleDeleteComment(reply._id)}
+                                          className="text-[11px] font-semibold text-[#8b949e] hover:text-red-500 transition-colors"
+                                        >
+                                          Delete
+                                        </button>
+                                      </div>
+                                    )}
                                   </div>
-                                  <div className="bg-accent/5 border border-accent/10 rounded-lg p-2.5 text-[13px] text-zinc-300">
-                                    {reply.content}
+                                  <div className="px-3 py-2.5 text-[13px] text-[#f0f6fc] leading-[1.5]">
+                                    {editingCommentId === reply._id ? (
+                                      <div className="space-y-3">
+                                        <textarea 
+                                          autoFocus
+                                          value={editingContent}
+                                          onChange={(e) => setEditingContent(e.target.value)}
+                                          className="w-full bg-[#010409] border border-[#30363d] rounded-md px-3 py-2 text-[13px] text-[#f0f6fc] outline-none min-h-[80px] resize-none focus:ring-1 focus:ring-accent"
+                                        />
+                                        <div className="flex justify-end gap-2">
+                                          <button 
+                                            onClick={() => setEditingCommentId(null)}
+                                            className="px-2 py-1 text-[11px] font-semibold text-[#8b949e] hover:text-[#f0f6fc]"
+                                          >
+                                            Cancel
+                                          </button>
+                                          <button 
+                                            onClick={() => handleUpdateComment(reply._id)}
+                                            className="px-3 py-1 bg-[#238636] text-white text-[11px] font-bold rounded-md hover:bg-[#2ea043]"
+                                          >
+                                            Update
+                                          </button>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      reply.content
+                                    )}
                                   </div>
                                 </div>
                               </div>
                             ))}
 
-                            {/* Reply Input */}
+                            {/* Reply Input Box */}
                             {replyingTo === comment._id && (
-                              <div className="ml-11 flex gap-2">
-                                <input 
-                                  autoFocus
-                                  value={newCommentContent}
-                                  onChange={(e) => setNewCommentContent(e.target.value)}
-                                  placeholder="Write a reply..."
-                                  className="flex-1 bg-background border border-border-default rounded-md px-3 py-1.5 text-xs focus:ring-1 focus:ring-accent outline-none"
-                                  onKeyDown={(e) => e.key === 'Enter' && handleCreateComment(comment._id)}
-                                />
-                                <button 
-                                  onClick={() => handleCreateComment(comment._id)}
-                                  className="p-2 bg-accent text-white rounded-md hover:opacity-90 transition-opacity"
-                                >
-                                  <Send size={12} />
-                                </button>
+                              <div className="ml-14 mt-3">
+                                <div className="border border-[#30363d] rounded-lg bg-[#0d1117] overflow-hidden focus-within:ring-1 focus-within:ring-[#1f6feb]">
+                                  <textarea 
+                                    autoFocus
+                                    value={newCommentContent}
+                                    onChange={(e) => setNewCommentContent(e.target.value)}
+                                    placeholder="Write a reply..."
+                                    className="w-full bg-[#010409] border-none px-4 py-3 text-[13px] text-[#f0f6fc] outline-none min-h-[80px] resize-none"
+                                  />
+                                  <div className="px-3 py-2 bg-[#161b22] border-t border-[#30363d] flex justify-end gap-2">
+                                    <button 
+                                      onClick={() => setReplyingTo(null)}
+                                      className="px-3 py-1.5 text-[12px] font-semibold text-[#8b949e] hover:text-[#f0f6fc] transition-colors"
+                                    >
+                                      Cancel
+                                    </button>
+                                    <button 
+                                      onClick={() => handleCreateComment(comment._id)}
+                                      disabled={!newCommentContent.trim() || isSendingComment}
+                                      className="px-4 py-1.5 bg-[#238636] hover:bg-[#2ea043] text-white text-[12px] font-bold rounded-md disabled:opacity-50 transition-all shadow-sm flex items-center gap-2"
+                                    >
+                                      {isSendingComment ? <Loader2 className="animate-spin" size={12} /> : 'Post Reply'}
+                                    </button>
+                                  </div>
+                                </div>
                               </div>
                             )}
                           </div>
@@ -740,30 +897,29 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
 
                   {/* New Comment Box (only shown if not currently replying) */}
                   {!replyingTo && (
-                    <div className="pt-2">
-                      <div className="flex gap-3">
-                        <div className="w-8 h-8 rounded-full bg-zinc-800 flex-shrink-0 flex items-center justify-center text-[10px] font-bold border border-border-default shadow-sm overflow-hidden relative">
+                    <div className="pt-4 px-1">
+                      <div className="flex gap-4">
+                        <div className="w-10 h-10 rounded-full bg-[#161b22] flex-shrink-0 flex items-center justify-center text-[11px] font-bold border border-[#30363d] shadow-sm overflow-hidden relative mt-1">
                           {currentUserAvatar ? (
-                            <Image src={currentUserAvatar} alt="My Avatar" fill sizes="32px" className="object-cover" />
+                            <Image src={currentUserAvatar} alt="My Avatar" fill sizes="40px" className="object-cover" />
                           ) : (
                             '?'
                           )}
                         </div>
-                        <div className="flex-1 space-y-2">
+                        <div className="flex-1 border border-[#30363d] rounded-lg bg-[#0d1117] overflow-hidden focus-within:ring-1 focus-within:ring-[#1f6feb] shadow-sm">
                           <textarea 
                             value={newCommentContent}
                             onChange={(e) => setNewCommentContent(e.target.value)}
                             placeholder="Add a comment..."
-                            className="w-full bg-bg-subtle border border-border-default rounded-lg px-4 py-3 text-sm focus:ring-1 focus:ring-accent outline-none min-h-[80px] resize-none"
+                            className="w-full bg-[#010409] px-4 py-3 text-[14px] text-[#f0f6fc] outline-none min-h-[100px] resize-none"
                           />
-                          <div className="flex justify-end">
+                          <div className="px-3 py-2 bg-[#161b22] border-t border-[#30363d] flex justify-end">
                             <button 
                               onClick={() => handleCreateComment()}
-                              disabled={!newCommentContent.trim()}
-                              className="px-4 py-2 bg-accent text-white text-xs font-bold rounded-lg hover:opacity-90 disabled:opacity-50 transition-all flex items-center gap-2"
+                              disabled={!newCommentContent.trim() || isSendingComment}
+                              className="px-5 py-2 bg-[#238636] hover:bg-[#2ea043] text-white text-[13px] font-bold rounded-md disabled:opacity-50 transition-all shadow-sm flex items-center gap-2"
                             >
-                              <Send size={12} />
-                              Comment
+                              {isSendingComment ? <Loader2 className="animate-spin" size={14} /> : 'Comment'}
                             </button>
                           </div>
                         </div>
@@ -773,13 +929,13 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
                 </div>
               </div>
 
-              {/* Modal Footer */}
-              <div className="px-6 py-4 border-t border-border-default bg-bg-subtle flex justify-between items-center">
+               {/* Modal Footer */}
+               <div className="px-6 py-4 border-t border-[#30363d] bg-[#161b22] flex justify-between items-center shadow-sm">
                 <div>
                   {(inspectingTask.creator._id === Cookies.get('user_id') || isOwnerOrCreator) && (
                     <button 
                       onClick={() => setTaskToConfirmDelete(inspectingTask)}
-                      className="px-4 py-2 text-sm font-semibold text-red-500 hover:bg-red-500/10 rounded-lg transition-colors flex items-center gap-2"
+                      className="px-4 py-1.5 text-[13px] font-semibold text-[#da3633] hover:bg-[#da3633]/10 rounded-md transition-colors flex items-center gap-2"
                     >
                       <Trash2 size={16} />
                       Delete Task
@@ -788,7 +944,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
                 </div>
                 <button 
                   onClick={() => setInspectingTask(null)}
-                  className="px-6 py-2 bg-foreground text-background text-sm font-bold rounded-lg hover:opacity-90 transition-opacity"
+                  className="px-6 py-1.5 bg-[#21262d] hover:bg-[#30363d] text-[#f0f6fc] border border-[#30363d] text-[13px] font-bold rounded-md transition-colors shadow-sm"
                 >
                   Close
                 </button>

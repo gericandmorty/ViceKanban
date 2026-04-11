@@ -1,8 +1,9 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Notification } from '@/app/hooks/useNotifications';
-import { Bell, Trash2, CheckCircle2, X, Circle } from 'lucide-react';
+import { Bell, Trash2, CheckCircle2, X } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface NotificationPopoverProps {
   notifications: Notification[];
@@ -76,34 +77,50 @@ export default function NotificationPopover({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className={`group relative flex gap-3 p-3 border-b border-[#30363d] hover:bg-[#161b22] transition-colors ${
-                  !n.isRead ? 'before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[3px] before:bg-[#2f81f7]' : ''
+                className={`group relative flex gap-3 p-3.5 border-b border-[#30363d] hover:bg-[#161b22] transition-colors ${
+                  !n.isRead ? 'bg-[#2f81f7]/5' : ''
                 }`}
               >
-                <div className="mt-1 shrink-0">
-                  {!n.isRead ? (
-                    <div className="w-2.5 h-2.5 bg-[#2f81f7] rounded-full" />
-                  ) : (
-                    <div className="w-2.5 h-2.5 border border-[#30363d] rounded-full" />
-                  )}
+                {/* Unread Indicator Bar */}
+                {!n.isRead && (
+                  <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#2f81f7]" />
+                )}
+
+                {/* Avatar Section */}
+                <div className="shrink-0 pt-0.5">
+                  <div className="w-8 h-8 rounded-full bg-[#30363d] border border-[#30363d] overflow-hidden relative shadow-sm">
+                    {n.sender?.avatarUrl ? (
+                      <Image src={n.sender.avatarUrl} alt={n.sender.username} fill sizes="32px" className="object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-[#f0f6fc]">
+                        {n.sender?.username?.charAt(0).toUpperCase() || '?'}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
+                {/* Content Section */}
                 <div className="flex-1 min-w-0 pr-6">
                   <Link 
                     href={n.link || '#'} 
                     onClick={onClose}
-                    className="block"
+                    className="block group"
                   >
-                    <p className={`text-[13px] leading-snug line-clamp-2 ${n.isRead ? 'text-[#8b949e]' : 'text-[#e6edf3] font-medium'}`}>
-                      {n.message}
-                    </p>
-                    <p className="text-[11px] text-[#8b949e] mt-1 flex items-center gap-1.5">
+                    <div className="text-[13px] leading-[1.5]">
+                      <span className="font-bold text-[#f0f6fc]">{n.sender?.username || 'System'}</span>
+                      {' '}
+                      <span className={!n.isRead ? 'text-[#e6edf3]' : 'text-[#8b949e]'}>
+                        {n.message}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-[#8b949e] mt-1.5 flex items-center gap-1.5 font-medium">
                       {getRelativeTime(n.createdAt)}
                     </p>
                   </Link>
                 </div>
 
-                <div className="absolute right-2 top-3 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-1">
+                {/* Action Section */}
+                <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-1 z-10">
                   {!n.isRead && (
                     <button 
                       onClick={() => onMarkRead(n._id)}

@@ -42,6 +42,7 @@ export default function DashboardPage() {
   const [organizations, setOrganizations] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
   const [invitations, setInvitations] = useState<any[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
   
   const [isLoading, setIsLoading] = useState(true);
   const [username, setUsername] = useState('User');
@@ -122,14 +123,11 @@ export default function DashboardPage() {
   }, [fetchProjects]);
 
   useEffect(() => {
+    setIsMounted(true);
     fetchOrganizations();
     fetchInvitations();
     const storedUsername = Cookies.get('user_name');
     if (storedUsername) setUsername(storedUsername);
-    
-    // We don't have the userId in a cookie, we might need a /me endpoint
-    // but for now we can infer permissions from the 'members' and 'owner' fields
-    // which are populated in fetchOrgDetails.
   }, [fetchOrganizations, fetchInvitations]);
 
   useEffect(() => {
@@ -254,33 +252,39 @@ export default function DashboardPage() {
             >
               <Menu size={20} />
             </button>
-            <div className="flex items-center gap-1.5 text-[14px] md:text-[15px] min-w-0 flex-1 font-normal text-[#8b949e]">
-              <UserIcon size={14} className="shrink-0" />
+            <div className={`flex items-center gap-1.5 text-[14px] md:text-[15px] min-w-0 flex-1 font-normal transition-opacity duration-300 ${isMounted ? 'opacity-100' : 'opacity-0'}`}>
+              <UserIcon size={14} className="shrink-0 text-[#8b949e]" />
               <span 
                 onClick={handleGoHome}
-                className="hover:text-[#f0f6fc] cursor-pointer transition-colors truncate"
+                className="text-[#8b949e] hover:text-[#f0f6fc] cursor-pointer transition-colors truncate"
               >
                 {username}
               </span>
-              <span className="shrink-0 mx-1">/</span>
+              <span className="shrink-0 mx-1 text-[#8b949e]">/</span>
               <div className="flex items-center gap-1.5 min-w-0 truncate">
-                {detailedOrg ? (
-                  <>
-                    <span 
-                      onClick={() => router.push(`/dashboard?orgId=${orgIdFromUrl}`)} 
-                      className={`cursor-pointer hover:underline truncate ${!currentProject ? 'font-semibold text-[#f0f6fc]' : ''}`}
-                      title={detailedOrg.name}
-                    >
-                      {detailedOrg.name} 
-                    </span>
-                    {currentProject && (
-                      <>
-                         <span className="shrink-0 mx-1">/</span>
-                         <span className="font-semibold text-[#f0f6fc] truncate" title={currentProject.name}>{currentProject.name}</span>
-                      </>
-                    )}
-                  </>
-                ) : <span className="font-semibold text-[#f0f6fc]">Organizations</span>}
+                {orgIdFromUrl ? (
+                  detailedOrg ? (
+                    <>
+                      <span 
+                        onClick={() => router.push(`/dashboard?orgId=${orgIdFromUrl}`)} 
+                        className={`cursor-pointer hover:underline truncate ${!currentProject ? 'font-semibold text-[#f0f6fc]' : 'text-[#8b949e]'}`}
+                        title={detailedOrg.name}
+                      >
+                        {detailedOrg.name} 
+                      </span>
+                      {currentProject && (
+                        <>
+                           <span className="shrink-0 mx-1 text-[#8b949e]">/</span>
+                           <span className="font-semibold text-[#f0f6fc] truncate" title={currentProject.name}>{currentProject.name}</span>
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <span className="h-4 w-24 bg-[#30363d] animate-pulse rounded" />
+                  )
+                ) : (
+                  <span className="font-semibold text-[#f0f6fc]">Organizations</span>
+                )}
               </div>
             </div>
           </div>

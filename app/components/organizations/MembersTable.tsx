@@ -222,42 +222,44 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
           />
         </div>
         
-        <div className="order-1 sm:order-2 ml-auto">
-          {!showInviteForm ? (
-            <button 
-              onClick={() => setShowInviteForm(true)}
-              className="bg-[#238636] hover:bg-[#2ea043] text-[#ffffff] px-4 py-[5px] rounded-md text-xs font-semibold flex items-center gap-2 transition-colors border border-[rgba(240,246,252,0.1)]"
-            >
-              <Plus size={14} /> Invite member
-            </button>
-          ) : (
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <form onSubmit={handleInvite} className="flex gap-2 flex-1">
-                <input 
-                  autoFocus
-                  type="email" 
-                  placeholder="Email address" 
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  className="flex-1 sm:w-60 px-3 py-[5px] bg-[#0d1117] border border-[#30363d] rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#1f6feb] transition-all"
-                />
-                <button 
-                  type="submit" 
-                  disabled={isInviting || !inviteEmail}
-                  className="bg-[#238636] hover:bg-[#2ea043] text-[#ffffff] px-3 py-[5px] rounded-md text-xs font-semibold disabled:opacity-50"
-                >
-                  {isInviting ? <Loader2 className="animate-spin" size={14} /> : 'Send Invite'}
-                </button>
-              </form>
+        {isAdmin && (
+          <div className="order-1 sm:order-2 ml-auto">
+            {!showInviteForm ? (
               <button 
-                onClick={() => setShowInviteForm(false)}
-                className="p-1.5 text-[#8b949e] hover:text-[#f0f6fc] transition-colors"
+                onClick={() => setShowInviteForm(true)}
+                className="bg-[#238636] hover:bg-[#2ea043] text-[#ffffff] px-4 py-[5px] rounded-md text-xs font-semibold flex items-center gap-2 transition-colors border border-[rgba(240,246,252,0.1)]"
               >
-                <X size={16} />
+                <Plus size={14} /> Invite member
               </button>
-            </div>
-          )}
-        </div>
+            ) : (
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <form onSubmit={handleInvite} className="flex gap-2 flex-1">
+                  <input 
+                    autoFocus
+                    type="email" 
+                    placeholder="Email address" 
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    className="flex-1 sm:w-60 px-3 py-[5px] bg-[#0d1117] border border-[#30363d] rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#1f6feb] transition-all"
+                  />
+                  <button 
+                    type="submit" 
+                    disabled={isInviting || !inviteEmail}
+                    className="bg-[#238636] hover:bg-[#2ea043] text-[#ffffff] px-3 py-[5px] rounded-md text-xs font-semibold disabled:opacity-50"
+                  >
+                    {isInviting ? <Loader2 className="animate-spin" size={14} /> : 'Send Invite'}
+                  </button>
+                </form>
+                <button 
+                  onClick={() => setShowInviteForm(false)}
+                  className="p-1.5 text-[#8b949e] hover:text-[#f0f6fc] transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {inviteSuccess && (
@@ -355,11 +357,16 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
                                   className="fixed inset-0 z-40" 
                                   onClick={() => setActiveMenuId(null)}
                                 />
-                                <div className="absolute right-0 mt-2 w-44 bg-[#161b22] border border-[#30363d] rounded-md shadow-[0_8px_24px_rgba(0,0,0,0.5)] z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-right">
-                                  <div className="py-1">
-                                    <div className="px-3 py-1.5 border-b border-[#30363d] mb-1">
-                                      <p className="text-[10px] uppercase font-bold text-[#8b949e] tracking-wider">Manage Member</p>
-                                    </div>
+                                {(() => {
+                                  const isNearBottom = index >= paginatedItems.length - 2;
+                                  return (
+                                    <div className={`absolute right-0 w-44 bg-[#161b22] border border-[#30363d] rounded-md shadow-[0_8px_24px_rgba(0,0,0,0.5)] z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 ${
+                                      isNearBottom ? 'bottom-full mb-2 origin-bottom-right' : 'top-full mt-2 origin-top-right'
+                                    }`}>
+                                      <div className="py-1">
+                                        <div className="px-3 py-1.5 border-b border-[#30363d] mb-1">
+                                          <p className="text-[10px] uppercase font-bold text-[#8b949e] tracking-wider">Manage Member</p>
+                                        </div>
                                     
                                     {item.data.role === 'developer' ? (
                                       <button 
@@ -393,6 +400,7 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
                                     </div>
                                   </div>
                                 </div>
+                              ); })()}
                               </>
                             )}
                           </div>

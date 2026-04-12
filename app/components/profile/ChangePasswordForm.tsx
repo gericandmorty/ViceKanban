@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Lock, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import Cookies from 'js-cookie';
-import { toast } from 'sonner';
+import toast from 'react-hot-toast';
 import { API_URL } from '@/app/utils/api';
 
 export default function ChangePasswordForm() {

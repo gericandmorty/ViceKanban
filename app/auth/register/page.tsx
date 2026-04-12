@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { Layout, Loader2, AlertCircle, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { API_URL } from '@/app/utils/api';
+import Footer from '../../components/ui/Footer';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -176,12 +177,7 @@ export default function RegisterPage() {
         </div>
       </motion.div>
 
-      <footer className="mt-auto py-12 flex gap-6 text-[12px] text-zinc-500">
-        <span>&copy; 2026 ViceKanBan, Inc.</span>
-        <Link href="#" className="hover:text-accent hover:underline">Terms</Link>
-        <Link href="#" className="hover:text-accent hover:underline">Privacy</Link>
-        <Link href="#" className="hover:text-accent hover:underline">Contact</Link>
-      </footer>
+      <Footer />
     </div>
   );
 }

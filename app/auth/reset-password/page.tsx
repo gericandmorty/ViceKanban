@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Layout, Loader2, AlertCircle, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
+import Footer from '../../components/ui/Footer';
 
 function ResetPasswordContent() {
   const router = useRouter();
@@ -146,12 +147,7 @@ function ResetPasswordContent() {
         </div>
       </motion.div>
 
-      <footer className="mt-auto py-10 flex gap-6 text-[12px] text-zinc-500">
-        <Link href="#" className="hover:text-accent hover:underline">Terms</Link>
-        <Link href="#" className="hover:text-accent hover:underline">Privacy</Link>
-        <Link href="#" className="hover:text-accent hover:underline">Security</Link>
-        <Link href="#" className="hover:text-zinc-800 transition-colors">Contact ViceKanBan</Link>
-      </footer>
+      <Footer />
     </div>
   );
 }

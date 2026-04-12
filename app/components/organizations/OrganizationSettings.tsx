@@ -6,6 +6,7 @@ import Cookies from 'js-cookie';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import ConfirmationModal from '../ui/ConfirmationModal';
+import DangerZoneModal from '../ui/DangerZoneModal';
 import { API_URL } from '@/app/utils/api';
 
 interface OrganizationSettingsProps {
@@ -19,6 +20,9 @@ export default function OrganizationSettings({ org, isOwner, isAdmin, onRefresh 
   const [name, setName] = useState(org.name);
   const [description, setDescription] = useState(org.description || '');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const router = useRouter();
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +52,34 @@ export default function OrganizationSettings({ org, isOwner, isAdmin, onRefresh 
       toast.error('Connection error');
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const handleDeleteOrg = async () => {
+    setIsDeleting(true);
+    try {
+      const apiUrl = API_URL;
+      const token = Cookies.get('access_token');
+      const response = await fetch(`${apiUrl}/organizations/${org._id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        toast.success(`Organization ${org.name} deleted`);
+        router.push('/dashboard');
+        router.refresh();
+      } else {
+        const data = await response.json();
+        toast.error(data.message || 'Failed to delete organization');
+      }
+    } catch (error) {
+      toast.error('Connection error');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -122,6 +154,40 @@ export default function OrganizationSettings({ org, isOwner, isAdmin, onRefresh 
       {!isOwner && (
         <LeaveOrgSection org={org} onRefresh={onRefresh} />
       )}
+
+      {isOwner && (
+        <div className="space-y-4 pt-10">
+          <h3 className="text-[14px] font-semibold text-red-500 uppercase tracking-wide">Danger Zone</h3>
+          <div className="bg-[#000000]/20 border border-red-500/50 rounded-md overflow-hidden">
+            <div className="p-4 border-b border-red-500/30 bg-red-500/5">
+              <h4 className="text-[14px] font-semibold text-red-500">Critical Actions</h4>
+            </div>
+            <div className="px-6 py-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+              <div className="space-y-2">
+                <h4 className="text-[16px] font-semibold text-[#f0f6fc]">Delete this organization</h4>
+                <p className="text-[14px] text-[#8b949e] max-w-md">Once you delete an organization, there is no going back. All projects, tasks, and data will be permanently wiped.</p>
+              </div>
+              <button 
+                type="button"
+                onClick={() => setShowDeleteModal(true)}
+                className="bg-[#21262d] hover:bg-red-500 hover:text-white text-red-500 border border-[#30363d] px-5 py-2 rounded-md text-[14px] font-bold transition-all shadow-sm"
+              >
+                Delete Organization
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <DangerZoneModal 
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDeleteOrg}
+        title="Delete Organization"
+        itemName={org.name}
+        itemType="organization"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

@@ -1,23 +1,29 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Save, Loader2, Type, FileText } from 'lucide-react';
+import { Save, Loader2, Type, FileText, AlertTriangle, Trash2 } from 'lucide-react';
 import Cookies from 'js-cookie';
 import toast from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 import { API_URL } from '@/app/utils/api';
+import DangerZoneModal from '../ui/DangerZoneModal';
 
 interface ProjectSettingsProps {
   project: any;
   orgId: string;
   isAdmin: boolean;
+  isOrgOwner: boolean;
   isCreator: boolean;
   onRefresh: () => void;
 }
 
-export default function ProjectSettings({ project, orgId, isAdmin, isCreator, onRefresh }: ProjectSettingsProps) {
+export default function ProjectSettings({ project, orgId, isAdmin, isOrgOwner, isCreator, onRefresh }: ProjectSettingsProps) {
+  const router = useRouter();
   const [name, setName] = useState(project.name);
   const [description, setDescription] = useState(project.description || '');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const canEdit = isAdmin || isCreator;
 
@@ -49,6 +55,35 @@ export default function ProjectSettings({ project, orgId, isAdmin, isCreator, on
       toast.error('Connection error');
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const apiUrl = API_URL;
+      const token = Cookies.get('access_token');
+      const response = await fetch(`${apiUrl}/projects/${project._id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        toast.success('Project deleted successfully');
+        setShowDeleteModal(false);
+        // Redirect to org home
+        router.push(`/dashboard?orgId=${orgId}`);
+        router.refresh();
+      } else {
+        const data = await response.json();
+        toast.error(data.message || 'Failed to delete project');
+      }
+    } catch (error) {
+      toast.error('Connection error');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -119,6 +154,37 @@ export default function ProjectSettings({ project, orgId, isAdmin, isCreator, on
           </div>
         </form>
       </div>
+
+      {isOrgOwner && (
+        <div className="space-y-4 pt-4">
+          <h3 className="text-[14px] font-semibold text-red-500 uppercase tracking-wide">Danger Zone</h3>
+          <div className="bg-[#000000]/20 border border-red-500/30 rounded-md overflow-hidden">
+            <div className="px-6 py-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+              <div className="space-y-2">
+                <h4 className="text-[16px] font-semibold text-[#f0f6fc]">Delete this project</h4>
+                <p className="text-[14px] text-[#8b949e] max-w-md">Once you delete this project, there is no going back. All tasks and history will be permanently wiped.</p>
+              </div>
+              <button 
+                type="button"
+                onClick={() => setShowDeleteModal(true)}
+                className="bg-[#21262d] hover:bg-red-500 hover:text-white text-red-500 border border-[#30363d] px-5 py-2 rounded-md text-[14px] font-bold transition-all shadow-sm"
+              >
+                Delete Project
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <DangerZoneModal 
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDelete}
+        title="Delete Project"
+        itemName={project.name}
+        itemType="project"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

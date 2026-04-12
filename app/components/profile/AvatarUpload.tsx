@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Camera, Loader2, Upload } from 'lucide-react';
 import Cookies from 'js-cookie';
-import { toast } from 'sonner';
+import toast from 'react-hot-toast';
 import Image from 'next/image';
 import CropImageModal from '../modals/CropImageModal';
 import { API_URL } from '@/app/utils/api';

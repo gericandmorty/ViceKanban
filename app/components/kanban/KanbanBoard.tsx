@@ -51,10 +51,11 @@ interface Task {
 interface KanbanBoardProps {
   projectId: string;
   isOwnerOrCreator: boolean;
+  orgOwnerId: string;
   members: any[];
 }
 
-export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: KanbanBoardProps) {
+export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, members }: KanbanBoardProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [board, setBoard] = useState<{ columns: { id: string, title: string }[] } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -76,6 +77,13 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
   const [currentUserAvatar, setCurrentUserAvatar] = useState<string | null>(null);
   const [filterOnlyMe, setFilterOnlyMe] = useState(false);
   const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
+  
+  // Edit Task State
+  const [isEditingTask, setIsEditingTask] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [isUpdatingTask, setIsUpdatingTask] = useState(false);
+
   const currentUserId = Cookies.get('user_id');
 
   const fetchMyProfile = useCallback(async () => {
@@ -149,10 +157,14 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
   useEffect(() => {
     if (inspectingTask) {
       fetchComments(inspectingTask._id);
+      setEditTitle(inspectingTask.title);
+      setEditDescription(inspectingTask.description || '');
+      setIsEditingTask(false);
     } else {
       setComments([]);
       setNewCommentContent('');
       setReplyingTo(null);
+      setIsEditingTask(false);
     }
   }, [inspectingTask, fetchComments]);
 
@@ -263,6 +275,42 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
       }
     } catch (error) {
       toast.error('Connection error');
+    }
+  };
+  
+  const handleUpdateTask = async () => {
+    if (!inspectingTask || !editTitle.trim() || isUpdatingTask) return;
+
+    setIsUpdatingTask(true);
+    try {
+      const apiUrl = API_URL;
+      const token = Cookies.get('access_token');
+      const response = await fetch(`${apiUrl}/tasks/${inspectingTask._id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title: editTitle,
+          description: editDescription
+        })
+      });
+
+      if (response.ok) {
+        const updatedTask = await response.json();
+        setTasks(prev => prev.map(t => t._id === updatedTask._id ? updatedTask : t));
+        setInspectingTask(updatedTask);
+        setIsEditingTask(false);
+        toast.success('Task updated successfully');
+      } else {
+        const error = await response.json();
+        toast.error(error.message || 'Failed to update task');
+      }
+    } catch (error) {
+      toast.error('Connection error');
+    } finally {
+      setIsUpdatingTask(false);
     }
   };
 
@@ -623,10 +671,10 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
                                     className={`px-4 py-2 text-sm cursor-pointer hover:bg-[#1f6feb] hover:text-white transition-colors flex items-center gap-2 ${newTaskAssignee === member.user._id ? 'bg-[#1f6feb]/20 text-[#58a6ff]' : 'text-[#f0f6fc]'}`}
                                   >
                                     <div className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] font-bold overflow-hidden relative border border-[#30363d]">
-                                      {member.user.avatarUrl ? (
-                                        <Image src={member.user.avatarUrl} alt={member.user.username} fill sizes="20px" className="object-cover" />
+                                      {member?.user?.avatarUrl ? (
+                                        <Image src={member.user.avatarUrl} alt={member.user.username || 'User'} fill sizes="20px" className="object-cover" />
                                       ) : (
-                                        member.user.username.charAt(0).toUpperCase()
+                                        member?.user?.username?.charAt(0).toUpperCase() || '?'
                                       )}
                                     </div>
                                     <span className="truncate">{member.user.username}</span>
@@ -686,9 +734,18 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
                 {/* Title Section */}
                 <div className="space-y-1">
                   <label className="text-[12px] font-semibold text-[#8b949e]">Title</label>
-                  <h1 className="text-[24px] font-bold text-[#f0f6fc] tracking-tight">
-                    {inspectingTask.title}
-                  </h1>
+                  {isEditingTask ? (
+                    <input 
+                      autoFocus
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      className="w-full bg-[#010409] border border-[#30363d] rounded-lg px-4 py-2 text-[18px] font-bold text-[#f0f6fc] outline-none focus:ring-1 focus:ring-accent"
+                    />
+                  ) : (
+                    <h1 className="text-[24px] font-bold text-[#f0f6fc] tracking-tight">
+                      {inspectingTask.title}
+                    </h1>
+                  )}
                 </div>
 
                 {/* Meta Grid */}
@@ -708,10 +765,10 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
                     <label className="text-[12px] font-semibold text-[#8b949e]">Creator</label>
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded-full bg-[#161b22] flex items-center justify-center text-[10px] font-bold overflow-hidden relative border border-[#30363d] shadow-sm">
-                        {inspectingTask.creator.avatarUrl ? (
-                          <Image src={inspectingTask.creator.avatarUrl} alt={inspectingTask.creator.username} fill sizes="24px" className="object-cover" />
+                        {inspectingTask.creator?.avatarUrl ? (
+                          <Image src={inspectingTask.creator.avatarUrl} alt={inspectingTask.creator.username || 'Owner'} fill sizes="24px" className="object-cover" />
                         ) : (
-                          inspectingTask.creator.username.charAt(0).toUpperCase()
+                          inspectingTask.creator?.username?.charAt(0).toUpperCase() || '?'
                         )}
                       </div>
                       <span className="text-[14px] font-medium text-[#f0f6fc]">{inspectingTask.creator.username}</span>
@@ -723,10 +780,10 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
                       {(inspectingTask as any).assignee ? (
                         <>
                           <div className="w-6 h-6 rounded-full bg-[#1f6feb]/10 flex items-center justify-center text-[10px] font-bold text-[#1f6feb] overflow-hidden relative border border-[#1f6feb]/20 shadow-sm">
-                            {(inspectingTask as any).assignee.avatarUrl ? (
-                              <Image src={(inspectingTask as any).assignee.avatarUrl} alt={(inspectingTask as any).assignee.username} fill sizes="24px" className="object-cover" />
+                            {(inspectingTask as any).assignee?.avatarUrl ? (
+                              <Image src={(inspectingTask as any).assignee.avatarUrl} alt={(inspectingTask as any).assignee.username || 'Assignee'} fill sizes="24px" className="object-cover" />
                             ) : (
-                              (inspectingTask as any).assignee.username.charAt(0).toUpperCase()
+                              (inspectingTask as any).assignee?.username?.charAt(0).toUpperCase() || '?'
                             )}
                           </div>
                           <span className="text-[14px] font-medium text-[#f0f6fc]">{(inspectingTask as any).assignee.username}</span>
@@ -744,15 +801,24 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
                     <Type size={16} className="text-[#8b949e]" />
                     <label className="text-[14px] font-semibold text-[#f0f6fc]">Description</label>
                   </div>
-                  <div className="bg-[#010409] border border-[#30363d] rounded-lg p-5 min-h-[120px] shadow-inner">
-                    {inspectingTask.description ? (
-                      <p className="text-[14px] text-[#f0f6fc] leading-[1.6] whitespace-pre-wrap font-normal">
-                        {inspectingTask.description}
-                      </p>
-                    ) : (
-                      <p className="text-[13px] text-[#8b949e] italic">No description provided for this task.</p>
-                    )}
-                  </div>
+                  {isEditingTask ? (
+                    <textarea 
+                      value={editDescription}
+                      onChange={(e) => setEditDescription(e.target.value)}
+                      className="w-full bg-[#010409] border border-[#30363d] rounded-lg px-4 py-3 text-[14px] text-[#f0f6fc] outline-none min-h-[150px] resize-none focus:ring-1 focus:ring-accent leading-[1.6]"
+                      placeholder="Add a more detailed description..."
+                    />
+                  ) : (
+                    <div className="bg-[#010409] border border-[#30363d] rounded-lg p-5 min-h-[120px] shadow-inner">
+                      {inspectingTask.description ? (
+                        <p className="text-[14px] text-[#f0f6fc] leading-[1.6] whitespace-pre-wrap font-normal">
+                          {inspectingTask.description}
+                        </p>
+                      ) : (
+                        <p className="text-[13px] text-[#8b949e] italic">No description provided for this task.</p>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Discussion Section */}
@@ -987,16 +1053,59 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, members }: Ka
 
                {/* Modal Footer */}
                <div className="px-6 py-4 border-t border-[#30363d] bg-[#161b22] flex justify-between items-center shadow-sm">
-                <div>
-                  {(inspectingTask.creator._id === Cookies.get('user_id') || isOwnerOrCreator) && (
-                    <button 
-                      onClick={() => setTaskToConfirmDelete(inspectingTask)}
-                      className="px-4 py-1.5 text-[13px] font-semibold text-[#da3633] hover:bg-[#da3633]/10 rounded-md transition-colors flex items-center gap-2"
-                    >
-                      <Trash2 size={16} />
-                      Delete Task
-                    </button>
-                  )}
+                <div className="flex items-center gap-2">
+                  {(() => {
+                    const currentUserId = Cookies.get('user_id');
+                    const isTaskCreator = inspectingTask.creator._id === currentUserId;
+                    const isCurrentUserOwner = currentUserId === orgOwnerId;
+                    const isTaskCreatedByOwner = inspectingTask.creator._id === orgOwnerId;
+                    
+                    // Logic: Owner can delete anything, Creator can delete their own, 
+                    // Co-owner (isOwnerOrCreator) can delete anything EXCEPT Owner's tasks.
+                    const canDelete = isCurrentUserOwner || isTaskCreator || (isOwnerOrCreator && !isTaskCreatedByOwner);
+                    
+                    if (!canDelete) return null;
+
+                    return (
+                      <>
+                        {isEditingTask ? (
+                          <div className="flex items-center gap-2">
+                            <button 
+                              onClick={handleUpdateTask}
+                              disabled={isUpdatingTask || !editTitle.trim()}
+                              className="px-5 py-1.5 bg-[#238636] hover:bg-[#2ea043] text-white text-[13px] font-bold rounded-md disabled:opacity-50 transition-all flex items-center gap-2"
+                            >
+                              {isUpdatingTask ? <Loader2 className="animate-spin" size={14} /> : 'Save Changes'}
+                            </button>
+                            <button 
+                              onClick={() => setIsEditingTask(false)}
+                              className="px-4 py-1.5 text-[13px] font-semibold text-[#8b949e] hover:text-[#f0f6fc] transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <button 
+                            onClick={() => setIsEditingTask(true)}
+                            className="px-4 py-1.5 text-[13px] font-semibold text-[#8b949e] hover:text-accent hover:bg-accent/10 rounded-md transition-colors flex items-center gap-2"
+                          >
+                            <Plus size={16} className="rotate-45" />
+                            Edit Task
+                          </button>
+                        )}
+                        
+                        {!isEditingTask && (
+                          <button 
+                            onClick={() => setTaskToConfirmDelete(inspectingTask)}
+                            className="px-4 py-1.5 text-[13px] font-semibold text-[#da3633] hover:bg-[#da3633]/10 rounded-md transition-colors flex items-center gap-2"
+                          >
+                            <Trash2 size={16} />
+                            Delete Task
+                          </button>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
                 <button 
                   onClick={() => setInspectingTask(null)}

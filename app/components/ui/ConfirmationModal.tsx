@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertCircle, X, Trash2, ShieldAlert } from 'lucide-react';
+import { X } from 'lucide-react';
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -40,44 +40,43 @@ export default function ConfirmationModal({
             initial={{ scale: 0.95, opacity: 0, y: 10 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 10 }}
-            className="relative w-full max-w-sm bg-background border border-border-default rounded-2xl shadow-2xl overflow-hidden"
+            className="relative w-full max-w-sm bg-[#0d1117] border border-[#30363d] rounded-lg shadow-xl overflow-hidden"
           >
-            <div className="p-6 text-center space-y-4">
-              <div className={`w-12 h-12 rounded-full mx-auto flex items-center justify-center ${
-                type === 'danger' ? 'bg-red-500/10 text-red-500' : 
-                type === 'warning' ? 'bg-orange-500/10 text-orange-500' : 'bg-accent/10 text-accent'
-              }`}>
-                {type === 'danger' ? <Trash2 size={24} /> : 
-                 type === 'warning' ? <ShieldAlert size={24} /> : <AlertCircle size={24} />}
-              </div>
-              
-              <div className="space-y-2">
-                <h3 className="text-xl font-bold text-foreground leading-tight">
-                  {title}
-                </h3>
-                <p className="text-sm text-zinc-500">
-                  {message}
-                </p>
-              </div>
+            {/* Header - Styled like comment header */}
+            <div className="bg-[#161b22] px-4 py-2.5 border-b border-[#30363d] flex items-center justify-between">
+              <span className="text-[13px] font-semibold text-[#f0f6fc]">{title}</span>
+              <button 
+                onClick={onClose}
+                className="text-[#8b949e] hover:text-[#f0f6fc] transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
 
-              <div className="flex flex-col gap-2 pt-2">
+            <div className="p-6 space-y-6">
+              <p className="text-[14px] text-[#f0f6fc] leading-[1.5]">
+                {message}
+              </p>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button 
+                  onClick={onClose}
+                  className="px-4 py-1.5 text-[13px] font-semibold text-[#8b949e] hover:text-[#f0f6fc] transition-colors"
+                >
+                  {cancelText}
+                </button>
                 <button 
                   onClick={() => {
                     onConfirm();
                     onClose();
                   }}
-                  className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all ${
-                    type === 'danger' ? 'bg-red-500 text-white hover:bg-red-600' : 
-                    'bg-accent text-white hover:opacity-90'
+                  className={`px-5 py-2 text-[13px] font-bold rounded-md transition-all shadow-sm ${
+                    type === 'danger' 
+                      ? 'bg-[#238636] hover:bg-[#2ea043] text-white' 
+                      : 'bg-[#21262d] text-[#f0f6fc] border border-[#30363d] hover:bg-[#30363d]'
                   }`}
                 >
                   {confirmText}
-                </button>
-                <button 
-                  onClick={onClose}
-                  className="w-full py-2.5 rounded-xl text-sm font-bold text-zinc-500 hover:text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all"
-                >
-                  {cancelText}
                 </button>
               </div>
             </div>

@@ -1,33 +1,53 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Layout, Shield, Zap } from 'lucide-react';
+import Cookies from 'js-cookie';
+import Footer from '../components/ui/Footer';
 
 export default function LandingPage() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    setIsLoggedIn(!!Cookies.get('access_token'));
+  }, []);
+
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans">
+    <div className="min-h-screen bg-bg-subtle text-foreground font-sans flex flex-col selection:bg-accent/30 selection:text-white">
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 w-full bg-header-bg text-header-text py-4 px-6 md:px-12 flex items-center justify-between border-b border-border-default/20">
+      <nav className="sticky top-0 z-50 w-full bg-bg-subtle text-header-text py-4 px-6 md:px-12 flex items-center justify-between border-b border-border-default/50">
         <div className="flex items-center gap-3">
           <Image src="/icon_vice.png" alt="ViceKanBan Logo" width={32} height={32} className="rounded" />
           <span className="font-semibold text-lg hidden md:block">ViceKanBan</span>
         </div>
         <div className="flex items-center gap-4">
-          <Link href="/auth/login" className="text-sm font-semibold hover:opacity-80 transition-opacity">Sign in</Link>
-          <Link href="/auth/register" className="border border-white/30 rounded-md px-3 py-1.5 text-sm font-semibold hover:bg-white/10 transition-colors">Sign up</Link>
+          {mounted && isLoggedIn ? (
+            <Link href="/dashboard" className="border border-accent/50 bg-accent/10 rounded-md px-4 py-1.5 text-sm font-semibold hover:bg-accent/20 transition-colors text-accent">Go to Dashboard</Link>
+          ) : mounted ? (
+            <>
+              <Link href="/auth/login" className="text-sm font-semibold hover:opacity-80 transition-opacity">Sign in</Link>
+              <Link href="/auth/register" className="border border-border-default bg-zinc-800 rounded-md px-3 py-1.5 text-sm font-semibold hover:bg-zinc-700 transition-colors">Sign up</Link>
+            </>
+          ) : (
+            <div className="w-32 h-8"></div>
+          )}
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="px-6 md:px-12 pt-24 pb-32 max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-16">
-        <div className="flex-1 text-left">
+      <section className="relative px-6 md:px-12 pt-24 pb-32 max-w-[92rem] mx-auto flex flex-col lg:flex-row items-center justify-between overflow-hidden min-h-[90vh]">
+        {/* Subtle grid background */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(240,246,252,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(240,246,252,0.03)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none -z-10" />
+
+        <div className="w-full lg:w-5/12 text-left relative z-10 lg:pr-10 pb-12 lg:pb-0">
           <motion.h1 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight"
+            className="text-5xl md:text-[4rem] font-extrabold tracking-tight mb-6 leading-[1.1]"
           >
             Manage projects <br />
             <span className="text-accent">built for developers.</span>
@@ -36,90 +56,73 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-xl md:text-2xl text-foreground opacity-70 mb-10 max-w-2xl leading-relaxed"
+            className="text-lg md:text-xl text-zinc-400 max-w-2xl leading-relaxed"
           >
-            ViceKanBan is a simple, collaborative project management tool that helps teams 
-            organize work, track progress, and ship products faster.
+            ViceKanBan is a simple, collaborative project management tool that helps teams organize work, track progress, and ship products faster.
           </motion.p>
-
         </div>
-        <div className="flex-1 w-full max-w-xl">
+
+        {/* Visual Mockup Window */}
+        <div className="w-full lg:w-7/12 max-w-[1050px]">
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-bg-subtle border border-border-default rounded-xl p-4 shadow-xl overflow-hidden"
+            transition={{ delay: 0.2 }}
+            className="rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden border border-border-default/50 relative bg-bg-subtle"
           >
-            <div className="flex items-center gap-2 mb-4 p-2 border-b border-border-default">
-              <div className="w-3 h-3 rounded-full bg-red-500/50" />
-              <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
-              <div className="w-3 h-3 rounded-full bg-green-500/50" />
-              <span className="text-xs opacity-50 ml-2">vicekanban.io — 80×24</span>
-            </div>
-            <div className="space-y-4 p-4 font-mono text-sm opacity-80">
-              <p className="text-accent underline">vk-init project-dashboard</p>
-              <p className="text-foreground">Initializing vice-kanban project stack...</p>
-              <p className="text-success">✓ MongoDB connection established</p>
-              <p className="text-success">✓ Auth module initialized</p>
-              <p className="text-foreground animate-pulse">_</p>
-            </div>
+            <Image 
+              src="/kanban_board.png?v=new" 
+              alt="ViceKanBan Dashboard Interface" 
+              width={1600} 
+              height={1000} 
+              unoptimized={true}
+              className="w-full h-auto object-cover opacity-90 hover:opacity-100 transition-opacity" 
+              priority
+            />
           </motion.div>
         </div>
       </section>
 
       {/* Feature Grid */}
-      <section className="bg-bg-subtle border-y border-border-default py-24 px-6 md:px-12">
+      <section className="border-y border-border-default py-24 px-6 md:px-12 bg-[#0d1117]/50 relative">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl font-bold mb-16 text-center">Everything you need, nothing you don't.</h2>
+          <div className="text-center mb-16 md:mb-24">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">Everything you need, nothing you don't.</h2>
+            <p className="text-zinc-400 max-w-2xl mx-auto text-lg">We stripped away the corporate bloat to give you a pure, high-performance issue tracker.</p>
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             <div className="space-y-4">
-              <Zap className="text-accent" size={32} />
-              <h3 className="text-xl font-bold">Fast as lightning</h3>
-              <p className="opacity-70 leading-relaxed">Built for speed. Drag, drop, and update cards with zero latency across your entire team.</p>
+              <h3 className="text-xl font-bold text-zinc-100">Zero-Latency Architecture</h3>
+              <p className="text-zinc-400 leading-relaxed text-sm">Built on top of cutting-edge paradigms. Drag, drop, and aggressively update Kanban cards across columns with zero visual lag.</p>
             </div>
+            
             <div className="space-y-4">
-              <Shield className="text-success" size={32} />
-              <h3 className="text-xl font-bold">Secure by default</h3>
-              <p className="opacity-70 leading-relaxed">Enterprise-grade security with encrypted data and robust authentication powered by JWT.</p>
+              <h3 className="text-xl font-bold text-zinc-100">Deep Work Interface</h3>
+              <p className="text-zinc-400 leading-relaxed text-sm">Engineered with a flawless dark mode and strict systematic spacing. Reduce visual clutter so your engineers can focus on shipping.</p>
             </div>
+            
             <div className="space-y-4">
-              <Layout className="text-orange-500" size={32} />
-              <h3 className="text-xl font-bold">Clean Interface</h3>
-              <p className="opacity-70 leading-relaxed">A focus on typography and systematic spacing, reducing clutter so you can focus on shipping.</p>
+              <h3 className="text-xl font-bold text-zinc-100">Secure by Design</h3>
+              <p className="text-zinc-400 leading-relaxed text-sm">Bank-grade security embedded into the stack. JWT session scaling, automated password hashing, and strict access control per project.</p>
             </div>
           </div>
         </div>
       </section>
 
+      {/* CTA Section */}
+      <section className="py-24 px-6 md:px-12 text-center max-w-4xl mx-auto flex flex-col items-center">
+        <h2 className="text-3xl md:text-5xl font-bold mb-6">Ready to accelerate your workflow?</h2>
+        <p className="text-zinc-400 mb-10 text-lg">Join thousands of developers prioritizing speed and simplicity.</p>
+        <Link href="/auth/register" className="bg-white text-black rounded-md px-8 py-4 font-bold text-lg hover:bg-zinc-200 transition-colors shadow-lg">
+          Initialize Workspace
+        </Link>
+      </section>
+
       {/* Footer */}
-      <footer className="py-20 px-6 md:px-12 max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-12 border-t border-border-default mt-20 opacity-70">
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Image src="/icon_vice.png" alt="ViceKanBan Logo" width={24} height={24} className="rounded" />
-            <span className="font-bold">ViceKanBan</span>
-          </div>
-          <p className="text-sm max-w-xs">Connecting developers around the world to build better software together.</p>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-12 text-sm font-medium">
-          <div className="flex flex-col gap-3">
-            <span className="text-foreground font-bold">Product</span>
-            <Link href="#" className="hover:text-accent">Features</Link>
-            <Link href="#" className="hover:text-accent">Integrations</Link>
-            <Link href="#" className="hover:text-accent">Security</Link>
-          </div>
-          <div className="flex flex-col gap-3">
-            <span className="text-foreground font-bold">Support</span>
-            <Link href="#" className="hover:text-accent">Docs</Link>
-            <Link href="#" className="hover:text-accent">Community</Link>
-            <Link href="#" className="hover:text-accent">Contact</Link>
-          </div>
-          <div className="flex flex-col gap-3">
-            <span className="text-foreground font-bold">Company</span>
-            <Link href="#" className="hover:text-accent">About</Link>
-            <Link href="#" className="hover:text-accent">Blog</Link>
-            <Link href="#" className="hover:text-accent">Careers</Link>
-          </div>
-        </div>
-      </footer>
+      <div className="mt-auto">
+        <Footer />
+      </div>
     </div>
   );
 }

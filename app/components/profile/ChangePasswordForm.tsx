@@ -22,8 +22,14 @@ export default function ChangePasswordForm() {
       return;
     }
 
-    if (formData.newPassword.length < 6) {
-      toast.error('New password must be at least 6 characters');
+    if (formData.newPassword.length < 8 || formData.newPassword.length > 18) {
+      toast.error('New password must be strictly between 8 and 18 characters');
+      return;
+    }
+
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[\d\W]).{8,}$/;
+    if (!passwordRegex.test(formData.newPassword)) {
+      toast.error('Password must contain at least 1 uppercase and 1 special/number');
       return;
     }
 
@@ -80,12 +86,14 @@ export default function ChangePasswordForm() {
           <input 
             type="password" 
             required
+            maxLength={18}
             value={formData.newPassword}
             onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
             className="w-full bg-background border border-border-default rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent font-sans"
-            placeholder="Min. 6 characters"
+            placeholder="8-18 chars"
           />
         </div>
+        <p className="text-[11px] text-zinc-500 pt-1">8-18 chars, 1 uppercase, 1 special/number required.</p>
       </div>
 
       <div className="space-y-1">
@@ -94,6 +102,7 @@ export default function ChangePasswordForm() {
           <input 
             type="password" 
             required
+            maxLength={18}
             value={formData.confirmPassword}
             onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
             className="w-full bg-background border border-border-default rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent font-sans"

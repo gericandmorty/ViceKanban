@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // Add paths that don't require authentication
-const publicRoutes = ['/', '/auth/login', '/auth/register'];
+const publicRoutes = ['/', '/auth/login', '/auth/register', '/auth/forgot-password', '/auth/reset-password'];
 
 export function middleware(request: NextRequest) {
   const token = request.cookies.get('access_token')?.value;
@@ -16,11 +16,11 @@ export function middleware(request: NextRequest) {
   // 2. Define what paths are "internal" to avoid checking them for auth
   // This helps prevent loops and allows static assets to load
   const isPublicRoute = publicRoutes.includes(pathname);
-  
+
   // Skip middleware for internal Next.js assets, public files, and API routes
   if (
-    pathname.startsWith('/_next') || 
-    pathname.includes('.') || 
+    pathname.startsWith('/_next') ||
+    pathname.includes('.') ||
     pathname.startsWith('/api')
   ) {
     return NextResponse.next();

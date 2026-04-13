@@ -38,6 +38,8 @@ export default function Sidebar() {
   const [username, setUsername] = useState('User');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [assignedTasks, setAssignedTasks] = useState<any[]>([]);
+  const [isTasksCollapsed, setIsTasksCollapsed] = useState(false);
   const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
 
   const fetchUserData = useCallback(async () => {
@@ -67,7 +69,8 @@ export default function Sidebar() {
       });
       if (response.ok) {
         const data = await response.json();
-        setOrganizations(data);
+        const sortedData = [...data].sort((a, b) => a.name.localeCompare(b.name));
+        setOrganizations(sortedData);
       }
     } catch (error) {
       console.error('Failed to fetch organizations:', error);
@@ -92,18 +95,50 @@ export default function Sidebar() {
     }
   }, []);
 
+  const fetchAssignedTasks = useCallback(async () => {
+    try {
+      const apiUrl = API_URL;
+      const token = Cookies.get('access_token');
+      const response = await fetch(`${apiUrl}/tasks/assigned`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const sortedData = [...data].sort((a, b) => {
+          const orgA = a.project?.organization?.name || '';
+          const orgB = b.project?.organization?.name || '';
+          return orgA.localeCompare(orgB);
+        });
+        setAssignedTasks(sortedData);
+      }
+    } catch (error) {
+      console.error('Failed to fetch assigned tasks:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleTaskUpdate = () => {
+      fetchAssignedTasks();
+    };
+
+    window.addEventListener('taskUpdated', handleTaskUpdate);
+    return () => window.removeEventListener('taskUpdated', handleTaskUpdate);
+  }, [fetchAssignedTasks]);
+
   useEffect(() => {
     fetchOrganizations();
     fetchInvitationCount();
     fetchUserData();
+    fetchAssignedTasks();
     
     // Refresh counts periodically
     const interval = setInterval(() => {
       fetchInvitationCount();
       fetchUserData();
+      fetchAssignedTasks();
     }, 30000);
     return () => clearInterval(interval);
-  }, [fetchOrganizations, fetchInvitationCount, fetchUserData]);
+  }, [fetchOrganizations, fetchInvitationCount, fetchUserData, fetchAssignedTasks]);
 
   const handleLogout = () => {
     Cookies.remove('access_token');
@@ -172,14 +207,6 @@ export default function Sidebar() {
         </div>
       
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        <div className="relative">
-          <input 
-            type="text" 
-            placeholder="Filter..." 
-            className="w-full bg-background border border-border-default rounded-md py-1 px-3 text-xs focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent font-sans"
-          />
-        </div>
-
         <div className="space-y-4">
           <div className="flex justify-between items-center px-2">
             <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Organizations</span>
@@ -191,7 +218,7 @@ export default function Sidebar() {
             </button>
           </div>
           
-          <div className="space-y-1">
+          <div className="space-y-1 max-h-[180px] overflow-y-auto pr-1 custom-scrollbar">
             {isLoading ? (
               <div className="flex justify-center p-2">
                 <Loader2 size={16} className="animate-spin text-zinc-400" />
@@ -220,6 +247,83 @@ export default function Sidebar() {
               ))
             )}
           </div>
+        </div>
+
+        {/* Assigned Tasks Section */}
+        <div className="space-y-4">
+          <div 
+            onClick={() => setIsTasksCollapsed(!isTasksCollapsed)}
+            className="flex justify-between items-center px-2 pt-2 border-t border-border-default/50 cursor-pointer group/header"
+          >
+            <div className="flex items-center gap-2">
+              <ChevronDown 
+                size={14} 
+                className={`text-zinc-500 transition-transform duration-200 ${isTasksCollapsed ? '-rotate-90' : ''}`} 
+              />
+              <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider group-hover/header:text-zinc-400">My Tasks</span>
+            </div>
+            {assignedTasks.length > 0 && (
+              <span className="bg-accent/10 text-accent text-[10px] px-1.5 py-0.5 rounded-full font-bold">
+                {assignedTasks.length}
+              </span>
+            )}
+          </div>
+          
+          <AnimatePresence initial={false}>
+            {!isTasksCollapsed && (
+              <motion.div 
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                className="overflow-hidden"
+              >
+                <div className="space-y-3">
+                  {isLoading ? (
+                    <div className="flex justify-center p-2">
+                      <Loader2 size={16} className="animate-spin text-zinc-400" />
+                    </div>
+                  ) : assignedTasks.length === 0 ? (
+                    <p className="px-2 text-[11px] text-zinc-500 italic">No pending tasks</p>
+                  ) : (
+                    Object.entries(
+                      assignedTasks.reduce((acc: any, task) => {
+                        const orgName = task.project?.organization?.name || 'Personal';
+                        if (!acc[orgName]) acc[orgName] = [];
+                        acc[orgName].push(task);
+                        return acc;
+                      }, {})
+                    ).map(([orgName, tasks]: [string, any]) => (
+                      <div key={orgName} className="space-y-1">
+                        <div className="px-2 py-1 flex items-center gap-2">
+                          <div className="w-1 h-3 bg-accent/30 rounded-full" />
+                          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-tight">{orgName}</span>
+                        </div>
+                        <div className="space-y-0.5">
+                          {tasks.map((task: any) => (
+                            <Link 
+                              key={task._id} 
+                              href={`/dashboard?orgId=${task.project?.organization?._id}&projectId=${task.project?._id}`} 
+                              onClick={closeSidebar}
+                              className="flex items-center gap-3 px-3 py-1.5 rounded-md text-sm hover:bg-border-default/50 transition-all group"
+                            >
+                              <div className="flex-shrink-0 text-zinc-400 group-hover:text-accent transition-colors">
+                                <CheckCircle2 size={14} />
+                              </div>
+                              <div className="flex flex-col min-w-0">
+                                <span className="truncate group-hover:text-accent transition-colors leading-tight font-medium">{task.title}</span>
+                                <span className="text-[10px] text-zinc-500 truncate">{task.project?.name}</span>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Dynamic Invitations Link in Sidebar if pending */}

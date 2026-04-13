@@ -1,16 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Layout, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { Layout, Loader2, AlertCircle, Eye, EyeOff, Clock } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { API_URL } from '@/app/utils/api';
 import Footer from '../../components/ui/Footer';
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isTimeout = searchParams.get('timeout') === 'true';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -36,9 +38,13 @@ export default function LoginPage() {
         throw new Error(data.message || 'Login failed');
       }
 
-      Cookies.set('access_token', data.access_token, { expires: 7 });
-      Cookies.set('user_name', data.username, { expires: 7 });
-      Cookies.set('user_id', data.userId, { expires: 7 });
+      // Store auth info
+      const expiryTime = Date.now() + 8 * 60 * 60 * 1000; // 8 hours from now
+      Cookies.set('access_token', data.access_token, { expires: 1/3 }); // ~8 hours
+      Cookies.set('user_name', data.username, { expires: 1/3 });
+      Cookies.set('user_id', data.userId, { expires: 1/3 });
+      localStorage.setItem('session_expiry', expiryTime.toString());
+      
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please try again.');
@@ -62,6 +68,13 @@ export default function LoginPage() {
       >
         <div className="bg-background border border-border-default rounded-md p-4 shadow-sm">
           <form onSubmit={handleLogin} className="space-y-4">
+            {isTimeout && !error && (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-md flex items-center gap-2 text-amber-800 text-xs mb-4 animate-shake">
+                <Clock size={14} className="shrink-0" />
+                <span>Session timed out. Please login again.</span>
+              </div>
+            )}
+            
             {error && (
               <div className="p-3 bg-red-100 border border-red-200 rounded-md flex items-center gap-2 text-red-800 text-xs">
                 <AlertCircle size={14} className="shrink-0" />
@@ -125,5 +138,17 @@ export default function LoginPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-bg-subtle flex items-center justify-center">
+        <Loader2 className="animate-spin text-zinc-500" size={32} />
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }

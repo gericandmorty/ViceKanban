@@ -74,6 +74,8 @@ export default function TaskCard({ task, onDelete, onClick, isOwnerOrCreator }: 
     );
   }
 
+  const isAssignedToMe = currentUserId === task.assignee?._id;
+
   return (
     <div 
       ref={setNodeRef}
@@ -81,7 +83,11 @@ export default function TaskCard({ task, onDelete, onClick, isOwnerOrCreator }: 
       {...attributes}
       {...listeners}
       onClick={onClick}
-      className={`bg-background border border-border-default rounded-lg p-3 shadow-sm hover:border-accent group mb-3 transition-all hover:shadow-md ${
+      className={`bg-background border rounded-lg p-3 shadow-sm hover:border-accent group mb-3 transition-all hover:shadow-md ${
+        isAssignedToMe 
+          ? 'border-[#388bfd] shadow-[0_0_12px_rgba(56,139,253,0.15)] ring-1 ring-[#388bfd]/30' 
+          : 'border-border-default'
+      } ${
         canDrag ? 'cursor-pointer active:cursor-grabbing' : 'cursor-default'
       }`}
     >

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 import {
   Plus,
   Layout,
@@ -261,11 +262,12 @@ export default function DashboardPage() {
   };
 
   const handleGoHome = () => {
-    router.push('/dashboard');
     setDetailedOrg(null);
     setProjects([]);
     setActiveTab('Board');
     setIsDetailLoading(false);
+    setIsLoading(false);
+    router.push('/dashboard');
   };
 
   const currentProject = projects.find(p => p._id === projectIdFromUrl);
@@ -291,35 +293,60 @@ export default function DashboardPage() {
               <Menu size={20} />
             </button>
             <div className={`flex items-center gap-1.5 text-[14px] md:text-[15px] min-w-0 flex-1 font-normal transition-opacity duration-300 ${isMounted ? 'opacity-100' : 'opacity-0'}`}>
-              <UserIcon size={14} className="shrink-0 text-[#8b949e]" />
-              <span
-                onClick={handleGoHome}
-                className="text-[#8b949e] hover:text-[#f0f6fc] cursor-pointer transition-colors max-w-[120px] truncate"
+              <Link 
+                href="/dashboard"
+                onClick={(e) => {
+                  if (!orgIdFromUrl) {
+                    e.preventDefault();
+                  } else {
+                    handleGoHome();
+                  }
+                }}
+                className="flex items-center gap-1.5 group"
               >
-                {username}
-              </span>
+                <UserIcon size={14} className="shrink-0 text-[#8b949e] group-hover:text-accent transition-colors" />
+                <span className="text-[#8b949e] group-hover:text-[#f0f6fc] transition-colors max-w-[120px] truncate">
+                  {username}
+                </span>
+              </Link>
+
               <span className="shrink-0 mx-2 text-[#484f58]">/</span>
+
               <div className="flex items-center gap-1.5 min-w-0 truncate">
                 {orgIdFromUrl ? (
-                  detailedOrg ? (
-                    <>
-                      <span
-                        onClick={() => handleSelectOrg(orgIdFromUrl)}
-                        className={`cursor-pointer hover:underline truncate ${!currentProject ? 'font-semibold text-[#f0f6fc]' : 'text-[#8b949e]'}`}
-                        title={detailedOrg.name}
-                      >
-                        {detailedOrg.name}
-                      </span>
-                      {currentProject && (
-                        <>
-                          <span className="shrink-0 mx-2 text-[#484f58]">/</span>
-                          <span className="font-semibold text-[#f0f6fc] truncate" title={currentProject.name}>{currentProject.name}</span>
-                        </>
-                      )}
-                    </>
-                  ) : (
-                    <span className="h-4 w-24 bg-[#30363d] animate-pulse rounded" />
-                  )
+                  <>
+                    <Link
+                      href="/dashboard"
+                      onClick={handleGoHome}
+                      className="text-[#8b949e] hover:text-[#f0f6fc] transition-colors"
+                    >
+                      Organizations
+                    </Link>
+                    <span className="shrink-0 mx-2 text-[#484f58]">/</span>
+                    {detailedOrg ? (
+                      <>
+                        <Link
+                          href={`/dashboard?orgId=${orgIdFromUrl}`}
+                          onClick={() => {
+                            setActiveTab('Board');
+                            closeSidebar();
+                          }}
+                          className={`hover:underline truncate ${!currentProject ? 'font-semibold text-[#f0f6fc]' : 'text-[#8b949e]'}`}
+                          title={detailedOrg.name}
+                        >
+                          {detailedOrg.name}
+                        </Link>
+                        {currentProject && (
+                          <>
+                            <span className="shrink-0 mx-2 text-[#484f58]">/</span>
+                            <span className="font-semibold text-[#f0f6fc] truncate" title={currentProject.name}>{currentProject.name}</span>
+                          </>
+                        )}
+                      </>
+                    ) : (
+                      <span className="h-4 w-24 bg-[#30363d] animate-pulse rounded" />
+                    )}
+                  </>
                 ) : (
                   <span className="font-semibold text-[#f0f6fc]">Organizations</span>
                 )}

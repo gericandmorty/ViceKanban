@@ -111,9 +111,6 @@ export default function Sidebar() {
     router.push('/auth/login');
   };
 
-  const handleGoHome = () => {
-    router.push('/dashboard');
-  };
 
   return (
     <>
@@ -131,13 +128,14 @@ export default function Sidebar() {
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         <div className="p-4 border-b border-border-default flex items-center justify-between">
-          <div 
-            onClick={() => { handleGoHome(); closeSidebar(); }}
+          <Link 
+            href="/dashboard"
+            onClick={closeSidebar}
             className="flex items-center gap-3 cursor-pointer group"
           >
             <Image src="/icon_vice.png" alt="Logo" width={32} height={32} style={{ height: 'auto' }} className="rounded group-hover:opacity-80 transition-opacity" />
             <span className="font-semibold text-sm group-hover:text-accent transition-colors">ViceKanBan</span>
-          </div>
+          </Link>
           <div className="flex items-center gap-2">
             <button 
               onClick={closeSidebar}
@@ -226,8 +224,9 @@ export default function Sidebar() {
 
         {/* Dynamic Invitations Link in Sidebar if pending */}
         {!currentOrgId && invitationCount > 0 && (
-          <div 
-            onClick={() => { handleGoHome(); closeSidebar(); }}
+          <Link 
+            href="/dashboard"
+            onClick={closeSidebar}
             className="flex items-center justify-between px-2 py-2 bg-accent/5 border border-accent/10 rounded-lg cursor-pointer hover:bg-accent/10 transition-all group"
           >
             <div className="flex items-center gap-3">
@@ -237,7 +236,7 @@ export default function Sidebar() {
             <span className="bg-accent text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">
               {invitationCount}
             </span>
-          </div>
+          </Link>
         )}
 
       </div>

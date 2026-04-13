@@ -17,13 +17,15 @@ import {
   Bell,
   Kanban,
   Menu,
-  User as UserIcon
+  User as UserIcon,
+  Activity
 } from 'lucide-react';
 import CreateOrgModal from '@/app/components/modals/CreateOrgModal';
 import CreateProjectModal from '@/app/components/modals/CreateProjectModal';
 import MembersTable from '@/app/components/organizations/MembersTable';
 import OrganizationSettings from '@/app/components/organizations/OrganizationSettings';
 import ProjectSettings from '@/app/components/organizations/ProjectSettings';
+import Contributions from '@/app/components/organizations/Contributions';
 import KanbanBoard from '@/app/components/kanban/KanbanBoard';
 import Cookies from 'js-cookie';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -155,22 +157,24 @@ export default function DashboardPage() {
     let isCurrent = true;
 
     const loadData = async () => {
+      // If we're going home (no orgId), reset everything
       if (!orgIdFromUrl) {
         setDetailedOrg(null);
         setProjects([]);
-        // Stop any loading state if we're just going home
+        setActiveTab('Board');
         setIsDetailLoading(false);
         setIsLoading(false);
         return;
       }
 
+      // If we are in an organization but the detailedOrg object is stale or missing
       setIsDetailLoading(true);
 
       try {
         const apiUrl = API_URL;
         const token = Cookies.get('access_token');
 
-        // Always fetch org details if missing or org changed
+        // 1. Fetch Organization Details if needed
         if (!detailedOrg || detailedOrg._id !== orgIdFromUrl) {
           const orgRes = await fetch(`${apiUrl}/organizations/${orgIdFromUrl}`, {
             headers: { 'Authorization': `Bearer ${token}` }
@@ -178,14 +182,16 @@ export default function DashboardPage() {
           if (orgRes.ok && isCurrent) {
             const orgData = await orgRes.json();
             setDetailedOrg(orgData);
+          } else if (!orgRes.ok) {
+            // If org not found or error, go home
+            handleGoHome();
+            return;
           }
         }
 
-        // Always fetch projects if they are missing or if the current project isn't in the list
-        const needsProjectFetch = projects.length === 0 ||
-          (projectIdFromUrl && !projects.find(p => p._id === projectIdFromUrl));
-
-        if (needsProjectFetch || (detailedOrg?._id !== orgIdFromUrl)) {
+        // 2. Fetch Projects for the org if needed
+        // We re-fetch if project list is empty OR if we've switched organizations
+        if (projects.length === 0 || (detailedOrg?._id !== orgIdFromUrl)) {
           const projRes = await fetch(`${apiUrl}/projects/org/${orgIdFromUrl}`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
@@ -199,7 +205,7 @@ export default function DashboardPage() {
       } finally {
         if (isCurrent) {
           setIsDetailLoading(false);
-          setIsLoading(false); // Also clear main loading if set
+          setIsLoading(false);
         }
       }
     };
@@ -209,7 +215,7 @@ export default function DashboardPage() {
     return () => {
       isCurrent = false;
     };
-  }, [orgIdFromUrl, projectIdFromUrl]);
+  }, [orgIdFromUrl, projectIdFromUrl, detailedOrg?._id]);
 
   const handleAcceptInvite = async (orgId: string, orgName: string) => {
     try {
@@ -299,6 +305,7 @@ export default function DashboardPage() {
                   if (!orgIdFromUrl) {
                     e.preventDefault();
                   } else {
+                    e.preventDefault(); // Prevent double navigation
                     handleGoHome();
                   }
                 }}
@@ -317,7 +324,10 @@ export default function DashboardPage() {
                   <>
                     <Link
                       href="/dashboard"
-                      onClick={handleGoHome}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleGoHome();
+                      }}
                       className="text-[#8b949e] hover:text-[#f0f6fc] transition-colors"
                     >
                       Organizations
@@ -327,7 +337,12 @@ export default function DashboardPage() {
                       <>
                         <Link
                           href={`/dashboard?orgId=${orgIdFromUrl}`}
-                          onClick={() => {
+                          onClick={(e) => {
+                            // If just clearing project, prevent full Link nav and do it manually/cleanly
+                            if (projectIdFromUrl) {
+                              e.preventDefault();
+                              router.push(`/dashboard?orgId=${orgIdFromUrl}`);
+                            }
                             setActiveTab('Board');
                             closeSidebar();
                           }}
@@ -360,7 +375,7 @@ export default function DashboardPage() {
 
         {detailedOrg && (
           <div className="px-4 md:px-6 flex gap-4 md:gap-8 items-end overflow-x-auto no-scrollbar border-b border-border-default">
-            {['Board', 'Members', 'Settings'].map((tab) => (
+            {['Board', 'Members', 'Contributions', 'Settings'].map((tab: any) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -371,6 +386,7 @@ export default function DashboardPage() {
               >
                 {tab === 'Board' && <Kanban size={16} className="opacity-70" />}
                 {tab === 'Members' && <Users size={16} className="opacity-70" />}
+                {tab === 'Contributions' && <Activity size={16} className="opacity-70" />}
                 {tab === 'Settings' && <Layout size={16} className="opacity-70" />}
                 {tab}
               </button>
@@ -516,6 +532,8 @@ export default function DashboardPage() {
               </div>
             ) : activeTab === 'Members' ? (
               <MembersTable org={detailedOrg} onRefresh={() => fetchOrgDetails(orgIdFromUrl as string)} />
+            ) : activeTab === 'Contributions' ? (
+              <Contributions orgId={orgIdFromUrl as string} />
             ) : activeTab === 'Board' ? (
               <div className="flex-1 flex flex-col min-h-0">
                 {projectIdFromUrl ? (

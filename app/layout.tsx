@@ -23,6 +23,8 @@ export const metadata: Metadata = {
   },
 };
 
+import SessionGuard from "./components/SessionGuard";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -35,7 +37,9 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <Toaster position="top-right" />
-        {children}
+        <SessionGuard>
+          {children}
+        </SessionGuard>
       </body>
     </html>
   );

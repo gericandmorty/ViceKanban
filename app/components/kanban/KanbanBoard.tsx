@@ -269,6 +269,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
         setTaskToConfirmDelete(null);
         setInspectingTask(null);
         refreshTasks();
+        window.dispatchEvent(new CustomEvent('taskUpdated')); // Sync sidebar
       } else {
         const error = await response.json();
         toast.error(error.message || 'Failed to delete task');
@@ -432,6 +433,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
 
       if (response.ok) {
         refreshTasks(); // Refresh to get precise order from server
+        window.dispatchEvent(new CustomEvent('taskUpdated')); // Sync sidebar
         toast.success(`Task moved to ${newStatus.replace('_', ' ')}`);
       } else {
         toast.error('Failed to update task position');
@@ -471,6 +473,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
         setNewTaskAssignee('');
         setShowTaskForm(null);
         refreshTasks();
+        window.dispatchEvent(new CustomEvent('taskUpdated')); // Sync sidebar
         toast.success('Task created successfully');
       } else {
         const data = await response.json();

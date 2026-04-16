@@ -26,23 +26,33 @@ export function useAutoLogout() {
     const checkSession = () => {
       const token = Cookies.get('access_token');
       const expiry = localStorage.getItem('session_expiry');
+      
+      const publicRoutes = ['/', '/about', '/terms', '/privacy'];
+      const isPublicPath = publicRoutes.includes(pathname) || pathname.startsWith('/auth');
 
       if (token && expiry) {
         if (Date.now() > parseInt(expiry)) {
           logout();
         }
-      } else if (!token && !pathname.startsWith('/auth') && pathname !== '/') {
+      } else if (!token && !isPublicPath) {
         // If token is missing but we are in protected area
         logout();
       }
     };
 
     checkSession();
+    
+    // 2. Listen for global unauthorized events (from our API utility)
+    const handleUnauthorized = () => {
+      console.log('Unauthorized event detected, logging out...');
+      logout();
+    };
+    window.addEventListener('unauthorized', handleUnauthorized);
 
-    // 2. Poll every 10 seconds
+    // 3. Poll every 10 seconds
     const interval = setInterval(checkSession, 10000);
 
-    // 3. Listen for storage events (e.g. if logout happens in another tab)
+    // 4. Listen for storage events (e.g. if logout happens in another tab)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'session_expiry' && !e.newValue) {
         logout();
@@ -53,6 +63,7 @@ export function useAutoLogout() {
     return () => {
       clearInterval(interval);
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('unauthorized', handleUnauthorized);
     };
   }, [logout, pathname]);
 

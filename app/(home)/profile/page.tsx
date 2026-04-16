@@ -5,7 +5,7 @@ import { User, Shield, ChevronRight, Loader2 } from 'lucide-react';
 import Cookies from 'js-cookie';
 import AvatarUpload from '@/app/components/profile/AvatarUpload';
 import ChangePasswordForm from '@/app/components/profile/ChangePasswordForm';
-import { API_URL } from '@/app/utils/api';
+import { apiFetch } from '@/app/utils/api';
 
 export default function ProfilePage() {
   const [userData, setUserData] = useState<any>(null);
@@ -14,11 +14,7 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const apiUrl = API_URL;
-        const token = Cookies.get('access_token');
-        const response = await fetch(`${apiUrl}/user/me`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const response = await apiFetch('/user/me');
         if (response.ok) {
           const data = await response.json();
           setUserData(data);

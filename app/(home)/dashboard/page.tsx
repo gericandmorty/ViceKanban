@@ -31,7 +31,7 @@ import Cookies from 'js-cookie';
 import { useSearchParams, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { useSidebar } from '@/app/context/SidebarContext';
-import { API_URL } from '@/app/utils/api';
+import { apiFetch } from '@/app/utils/api';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -59,11 +59,7 @@ export default function DashboardPage() {
 
   const fetchUserProfile = useCallback(async () => {
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      const response = await fetch(`${apiUrl}/user/me`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await apiFetch('/user/me');
       if (response.ok) {
         const data = await response.json();
         setUsername(data.username);
@@ -76,11 +72,7 @@ export default function DashboardPage() {
 
   const fetchInvitations = useCallback(async () => {
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      const response = await fetch(`${apiUrl}/organizations/invitations`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await apiFetch('/organizations/invitations');
       if (response.ok) {
         const data = await response.json();
         setInvitations(data);
@@ -92,11 +84,7 @@ export default function DashboardPage() {
 
   const fetchOrganizations = useCallback(async () => {
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      const response = await fetch(`${apiUrl}/organizations`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await apiFetch('/organizations');
       if (response.ok) {
         const data = await response.json();
         setOrganizations(data);
@@ -110,11 +98,7 @@ export default function DashboardPage() {
 
   const fetchProjects = useCallback(async (orgId: string) => {
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      const response = await fetch(`${apiUrl}/projects/org/${orgId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await apiFetch(`/projects/org/${orgId}`);
       if (response.ok) {
         const data = await response.json();
         setProjects(data);
@@ -127,11 +111,7 @@ export default function DashboardPage() {
   const fetchOrgDetails = useCallback(async (id: string) => {
     setIsDetailLoading(true);
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      const response = await fetch(`${apiUrl}/organizations/${id}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await apiFetch(`/organizations/${id}`);
       if (response.ok) {
         const data = await response.json();
         setDetailedOrg(data);
@@ -171,14 +151,9 @@ export default function DashboardPage() {
       setIsDetailLoading(true);
 
       try {
-        const apiUrl = API_URL;
-        const token = Cookies.get('access_token');
-
         // 1. Fetch Organization Details if needed
         if (!detailedOrg || detailedOrg._id !== orgIdFromUrl) {
-          const orgRes = await fetch(`${apiUrl}/organizations/${orgIdFromUrl}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
+          const orgRes = await apiFetch(`/organizations/${orgIdFromUrl}`);
           if (orgRes.ok && isCurrent) {
             const orgData = await orgRes.json();
             setDetailedOrg(orgData);
@@ -192,9 +167,7 @@ export default function DashboardPage() {
         // 2. Fetch Projects for the org if needed
         // We re-fetch if project list is empty OR if we've switched organizations
         if (projects.length === 0 || (detailedOrg?._id !== orgIdFromUrl)) {
-          const projRes = await fetch(`${apiUrl}/projects/org/${orgIdFromUrl}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
+          const projRes = await apiFetch(`/projects/org/${orgIdFromUrl}`);
           if (projRes.ok && isCurrent) {
             const projData = await projRes.json();
             setProjects(projData);
@@ -219,11 +192,8 @@ export default function DashboardPage() {
 
   const handleAcceptInvite = async (orgId: string, orgName: string) => {
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      const response = await fetch(`${apiUrl}/organizations/${orgId}/accept`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
+      const response = await apiFetch(`/organizations/${orgId}/accept`, {
+        method: 'POST'
       });
 
       if (response.ok) {
@@ -240,11 +210,8 @@ export default function DashboardPage() {
 
   const handleDeclineInvite = async (orgId: string) => {
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      const response = await fetch(`${apiUrl}/organizations/${orgId}/decline`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+      const response = await apiFetch(`/organizations/${orgId}/decline`, {
+        method: 'DELETE'
       });
 
       if (response.ok) {

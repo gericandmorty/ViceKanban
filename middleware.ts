@@ -19,8 +19,12 @@ export function middleware(request: NextRequest) {
 
   // 2. Define what paths are "internal" to avoid checking them for auth
   // This helps prevent loops and allows static assets to load
-  const isPublicRoute = publicRoutes.includes(pathname);
-
+  const normalizedPath = pathname.endsWith('/') && pathname !== '/' 
+    ? pathname.slice(0, -1) 
+    : pathname;
+    
+  const isPublicRoute = publicRoutes.includes(normalizedPath);
+  
   // Skip middleware for internal Next.js assets, public files, and API routes
   if (
     pathname.startsWith('/_next') ||

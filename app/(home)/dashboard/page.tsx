@@ -31,6 +31,7 @@ import Contributions from '@/app/components/organizations/Contributions';
 import KanbanBoard from '@/app/components/kanban/KanbanBoard';
 import Announcements from '@/app/components/organizations/Announcements';
 import AnnouncementDetailModal from '@/app/components/modals/AnnouncementDetailModal';
+import AnnouncementStackModal from '@/app/components/modals/AnnouncementStackModal';
 import Cookies from 'js-cookie';
 import { useSearchParams, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
@@ -62,7 +63,7 @@ export default function DashboardPage() {
   const [isDetailLoading, setIsDetailLoading] = useState(false);
 
   // Announcement popup state
-  const [popupAnnouncement, setPopupAnnouncement] = useState<any>(null);
+  const [popupAnnouncements, setPopupAnnouncements] = useState<any[]>([]);
 
   // Notification state
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -215,29 +216,48 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!orgIdFromUrl) return;
 
-    const fetchLatestAnnouncement = async () => {
+    const fetchLatestAnnouncements = async () => {
       try {
-        const res = await apiFetch(`/organizations/${orgIdFromUrl}/announcements?page=1&limit=1`);
+        const res = await apiFetch(`/organizations/${orgIdFromUrl}/announcements?page=1&limit=50`);
         if (res.ok) {
           const data = await res.json();
           if (data.announcements && data.announcements.length > 0) {
-            const latest = data.announcements[0];
             const seenAnnouncements = JSON.parse(localStorage.getItem('seen_announcements') || '[]');
             
-            // Only show if we haven't seen THIS specific announcement before
-            if (!seenAnnouncements.includes(latest._id)) {
-              setPopupAnnouncement(latest);
-              // Mark as seen immediately
-              localStorage.setItem('seen_announcements', JSON.stringify([...seenAnnouncements, latest._id]));
+            // Filter out already seen ones
+            const unread = data.announcements.filter((a: any) => !seenAnnouncements.includes(a._id));
+            
+            if (unread.length > 0) {
+              // Priority Weights: red (maintenance) > blue (system) > orange (feature) > green (update)
+              const priorityWeights: Record<string, number> = {
+                maintenance: 4,
+                system: 3,
+                feature: 2,
+                update: 1
+              };
+
+              const sorted = [...unread].sort((a, b) => {
+                const weightA = priorityWeights[a.type.toLowerCase()] || 0;
+                const weightB = priorityWeights[b.type.toLowerCase()] || 0;
+
+                if (weightA !== weightB) {
+                  return weightB - weightA; // Higher weight first
+                }
+                
+                // Same priority, sort by date descending
+                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+              });
+              
+              setPopupAnnouncements(sorted);
             }
           }
         }
       } catch (err) {
-        console.error('Failed to fetch latest announcement:', err);
+        console.error('Failed to fetch latest announcements:', err);
       }
     };
 
-    fetchLatestAnnouncement();
+    fetchLatestAnnouncements();
   }, [orgIdFromUrl]);
 
   const handleAcceptInvite = async (orgId: string, orgName: string) => {
@@ -714,11 +734,12 @@ export default function DashboardPage() {
         />
       )}
 
-      {/* Auto-popup announcement modal */}
-      <AnnouncementDetailModal
-        isOpen={!!popupAnnouncement}
-        onClose={() => setPopupAnnouncement(null)}
-        announcement={popupAnnouncement}
+      {/* Multi-announcement stack modal */}
+      <AnnouncementStackModal
+        key={orgIdFromUrl || 'global-stack'}
+        isOpen={popupAnnouncements.length > 0}
+        onClose={() => setPopupAnnouncements([])}
+        announcements={popupAnnouncements}
       />
     </div>
   );

@@ -126,6 +126,14 @@ export default function Sidebar() {
   }, [fetchAssignedTasks]);
 
   useEffect(() => {
+    const handleMembershipChange = () => {
+      fetchOrganizations();
+    };
+    window.addEventListener('orgMembershipChanged', handleMembershipChange);
+    return () => window.removeEventListener('orgMembershipChanged', handleMembershipChange);
+  }, [fetchOrganizations]);
+
+  useEffect(() => {
     fetchOrganizations();
     fetchInvitationCount();
     fetchUserData();
@@ -323,22 +331,7 @@ export default function Sidebar() {
           </AnimatePresence>
         </div>
 
-        {/* Dynamic Invitations Link in Sidebar if pending */}
-        {!currentOrgId && invitationCount > 0 && (
-          <Link 
-            href="/dashboard"
-            onClick={closeSidebar}
-            className="flex items-center justify-between px-2 py-2 bg-accent/5 border border-accent/10 rounded-lg cursor-pointer hover:bg-accent/10 transition-all group"
-          >
-            <div className="flex items-center gap-3">
-              <Bell size={14} className="text-accent" />
-              <span className="text-xs font-bold text-accent">Pending Invites</span>
-            </div>
-            <span className="bg-accent text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">
-              {invitationCount}
-            </span>
-          </Link>
-        )}
+
 
       </div>
 

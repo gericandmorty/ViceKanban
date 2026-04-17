@@ -145,6 +145,13 @@ export default function DashboardPage() {
     fetchUserProfile(); // Ensure name is loaded from API even if cookie is missing
     const storedUsername = Cookies.get('user_name');
     if (storedUsername) setUsername(storedUsername);
+
+    const handleOrgChange = () => {
+      fetchOrganizations();
+      fetchInvitations();
+    };
+    window.addEventListener('orgMembershipChanged', handleOrgChange);
+    return () => window.removeEventListener('orgMembershipChanged', handleOrgChange);
   }, [fetchOrganizations, fetchInvitations, fetchUserProfile]);
 
   useEffect(() => {
@@ -243,6 +250,7 @@ export default function DashboardPage() {
         toast.success(`Joined ${orgName}!`);
         fetchOrganizations();
         fetchInvitations();
+        window.dispatchEvent(new Event('orgMembershipChanged'));
       } else {
         toast.error('Failed to join organization');
       }
@@ -256,13 +264,13 @@ export default function DashboardPage() {
       const response = await apiFetch(`/organizations/${orgId}/decline`, {
         method: 'DELETE'
       });
-
       if (response.ok) {
         toast.success('Invitation declined');
         fetchInvitations();
+        window.dispatchEvent(new Event('orgMembershipChanged'));
       }
     } catch (error) {
-      console.error('Failed to decline:', error);
+      console.error('Failed to decline invitation:', error);
     }
   };
 
@@ -452,52 +460,6 @@ export default function DashboardPage() {
           <div className="w-full py-8 px-6 space-y-8 overflow-y-auto h-full">
 
 
-            {/* Pending Invitations Section */}
-            <AnimatePresence>
-              {invitations.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="rounded-lg border border-accent/30 bg-accent/5 overflow-hidden"
-                >
-                  <div className="flex items-center gap-2 px-4 py-3 border-b border-accent/20">
-                    <Bell className="text-accent" size={14} />
-                    <span className="text-sm font-semibold text-accent">Pending invitations ({invitations.length})</span>
-                  </div>
-                  <div className="divide-y divide-border-default">
-                    {invitations.map((inv) => (
-                      <div key={inv._id} className="flex items-center justify-between px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-md bg-accent flex items-center justify-center text-white font-bold text-sm">
-                            {inv.name.charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold">{inv.name}</p>
-                            <p className="text-xs text-zinc-500">You've been invited to join this organization</p>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleAcceptInvite(inv._id, inv.name)}
-                            className="btn btn-primary py-1 px-3 text-xs flex items-center gap-1"
-                          >
-                            <Check size={12} /> Accept
-                          </button>
-                          <button
-                            onClick={() => handleDeclineInvite(inv._id)}
-                            className="text-xs text-zinc-500 hover:text-red-500 transition-colors px-2"
-                          >
-                            Decline
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
             {/* Organizations List */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -561,6 +523,68 @@ export default function DashboardPage() {
                 </div>
               )}
             </div>
+
+            {/* Pending Invitations Section (Moved to bottom) */}
+            <AnimatePresence>
+              {invitations.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="rounded-lg border border-accent/20 bg-accent/5 overflow-hidden"
+                >
+                  <div className="flex items-center gap-2 px-4 py-3 border-b border-accent/10">
+                    <Bell className="text-accent" size={14} />
+                    <span className="text-sm font-semibold text-accent">Pending invitations ({invitations.length})</span>
+                  </div>
+                  <div className="divide-y divide-border-default">
+                    {invitations.map((inv) => {
+                      const senderName = inv.invitation?.sender?.username;
+                      const expiresAt = inv.invitation?.expiresAt ? new Date(inv.invitation.expiresAt) : null;
+                      const hoursLeft = expiresAt ? Math.max(0, Math.ceil((expiresAt.getTime() - Date.now()) / 3600000)) : null;
+                      return (
+                        <div key={inv._id} className="flex items-center justify-between px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-9 h-9 rounded-md flex items-center justify-center relative overflow-hidden ${!inv.avatarUrl ? 'bg-accent/10' : ''}`}>
+                              {inv.avatarUrl ? (
+                                <Image src={inv.avatarUrl} alt={inv.name} fill sizes="36px" className="object-cover" />
+                              ) : (
+                                <Building2 className="text-accent" size={18} />
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold">{inv.name}</p>
+                              <p className="text-xs text-zinc-500">
+                                {senderName ? `${senderName} invited you to join` : 'You\'ve been invited to join this organization'}
+                              </p>
+                              {hoursLeft !== null && (
+                                <p className="text-[10px] text-zinc-600 mt-0.5">
+                                  Expires in {hoursLeft}h
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleAcceptInvite(inv._id, inv.name)}
+                              className="btn btn-primary py-1 px-3 text-xs flex items-center gap-1"
+                            >
+                              <Check size={12} /> Accept
+                            </button>
+                            <button
+                              onClick={() => handleDeclineInvite(inv._id)}
+                              className="text-xs text-zinc-500 hover:text-red-500 transition-colors px-2"
+                            >
+                              Decline
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         ) : (
           /* Organization Workspace View */

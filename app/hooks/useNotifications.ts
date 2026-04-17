@@ -68,6 +68,16 @@ export function useNotifications() {
       });
     });
 
+    newSocket.on('notification_deleted', (notificationId: string) => {
+      setNotifications(prev => {
+        const target = prev.find(n => n._id === notificationId);
+        if (target && !target.isRead) {
+          setUnreadCount(count => Math.max(0, count - 1));
+        }
+        return prev.filter(n => n._id !== notificationId);
+      });
+    });
+
     setSocket(newSocket);
 
     return () => {

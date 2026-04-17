@@ -253,42 +253,46 @@ export default function OrganizationSettings({ org, isOwner, isAdmin, onRefresh 
               <p className="text-[14px] text-[#8b949e]">
                 This logo will be displayed in the sidebar, dashboard, and invitations.
               </p>
-              <div className="pt-2 flex flex-wrap justify-center sm:justify-start gap-2">
-                <label className="cursor-pointer bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] px-3 py-1.5 rounded-md text-[12px] font-semibold border border-[#30363d] transition-all">
-                  Change logo
-                  <input 
-                    type="file" 
-                    className="hidden" 
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    disabled={isUpdatingLogo}
-                  />
-                </label>
-                {logoPreview !== org.avatarUrl && (
-                  <button 
-                    onClick={() => { setLogoFile(null); setLogoPreview(org.avatarUrl || ''); }}
-                    className="text-[12px] text-[#f85149] hover:underline px-2 py-1.5"
-                    disabled={isUpdatingLogo}
-                  >
-                    Reset changes
-                  </button>
-                )}
-              </div>
+              {isAdmin && (
+                <div className="pt-2 flex flex-wrap justify-center sm:justify-start gap-2">
+                  <label className="cursor-pointer bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] px-3 py-1.5 rounded-md text-[12px] font-semibold border border-[#30363d] transition-all">
+                    Change logo
+                    <input 
+                      type="file" 
+                      className="hidden" 
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      disabled={isUpdatingLogo}
+                    />
+                  </label>
+                  {logoPreview !== org.avatarUrl && (
+                    <button 
+                      onClick={() => { setLogoFile(null); setLogoPreview(org.avatarUrl || ''); }}
+                      className="text-[12px] text-[#f85149] hover:underline px-2 py-1.5"
+                      disabled={isUpdatingLogo}
+                    >
+                      Reset changes
+                    </button>
+                  )}
+                </div>
+              )}
               <p className="text-[11px] text-[#8b949e] mt-2">
                 Maximum file size: 5MB. Supported formats: PNG, JPG, WEBP.
               </p>
             </div>
           </div>
           
-          <div className="mt-8 pt-4 border-t border-[#30363d] flex justify-end bg-[#161b22]/30 -mx-6 -mb-6 px-6 py-4">
-            <button 
-              onClick={handleUpdateLogo}
-              disabled={isUpdatingLogo || !logoFile}
-              className="bg-[#238636] hover:bg-[#2ea043] text-[#ffffff] px-4 py-[5px] rounded-md text-[14px] font-semibold flex items-center gap-2 transition-colors border border-[rgba(240,246,252,0.1)] disabled:opacity-50"
-            >
-              {isUpdatingLogo ? <Loader2 className="animate-spin" size={16} /> : 'Save Logo'}
-            </button>
-          </div>
+          {isAdmin && (
+            <div className="mt-8 pt-4 border-t border-[#30363d] flex justify-end bg-[#161b22]/30 -mx-6 -mb-6 px-6 py-4">
+              <button 
+                onClick={handleUpdateLogo}
+                disabled={isUpdatingLogo || !logoFile}
+                className="bg-[#238636] hover:bg-[#2ea043] text-[#ffffff] px-4 py-[5px] rounded-md text-[14px] font-semibold flex items-center gap-2 transition-colors border border-[rgba(240,246,252,0.1)] disabled:opacity-50"
+              >
+                {isUpdatingLogo ? <Loader2 className="animate-spin" size={16} /> : 'Save Logo'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

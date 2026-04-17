@@ -38,7 +38,7 @@ interface Organization {
   _id: string;
   name: string;
   members: Member[];
-  invitedEmails: string[];
+  invitations?: { email: string; status: string; expiresAt?: string }[];
 }
 
 interface MembersTableProps {
@@ -191,7 +191,12 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
     m.user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const filteredInvites = org.invitedEmails.filter(email => 
+  // Pending invites from the new structured invitations array
+  const pendingInviteEmails = (org.invitations || [])
+    .filter(inv => inv.status === 'pending')
+    .map(inv => inv.email);
+
+  const filteredInvites = pendingInviteEmails.filter(email =>
     email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -273,7 +278,7 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
         <div className="px-4 py-3 border-b border-[#30363d] bg-[#161b22] rounded-t-md">
           <div className="flex items-center justify-between">
             <span className="text-[14px] font-semibold text-[#f0f6fc]">
-              {org.members.length + org.invitedEmails.length} members
+              {org.members.length + (org.invitations?.filter(i => i.status === 'pending').length ?? 0)} members
             </span>
           </div>
         </div>

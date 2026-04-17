@@ -1,13 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { 
   SortableContext, 
   verticalListSortingStrategy 
 } from '@dnd-kit/sortable';
 import TaskCard from './TaskCard';
-import { MoreHorizontal, Plus, Lock } from 'lucide-react';
+import { MoreHorizontal, Plus, Lock, ArrowUpAz, ArrowDownAz, ListOrdered, Calendar } from 'lucide-react';
 
 interface Task {
   _id: string;
@@ -23,6 +23,7 @@ interface Task {
     _id: string;
     username: string;
   };
+  createdAt: string;
 }
 
 interface KanbanColumnProps {
@@ -54,6 +55,19 @@ export default function KanbanColumn({
       status: id
     }
   });
+  
+  const [sortOrder, setSortOrder] = useState<'manual' | 'newest' | 'oldest'>('manual');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const displayTasks = useMemo(() => {
+    if (sortOrder === 'newest') {
+      return [...tasks].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
+    if (sortOrder === 'oldest') {
+      return [...tasks].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    }
+    return tasks;
+  }, [tasks, sortOrder]);
 
   return (
     <div 
@@ -68,10 +82,59 @@ export default function KanbanColumn({
           </span>
           {isLocked && <Lock size={12} className="text-zinc-400 ml-1" />}
         </div>
-        <div className="flex items-center gap-1">
-          <button className="p-1 hover:bg-border-default rounded transition-colors text-zinc-400">
+        <div className="flex items-center gap-1 relative">
+          <button 
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className={`p-1 rounded transition-colors ${isMenuOpen ? 'bg-border-default text-accent' : 'text-zinc-400 hover:bg-border-default'}`}
+          >
             <MoreHorizontal size={14} />
           </button>
+
+          {isMenuOpen && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setIsMenuOpen(false)} />
+              <div className="absolute top-full right-0 mt-1 w-48 bg-[#161b22] border border-[#30363d] rounded-md shadow-xl z-20 py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                <div className="px-3 py-1.5 border-b border-[#30363d] flex items-center gap-2">
+                  <Calendar size={12} className="text-zinc-500" />
+                  <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Column Actions</span>
+                </div>
+
+                {!isLocked && onAddTask && (
+                  <button 
+                    onClick={() => { onAddTask(); setIsMenuOpen(false); }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-zinc-300 hover:bg-[#1f242c] transition-colors border-b border-[#30363d]/50"
+                  >
+                    <Plus size={14} className="text-accent" />
+                    Add Task
+                  </button>
+                )}
+                
+                <button 
+                  onClick={() => { setSortOrder('manual'); setIsMenuOpen(false); }}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-xs transition-colors ${sortOrder === 'manual' ? 'text-accent bg-accent/5' : 'text-zinc-300 hover:bg-[#1f242c]'}`}
+                >
+                  <ListOrdered size={14} />
+                  Manual Sort
+                </button>
+                
+                <button 
+                  onClick={() => { setSortOrder('newest'); setIsMenuOpen(false); }}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-xs transition-colors ${sortOrder === 'newest' ? 'text-accent bg-accent/5' : 'text-zinc-300 hover:bg-[#1f242c]'}`}
+                >
+                  <ArrowDownAz size={14} />
+                  Newest First
+                </button>
+                
+                <button 
+                  onClick={() => { setSortOrder('oldest'); setIsMenuOpen(false); }}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-xs transition-colors ${sortOrder === 'oldest' ? 'text-accent bg-accent/5' : 'text-zinc-300 hover:bg-[#1f242c]'}`}
+                >
+                  <ArrowUpAz size={14} />
+                  Oldest First
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -83,16 +146,17 @@ export default function KanbanColumn({
       >
         <div className="p-1 pb-4 min-h-[100px]">
           <SortableContext 
-            items={tasks.map(t => t._id)} 
+            items={displayTasks.map(t => t._id)} 
             strategy={verticalListSortingStrategy}
           >
-            {tasks.map((task) => (
+            {displayTasks.map((task) => (
               <TaskCard 
                 key={task._id} 
                 task={task} 
                 onDelete={() => onDeleteTask?.(task)}
                 onClick={() => onTaskClick?.(task)}
                 isOwnerOrCreator={isOwnerOrCreator}
+                isSortingActive={sortOrder !== 'manual'}
               />
             ))}
           </SortableContext>

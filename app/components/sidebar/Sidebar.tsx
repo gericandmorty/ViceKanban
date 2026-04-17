@@ -143,6 +143,7 @@ export default function Sidebar() {
   const handleLogout = () => {
     Cookies.remove('access_token');
     Cookies.remove('user_name');
+    localStorage.removeItem('seen_announcements');
     router.push('/auth/login');
   };
 

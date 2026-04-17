@@ -46,6 +46,7 @@ interface Task {
     _id: string;
     avatarUrl?: string;
   };
+  createdAt: string;
 }
 
 interface KanbanBoardProps {

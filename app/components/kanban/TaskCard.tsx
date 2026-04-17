@@ -30,6 +30,7 @@ interface Task {
     username: string;
     avatarUrl?: string;
   };
+  createdAt: string;
 }
 
 interface TaskCardProps {
@@ -37,9 +38,10 @@ interface TaskCardProps {
   onDelete?: () => void;
   onClick?: () => void;
   isOwnerOrCreator?: boolean;
+  isSortingActive?: boolean;
 }
 
-export default function TaskCard({ task, onDelete, onClick, isOwnerOrCreator }: TaskCardProps) {
+export default function TaskCard({ task, onDelete, onClick, isOwnerOrCreator, isSortingActive }: TaskCardProps) {
   const currentUserId = Cookies.get('user_id');
   const isOwner = currentUserId === task.creator._id;
   const canDrag = isOwnerOrCreator || isOwner || (task.assignee && task.assignee._id === currentUserId);
@@ -52,7 +54,7 @@ export default function TaskCard({ task, onDelete, onClick, isOwnerOrCreator }: 
     isDragging
   } = useSortable({
     id: task._id,
-    disabled: !canDrag,
+    disabled: !canDrag || isSortingActive,
     data: {
       type: 'Task',
       task
@@ -88,7 +90,7 @@ export default function TaskCard({ task, onDelete, onClick, isOwnerOrCreator }: 
           ? 'border-[#388bfd] shadow-[0_0_12px_rgba(56,139,253,0.15)] ring-1 ring-[#388bfd]/30' 
           : 'border-border-default'
       } ${
-        canDrag ? 'cursor-pointer active:cursor-grabbing' : 'cursor-default'
+        (canDrag && !isSortingActive) ? 'cursor-pointer active:cursor-grabbing' : 'cursor-default'
       }`}
     >
       <div className="flex flex-col gap-2 relative">

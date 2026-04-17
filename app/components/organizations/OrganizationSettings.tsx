@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Settings, Save, Loader2, Layout, Type, FileText } from 'lucide-react';
+import { Settings, Save, Loader2, Layout, Type, FileText, Upload, Trash2, Image as ImageIcon } from 'lucide-react';
 import Cookies from 'js-cookie';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import ConfirmationModal from '../ui/ConfirmationModal';
 import DangerZoneModal from '../ui/DangerZoneModal';
 import { API_URL } from '@/app/utils/api';
+import Image from 'next/image';
 
 interface OrganizationSettingsProps {
   org: any;
@@ -19,16 +20,42 @@ interface OrganizationSettingsProps {
 export default function OrganizationSettings({ org, isOwner, isAdmin, onRefresh }: OrganizationSettingsProps) {
   const [name, setName] = useState(org.name);
   const [description, setDescription] = useState(org.description || '');
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string>(org.avatarUrl || '');
+  const [isUpdatingDetails, setIsUpdatingDetails] = useState(false);
+  const [isUpdatingLogo, setIsUpdatingLogo] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [error, setError] = useState('');
   const router = useRouter();
 
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim() || isUpdating) return;
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    setIsUpdating(true);
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB');
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file');
+      return;
+    }
+
+    setLogoFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setLogoPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleUpdateDetails = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || isUpdatingDetails) return;
+
+    setIsUpdatingDetails(true);
     try {
       const apiUrl = API_URL;
       const token = Cookies.get('access_token');
@@ -42,16 +69,51 @@ export default function OrganizationSettings({ org, isOwner, isAdmin, onRefresh 
       });
 
       if (response.ok) {
-        toast.success('Organization updated successfully');
+        toast.success('Organization details updated');
         onRefresh();
       } else {
         const data = await response.json();
-        toast.error(data.message || 'Failed to update organization');
+        toast.error(data.message || 'Failed to update details');
       }
     } catch (error) {
       toast.error('Connection error');
     } finally {
-      setIsUpdating(false);
+      setIsUpdatingDetails(false);
+    }
+  };
+
+  const handleUpdateLogo = async () => {
+    if (!logoFile || isUpdatingLogo) return;
+
+    setIsUpdatingLogo(true);
+    const formData = new FormData();
+    if (logoFile) {
+      formData.append('logo', logoFile);
+    }
+
+    try {
+      const apiUrl = API_URL;
+      const token = Cookies.get('access_token');
+      const response = await fetch(`${apiUrl}/organizations/${org._id}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (response.ok) {
+        toast.success('Organization logo updated');
+        setLogoFile(null);
+        onRefresh();
+      } else {
+        const data = await response.json();
+        toast.error(data.message || 'Failed to update logo');
+      }
+    } catch (error) {
+      toast.error('Connection error');
+    } finally {
+      setIsUpdatingLogo(false);
     }
   };
 
@@ -95,7 +157,7 @@ export default function OrganizationSettings({ org, isOwner, isAdmin, onRefresh 
       <div className="space-y-4">
         <h3 className="text-[14px] font-semibold text-[#f0f6fc] uppercase tracking-wide">General Details</h3>
         
-        <form onSubmit={handleUpdate} className="bg-[#0d1117] border border-[#30363d] rounded-md overflow-hidden">
+        <form onSubmit={handleUpdateDetails} className="bg-[#0d1117] border border-[#30363d] rounded-md overflow-hidden">
           {/* Organization Name Row */}
           <div className="px-6 py-6 border-b border-[#30363d] flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors">
             <label className="text-[14px] font-semibold text-[#f0f6fc] w-full sm:w-1/3">
@@ -106,7 +168,7 @@ export default function OrganizationSettings({ org, isOwner, isAdmin, onRefresh 
                 type="text" 
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                disabled={!isAdmin || isUpdating}
+                disabled={!isAdmin || isUpdatingDetails}
                 className="w-full px-3 py-[5px] bg-[#0d1117] border border-[#30363d] rounded-md text-[14px] text-[#f0f6fc] focus:outline-none focus:ring-1 focus:ring-[#1f6feb] transition-all disabled:opacity-50"
               />
             </div>
@@ -121,7 +183,7 @@ export default function OrganizationSettings({ org, isOwner, isAdmin, onRefresh 
               <textarea 
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                disabled={!isAdmin || isUpdating}
+                disabled={!isAdmin || isUpdatingDetails}
                 placeholder="Add a description for your organization..."
                 className="w-full px-3 py-[7px] bg-[#0d1117] border border-[#30363d] rounded-md text-[14px] text-[#f0f6fc] focus:outline-none focus:ring-1 focus:ring-[#1f6feb] transition-all min-h-[120px] resize-none disabled:opacity-50"
               />
@@ -140,15 +202,98 @@ export default function OrganizationSettings({ org, isOwner, isAdmin, onRefresh 
                 </button>
                 <button 
                   type="submit"
-                  disabled={isUpdating || !name.trim() || (name === org.name && description === (org.description || ''))}
+                  disabled={isUpdatingDetails || !name.trim() || (name === org.name && description === (org.description || ''))}
                   className="bg-[#238636] hover:bg-[#2ea043] text-[#ffffff] px-4 py-[5px] rounded-md text-[14px] font-semibold flex items-center gap-2 transition-colors border border-[rgba(240,246,252,0.1)] disabled:opacity-50"
                 >
-                  {isUpdating ? <Loader2 className="animate-spin" size={16} /> : 'Save changes'}
+                  {isUpdatingDetails ? <Loader2 className="animate-spin" size={16} /> : 'Save changes'}
                 </button>
               </>
             )}
           </div>
         </form>
+      </div>
+
+      <div className="space-y-4 pt-4">
+        <h3 className="text-[14px] font-semibold text-[#f0f6fc] uppercase tracking-wide">Organization Branding</h3>
+        
+        <div className="bg-[#0d1117] border border-[#30363d] rounded-md p-6">
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <div className="relative group">
+              <div className="w-24 h-24 rounded-xl overflow-hidden relative flex items-center justify-center">
+                {logoPreview ? (
+                  <Image 
+                    src={logoPreview} 
+                    alt="Logo Preview" 
+                    fill 
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="text-[#8b949e] flex flex-col items-center">
+                    <ImageIcon size={32} strokeWidth={1.5} />
+                    <span className="text-[10px] mt-1 font-medium">NO LOGO</span>
+                  </div>
+                )}
+              </div>
+              
+              {isAdmin && (
+                <label className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-xl">
+                  <Upload size={24} className="text-white" />
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+                </label>
+              )}
+            </div>
+
+            <div className="flex-1 space-y-2 text-center sm:text-left">
+              <h4 className="text-[16px] font-semibold text-[#f0f6fc]">Organization Logo</h4>
+              <p className="text-[14px] text-[#8b949e]">
+                This logo will be displayed in the sidebar, dashboard, and invitations.
+              </p>
+              {isAdmin && (
+                <div className="pt-2 flex flex-wrap justify-center sm:justify-start gap-2">
+                  <label className="cursor-pointer bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] px-3 py-1.5 rounded-md text-[12px] font-semibold border border-[#30363d] transition-all">
+                    Change logo
+                    <input 
+                      type="file" 
+                      className="hidden" 
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      disabled={isUpdatingLogo}
+                    />
+                  </label>
+                  {logoPreview !== org.avatarUrl && (
+                    <button 
+                      onClick={() => { setLogoFile(null); setLogoPreview(org.avatarUrl || ''); }}
+                      className="text-[12px] text-[#f85149] hover:underline px-2 py-1.5"
+                      disabled={isUpdatingLogo}
+                    >
+                      Reset changes
+                    </button>
+                  )}
+                </div>
+              )}
+              <p className="text-[11px] text-[#8b949e] mt-2">
+                Maximum file size: 5MB. Supported formats: PNG, JPG, WEBP.
+              </p>
+            </div>
+          </div>
+          
+          {isAdmin && (
+            <div className="mt-8 pt-4 border-t border-[#30363d] flex justify-end bg-[#161b22]/30 -mx-6 -mb-6 px-6 py-4">
+              <button 
+                onClick={handleUpdateLogo}
+                disabled={isUpdatingLogo || !logoFile}
+                className="bg-[#238636] hover:bg-[#2ea043] text-[#ffffff] px-4 py-[5px] rounded-md text-[14px] font-semibold flex items-center gap-2 transition-colors border border-[rgba(240,246,252,0.1)] disabled:opacity-50"
+              >
+                {isUpdatingLogo ? <Loader2 className="animate-spin" size={16} /> : 'Save Logo'}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {!isOwner && (

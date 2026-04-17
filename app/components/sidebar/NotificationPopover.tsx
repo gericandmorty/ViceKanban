@@ -33,10 +33,10 @@ export default function NotificationPopover({
 }: NotificationPopoverProps) {
   return (
     <motion.div 
-      initial={{ opacity: 0, scale: 0.95, y: -20, x: 10 }}
+      initial={{ opacity: 0, scale: 0.95, y: -20, x: -10 }}
       animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
-      exit={{ opacity: 0, scale: 0.95, y: -20, x: 10 }}
-      className="absolute top-12 left-0 w-[340px] bg-[#161b22] border border-[#30363d] rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.5)] z-[200] overflow-hidden flex flex-col max-h-[500px]"
+      exit={{ opacity: 0, scale: 0.95, y: -20, x: -10 }}
+      className="absolute top-12 right-0 w-[340px] bg-[#161b22] border border-[#30363d] rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.5)] z-[200] overflow-hidden flex flex-col max-h-[500px]"
     >
       <div className="flex items-center justify-between p-3 border-b border-[#30363d] bg-[#161b22]">
         <h3 className="font-semibold text-xs text-[#e6edf3] flex items-center gap-2">

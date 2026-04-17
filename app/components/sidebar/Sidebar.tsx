@@ -13,7 +13,11 @@ import {
   Loader2,
   Bell,
   X as CloseIcon,
-  CheckCircle2
+  CheckCircle2,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Menu,
+  Building2
 } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -22,14 +26,12 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSidebar } from '@/app/context/SidebarContext';
 import { API_URL } from '@/app/utils/api';
-import { useNotifications } from '@/app/hooks/useNotifications';
-import NotificationPopover from './NotificationPopover';
 
 export default function Sidebar() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentOrgId = searchParams.get('orgId');
-  const { isSidebarOpen, closeSidebar } = useSidebar();
+  const { isSidebarOpen, closeSidebar, isCollapsed, toggleCollapse } = useSidebar();
 
   const [organizations, setOrganizations] = useState<any[]>([]);
   const [invitationCount, setInvitationCount] = useState(0);
@@ -37,10 +39,8 @@ export default function Sidebar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [username, setUsername] = useState('User');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [assignedTasks, setAssignedTasks] = useState<any[]>([]);
   const [isTasksCollapsed, setIsTasksCollapsed] = useState(false);
-  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
 
   const fetchUserData = useCallback(async () => {
     try {
@@ -160,90 +160,82 @@ export default function Sidebar() {
 
       <aside className={`
         fixed lg:sticky top-0 left-0 h-screen transition-all duration-300 z-[100]
-        w-64 border-r border-border-default bg-bg-subtle flex flex-col
+        ${isCollapsed ? 'w-20' : 'w-64'} border-r border-border-default bg-bg-subtle flex flex-col
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        <div className="p-4 border-b border-border-default flex items-center justify-between">
-          <Link 
-            href="/dashboard"
-            onClick={closeSidebar}
-            className="flex items-center gap-3 cursor-pointer group"
-          >
-            <Image src="/icon_vice.png" alt="Logo" width={32} height={32} style={{ height: 'auto' }} className="rounded group-hover:opacity-80 transition-opacity" />
-            <span className="font-semibold text-sm group-hover:text-accent transition-colors">ViceKanBan</span>
-          </Link>
+        <div className={`h-16 border-b border-border-default flex items-center px-4 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+          {!isCollapsed && (
+            <div className="flex items-center gap-3 overflow-hidden">
+              <Link 
+                href="/dashboard"
+                onClick={closeSidebar}
+                className="flex items-center gap-3 cursor-pointer group"
+              >
+                <Image src="/icon_vice.png" alt="Logo" width={32} height={32} style={{ height: 'auto' }} className="rounded group-hover:opacity-80 transition-opacity flex-shrink-0" />
+                <span className="font-semibold text-sm group-hover:text-accent transition-colors truncate">ViceKanBan</span>
+              </Link>
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <button 
+              onClick={toggleCollapse}
+              className={`hidden lg:flex p-1.5 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded transition-colors text-zinc-500 hover:text-accent`}
+              title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            >
+              <Menu size={18} />
+            </button>
+            <button 
               onClick={closeSidebar}
-              className="lg:hidden p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded transition-colors"
+              className="lg:hidden p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded transition-colors text-zinc-500"
             >
               <CloseIcon size={18} />
             </button>
-            <div className="relative flex items-center gap-2">
-              <button 
-                onClick={() => setIsNotifOpen(!isNotifOpen)}
-                className={`p-2 rounded-md transition-all relative ${
-                  isNotifOpen ? 'bg-border-default text-accent shadow-inner' : 'hover:bg-border-default/80 text-zinc-500'
-                }`}
-              >
-                <Bell size={16} className={unreadCount > 0 ? 'animate-wiggle' : ''} />
-                {unreadCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#2f81f7] rounded-full border border-bg-subtle" />
-                )}
-              </button>
-
-              <AnimatePresence>
-                {isNotifOpen && (
-                  <NotificationPopover 
-                    notifications={notifications}
-                    onMarkRead={markAsRead}
-                    onDelete={deleteNotification}
-                    onMarkAllAsRead={markAllAsRead}
-                    onClose={() => setIsNotifOpen(false)}
-                  />
-                )}
-              </AnimatePresence>
-            </div>
           </div>
         </div>
       
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+      <div className={`flex-1 overflow-y-auto ${isCollapsed ? 'p-2' : 'p-4'} space-y-6 custom-scrollbar`}>
         <div className="space-y-4">
-          <div className="flex justify-between items-center px-2">
-            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Organizations</span>
+          <div className={`flex items-center px-2 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+            {!isCollapsed && <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Organizations</span>}
             <button 
               onClick={() => setIsModalOpen(true)}
               className="text-zinc-500 hover:text-accent transition-colors"
+              title="Create Organization"
             >
               <Plus size={14} />
             </button>
           </div>
           
-          <div className="space-y-1 max-h-[180px] overflow-y-auto pr-1 custom-scrollbar">
+          <div className="space-y-1 max-h-[250px] overflow-y-auto pr-1">
             {isLoading ? (
               <div className="flex justify-center p-2">
                 <Loader2 size={16} className="animate-spin text-zinc-400" />
               </div>
             ) : organizations.length === 0 ? (
-              <p className="px-2 text-[11px] text-zinc-500 italic">No organizations found</p>
+              !isCollapsed && <p className="px-2 text-[11px] text-zinc-500 italic">No organizations found</p>
             ) : (
               organizations.map((org) => (
                   <Link 
                     key={org._id} 
                     href={`/dashboard?orgId=${org._id}`} 
                     onClick={closeSidebar}
-                    className={`flex items-center gap-3 px-2 py-1.5 rounded-md text-sm cursor-pointer transition-colors ${
+                    title={org.name}
+                    className={`flex items-center rounded-md text-sm cursor-pointer transition-colors ${isCollapsed ? 'justify-center p-2' : 'gap-3 px-2 py-1.5'} ${
                     currentOrgId === org._id 
                       ? 'bg-border-default border border-border-default font-semibold' 
                       : 'hover:bg-border-default/50'
                   }`}
                 >
-                  <div className={`w-4 h-4 rounded flex items-center justify-center text-[10px] font-bold ${
-                    currentOrgId === org._id ? 'bg-accent text-white' : 'bg-zinc-200 dark:bg-zinc-800'
+                  <div className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 overflow-hidden relative ${
+                    !org.avatarUrl ? (currentOrgId === org._id ? 'bg-accent/10' : 'bg-zinc-800/50') : ''
                   }`}>
-                    {org.name.charAt(0).toUpperCase()}
+                    {org.avatarUrl ? (
+                      <Image src={org.avatarUrl} alt={org.name} fill sizes="24px" className="object-cover" />
+                    ) : (
+                      <Building2 size={14} className={currentOrgId === org._id ? 'text-accent' : 'text-zinc-500'} />
+                    )}
                   </div>
-                  <span className="truncate">{org.name}</span>
+                  {!isCollapsed && <span className="truncate">{org.name}</span>}
                 </Link>
               ))
             )}
@@ -253,17 +245,21 @@ export default function Sidebar() {
         {/* Assigned Tasks Section */}
         <div className="space-y-4">
           <div 
-            onClick={() => setIsTasksCollapsed(!isTasksCollapsed)}
-            className="flex justify-between items-center px-2 pt-2 border-t border-border-default/50 cursor-pointer group/header"
+            onClick={() => !isCollapsed && setIsTasksCollapsed(!isTasksCollapsed)}
+            className={`flex items-center px-2 pt-2 border-t border-border-default/50 group/header ${isCollapsed ? 'justify-center' : 'justify-between cursor-pointer'}`}
+            title="My Tasks"
           >
             <div className="flex items-center gap-2">
-              <ChevronDown 
-                size={14} 
-                className={`text-zinc-500 transition-transform duration-200 ${isTasksCollapsed ? '-rotate-90' : ''}`} 
-              />
-              <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider group-hover/header:text-zinc-400">My Tasks</span>
+              {!isCollapsed && (
+                <ChevronDown 
+                  size={14} 
+                  className={`text-zinc-500 transition-transform duration-200 ${isTasksCollapsed ? '-rotate-90' : ''}`} 
+                />
+              )}
+              <CheckCircle2 size={isCollapsed ? 16 : 14} className="text-zinc-500" />
+              {!isCollapsed && <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider group-hover/header:text-zinc-400">My Tasks</span>}
             </div>
-            {assignedTasks.length > 0 && (
+            {!isCollapsed && assignedTasks.length > 0 && (
               <span className="bg-accent/10 text-accent text-[10px] px-1.5 py-0.5 rounded-full font-bold">
                 {assignedTasks.length}
               </span>
@@ -271,7 +267,7 @@ export default function Sidebar() {
           </div>
           
           <AnimatePresence initial={false}>
-            {!isTasksCollapsed && (
+            {!isTasksCollapsed && !isCollapsed && (
               <motion.div 
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
@@ -346,10 +342,11 @@ export default function Sidebar() {
 
       </div>
 
-      <div className="p-4 border-t border-border-default space-y-2 mt-auto">
+      <div className={`p-4 border-t border-border-default space-y-2 mt-auto overflow-hidden`}>
         <Link
           href="/profile"
-          className="flex items-center gap-3 px-3 py-2 rounded-md text-sm cursor-pointer hover:bg-border-default transition-all group overflow-hidden"
+          title={username}
+          className={`flex items-center rounded-md text-sm cursor-pointer hover:bg-border-default transition-all group overflow-hidden ${isCollapsed ? 'justify-center p-2' : 'gap-3 px-3 py-2'}`}
         >
           <div className="flex-shrink-0">
             {avatarUrl ? (
@@ -362,14 +359,15 @@ export default function Sidebar() {
               </div>
             )}
           </div>
-          <span className="truncate group-hover:text-accent font-semibold transition-colors flex-1">{username}</span>
+          {!isCollapsed && <span className="truncate group-hover:text-accent font-semibold transition-colors flex-1">{username}</span>}
         </Link>
         <button 
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm cursor-pointer hover:bg-red-500/10 hover:text-red-500 transition-colors"
+          title="Logout"
+          className={`w-full flex items-center rounded-md text-sm cursor-pointer hover:bg-red-500/10 hover:text-red-500 transition-colors ${isCollapsed ? 'justify-center p-2' : 'gap-3 px-3 py-2'}`}
         >
           <LogOut size={16} />
-          <span>Logout</span>
+          {!isCollapsed && <span>Logout</span>}
         </button>
       </div>
 

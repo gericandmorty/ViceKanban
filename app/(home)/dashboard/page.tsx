@@ -14,12 +14,13 @@ import {
   Users,
   Check,
   X,
-  Bell,
-  Kanban,
-  Menu,
-  User as UserIcon,
   Activity,
-  Megaphone
+  Megaphone,
+  Bell,
+  Menu,
+  Kanban,
+  User as UserIcon,
+  Building2
 } from 'lucide-react';
 import CreateOrgModal from '@/app/components/modals/CreateOrgModal';
 import CreateProjectModal from '@/app/components/modals/CreateProjectModal';
@@ -35,11 +36,14 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { useSidebar } from '@/app/context/SidebarContext';
 import { apiFetch } from '@/app/utils/api';
+import { useNotifications } from '@/app/hooks/useNotifications';
+import NotificationPopover from '@/app/components/sidebar/NotificationPopover';
+import Image from 'next/image';
 
 export default function DashboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { toggleSidebar, closeSidebar } = useSidebar();
+  const { toggleSidebar, closeSidebar, toggleCollapse } = useSidebar();
   const orgIdFromUrl = searchParams.get('orgId');
   const projectIdFromUrl = searchParams.get('projectId');
 
@@ -57,8 +61,12 @@ export default function DashboardPage() {
   const [detailedOrg, setDetailedOrg] = useState<any>(null);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
 
-  // Auto-popup announcement state
+  // Announcement popup state
   const [popupAnnouncement, setPopupAnnouncement] = useState<any>(null);
+
+  // Notification state
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
 
   // Auth/Permissions
   const [userId, setUserId] = useState<string | null>(null);
@@ -291,12 +299,13 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header */}
-      <header className="border-b border-border-default bg-background sticky top-0 z-40">
-        <div className="px-4 md:px-6 py-3 md:py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <header className="bg-background sticky top-0 z-40 w-full">
+        <div className="px-4 md:px-6 h-16 border-b border-border-default flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 overflow-hidden">
             <button
               onClick={toggleSidebar}
-              className="lg:hidden p-2 -ml-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+              className="lg:hidden p-2 -ml-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors text-zinc-500 hover:text-accent"
+              title="Toggle Sidebar"
             >
               <Menu size={20} />
             </button>
@@ -372,6 +381,31 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            <div className="relative flex items-center gap-2">
+              <button 
+                onClick={() => setIsNotifOpen(!isNotifOpen)}
+                className={`p-2 rounded-md transition-all relative ${
+                  isNotifOpen ? 'bg-border-default text-accent shadow-inner' : 'hover:bg-border-default/80 text-zinc-500'
+                }`}
+              >
+                <Bell size={18} className={unreadCount > 0 ? 'animate-wiggle' : ''} />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#2f81f7] rounded-full border border-bg-subtle" />
+                )}
+              </button>
+
+              <AnimatePresence>
+                {isNotifOpen && (
+                  <NotificationPopover 
+                    notifications={notifications}
+                    onMarkRead={markAsRead}
+                    onDelete={deleteNotification}
+                    onMarkAllAsRead={markAllAsRead}
+                    onClose={() => setIsNotifOpen(false)}
+                  />
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
 
@@ -415,7 +449,7 @@ export default function DashboardPage() {
 
         {!detailedOrg && !isLoading && !isDetailLoading ? (
           /* "Home" View with Organizations and Invitations */
-          <div className="w-full max-w-4xl mx-auto py-8 px-6 space-y-8 overflow-y-auto h-full">
+          <div className="w-full py-8 px-6 space-y-8 overflow-y-auto h-full">
 
 
             {/* Pending Invitations Section */}
@@ -504,9 +538,14 @@ export default function DashboardPage() {
                         }`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-md flex items-center justify-center text-sm font-bold ${orgIdFromUrl === org._id ? 'bg-accent text-white' : 'bg-bg-subtle text-accent border border-border-default'
-                          }`}>
-                          {org.name.charAt(0).toUpperCase()}
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center relative overflow-hidden ${
+                          !org.avatarUrl ? (orgIdFromUrl === org._id ? 'bg-accent/10' : 'bg-bg-subtle') : ''
+                        }`}>
+                          {org.avatarUrl ? (
+                            <Image src={org.avatarUrl} alt={org.name} fill sizes="40px" className="object-cover" />
+                          ) : (
+                            <Building2 className={orgIdFromUrl === org._id ? 'text-accent' : 'text-zinc-500'} size={20} />
+                          )}
                         </div>
                         <div>
                           <p className="text-sm font-semibold group-hover:text-accent transition-colors">{org.name}</p>

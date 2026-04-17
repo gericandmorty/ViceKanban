@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import {
@@ -18,7 +18,8 @@ import {
   Kanban,
   Menu,
   User as UserIcon,
-  Activity
+  Activity,
+  Megaphone
 } from 'lucide-react';
 import CreateOrgModal from '@/app/components/modals/CreateOrgModal';
 import CreateProjectModal from '@/app/components/modals/CreateProjectModal';
@@ -27,6 +28,8 @@ import OrganizationSettings from '@/app/components/organizations/OrganizationSet
 import ProjectSettings from '@/app/components/organizations/ProjectSettings';
 import Contributions from '@/app/components/organizations/Contributions';
 import KanbanBoard from '@/app/components/kanban/KanbanBoard';
+import Announcements from '@/app/components/organizations/Announcements';
+import AnnouncementDetailModal from '@/app/components/modals/AnnouncementDetailModal';
 import Cookies from 'js-cookie';
 import { useSearchParams, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
@@ -53,6 +56,9 @@ export default function DashboardPage() {
   const [username, setUsername] = useState('User');
   const [detailedOrg, setDetailedOrg] = useState<any>(null);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
+
+  // Auto-popup announcement state
+  const [popupAnnouncement, setPopupAnnouncement] = useState<any>(null);
 
   // Auth/Permissions
   const [userId, setUserId] = useState<string | null>(null);
@@ -189,6 +195,35 @@ export default function DashboardPage() {
       isCurrent = false;
     };
   }, [orgIdFromUrl, projectIdFromUrl, detailedOrg?._id]);
+
+  // Auto-popup the latest announcement when entering an org
+  useEffect(() => {
+    if (!orgIdFromUrl) return;
+
+    const fetchLatestAnnouncement = async () => {
+      try {
+        const res = await apiFetch(`/organizations/${orgIdFromUrl}/announcements?page=1&limit=1`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.announcements && data.announcements.length > 0) {
+            const latest = data.announcements[0];
+            const seenAnnouncements = JSON.parse(localStorage.getItem('seen_announcements') || '[]');
+            
+            // Only show if we haven't seen THIS specific announcement before
+            if (!seenAnnouncements.includes(latest._id)) {
+              setPopupAnnouncement(latest);
+              // Mark as seen immediately
+              localStorage.setItem('seen_announcements', JSON.stringify([...seenAnnouncements, latest._id]));
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch latest announcement:', err);
+      }
+    };
+
+    fetchLatestAnnouncement();
+  }, [orgIdFromUrl]);
 
   const handleAcceptInvite = async (orgId: string, orgName: string) => {
     try {
@@ -342,7 +377,7 @@ export default function DashboardPage() {
 
         {detailedOrg && (
           <div className="px-4 md:px-6 flex gap-4 md:gap-8 items-end overflow-x-auto no-scrollbar border-b border-border-default">
-            {['Board', 'Members', 'Contributions', 'Settings'].map((tab: any) => (
+            {['Board', 'Announcements', 'Members', 'Contributions', 'Settings'].map((tab: any) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -352,6 +387,7 @@ export default function DashboardPage() {
                   }`}
               >
                 {tab === 'Board' && <Kanban size={16} className="opacity-70" />}
+                {tab === 'Announcements' && <Megaphone size={16} className="opacity-70" />}
                 {tab === 'Members' && <Users size={16} className="opacity-70" />}
                 {tab === 'Contributions' && <Activity size={16} className="opacity-70" />}
                 {tab === 'Settings' && <Layout size={16} className="opacity-70" />}
@@ -499,6 +535,8 @@ export default function DashboardPage() {
               </div>
             ) : activeTab === 'Members' ? (
               <MembersTable org={detailedOrg} onRefresh={() => fetchOrgDetails(orgIdFromUrl as string)} />
+            ) : activeTab === 'Announcements' ? (
+              <Announcements orgId={orgIdFromUrl as string} isAdmin={isAdmin} />
             ) : activeTab === 'Contributions' ? (
               <Contributions orgId={orgIdFromUrl as string} />
             ) : activeTab === 'Board' ? (
@@ -612,6 +650,13 @@ export default function DashboardPage() {
           onSuccess={() => fetchProjects(orgIdFromUrl)}
         />
       )}
+
+      {/* Auto-popup announcement modal */}
+      <AnnouncementDetailModal
+        isOpen={!!popupAnnouncement}
+        onClose={() => setPopupAnnouncement(null)}
+        announcement={popupAnnouncement}
+      />
     </div>
   );
 }

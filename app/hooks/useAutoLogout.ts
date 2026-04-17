@@ -14,6 +14,7 @@ export function useAutoLogout() {
     Cookies.remove('user_name');
     Cookies.remove('user_id');
     localStorage.removeItem('session_expiry');
+    localStorage.removeItem('seen_announcements');
     
     // Redirect to login with timeout param
     if (!pathname.startsWith('/auth')) {

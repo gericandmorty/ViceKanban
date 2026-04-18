@@ -1,120 +1,125 @@
 <p align="center">
-  <img src="public/icon_vice.png" alt="ViceKanBan Logo" width="80" />
+  <img src="public/icons/icon_vice.png" alt="ViceKanBan Logo" width="80" />
 </p>
 
 <h1 align="center">ViceKanBan</h1>
 
 <p align="center">
-  A professional, GitHub-inspired project management tool built for developer teams.<br/>
-  Organize work, track progress, and collaborate — all in one place.
+  <strong>A high-performance, GitHub-inspired project management platform for developer teams.</strong><br/>
+  Orchestrate your workflow, track project velocity, and collaborate with precision.
 </p>
 
----
-
-## Overview
-
-ViceKanBan is a full-stack Kanban project management application designed to feel familiar to developers. It draws its design language from GitHub — clean, information-dense, and professional — while providing the core workflow tools that small to mid-sized development teams need.
-
-The frontend is built with Next.js (App Router) and Tailwind CSS. It communicates with a separate NestJS backend over a REST API secured with JWT authentication. This repository contains only the frontend.
+<div align="center">
+  <img src="https://img.shields.io/badge/version-1.0.0-blue.svg" alt="Version" />
+  <img src="https://img.shields.io/badge/tech-Next.js-black?logo=next.js" alt="Next.js" />
+  <img src="https://img.shields.io/badge/styling-Tailwind_CSS_4-38B2AC?logo=tailwind-css" alt="Tailwind CSS" />
+</div>
 
 ---
 
-## Screenshots
+## ⚡ Overview
 
-**Landing Page**
+**ViceKanBan** is a premium Kanban project management ecosystem designed for clarity and efficiency. Borrowing the robust design language of GitHub, it offers an information-dense yet intuitive interface that developers already know and love.
 
-![Landing Page](public/readmeAssets/landing.png)
-
-**Login**
-
-![Login](public/readmeAssets/login.png)
-
-**Kanban Board**
-
-![Kanban Board](public/readmeAssets/kanbanBoard.png)
+This repository serves as the **Frontend Ecosystem**, engineered with Next.js (App Router) for optimized performance and a seamless client-side experience.
 
 ---
 
-## How It Works
+## 🖼️ Preview
 
-### Authentication
+<details open>
+<summary><b>Screenshots</b></summary>
 
-Users register and log in through the auth pages. Upon successful login, the backend issues a JWT access token which the frontend stores in a cookie. Every subsequent API request attaches this token in the Authorization header. If the token is missing or expired, the middleware redirects the user back to the login page.
+| **Landing & Concept** | **User Authentication** |
+| :---: | :---: |
+| ![Landing Page](public/readmeAssets/landing.png) | ![Login](public/readmeAssets/login.png) |
 
-### Organizations
+| **Kanban Board** |
+| :---: |
+| ![Kanban Board](public/readmeAssets/kanban_board.png) |
 
-After logging in, users land on the dashboard. The first step is to create or join an Organization. An Organization is a shared workspace — similar to a GitHub organization — that can contain multiple projects and multiple members. The owner or a co-owner of an organization can invite other registered users by their **email address**. Invited users will see a pending invitation on their dashboard, which they can accept or decline. Administrators can also revoke pending invitations at any time.
-
-### Projects
-
-Inside an organization, owners can create Projects. A project represents a specific product, feature, or initiative the team is working on. Each project has its own dedicated Kanban board.
-
-### Kanban Board
-
-The Kanban board is the core of the application. Each board has four columns representing the lifecycle of a task:
-
-- **To Do** — work that has been defined but not started
-- **In Progress** — work that is actively being developed
-- **Done** — work that is complete from the developer's perspective
-- **Reviewed** — work that has been reviewed and signed off (restricted to administrators: owners and co-owners)
-
-Tasks can be created directly from a column by administrators or the project creator. Each task has a title, description, an assignee (any member of the org), and a status. Tasks can be dragged and dropped between columns to update their status. Drag permissions are enforced: a task can only be moved by an administrator, the project creator, the task creator, or the assigned user. Moving a task into the **Reviewed** column is strictly restricted to administrators and project creators.
-
-Clicking on a task card expands a detail view where users can edit, comment, and reply to comments in a discussion-style thread. Destructive actions such as deleting a task or removing a member are gated behind a confirmation modal to prevent mistakes.
-
-### Member Management
-
-The Members tab inside an organization lists all current members with their roles: **Owner**, **Co-owner**, and **Developer**. 
-- **Owner**: Full access, including member removal and role management.
-- **Co-owner**: Administrative access to manage projects, create tasks, and update organization settings. Restricted from removing members or changing roles.
-- **Developer**: Standard access to view projects and manage assigned tasks.
-
-The organization owner can remove members or manage permissions directly from this view. Removed members lose access to all projects within that organization immediately. Pending invitations can also be revoked by administrators if needed.
+</details>
 
 ---
 
-## Tech Stack
+## 🚀 Key Features
 
-| Layer | Technology |
+- **GitHub-Inspired UX**: Information-dense, clean layout with a focus on hierarchy and developers' familiarity.
+- **Organization Workspaces**: Create high-level workspaces with multiple projects and granular member management.
+- **Smart Member Roles**: Define roles including **Owner**, **Co-owner**, and **Developer** with specific access control.
+- **Dynamic Kanban**: Fluid drag-and-drop task management powered by `dnd-kit`, featuring restricted columns for reviewed work.
+- **Collaborative Threads**: Integrated task discussions with nested replies and threaded conversation support.
+- **Security First**: 
+  - JWT-based authentication via secure cookies.
+  - **Auto-Purge Protocol**: Complete session cleansing (Cookies & LocalStorage) upon logout for maximum security.
+  - **State Persistence**: Optimized context management to prevent stale data display during navigation.
+
+---
+
+## 🛠️ Tech Stack
+
+| Domain | Technology |
 |---|---|
-| Framework | Next.js 16 (App Router) |
-| Styling | Tailwind CSS v4 |
-| Animations | Framer Motion |
-| Drag and Drop | dnd-kit |
-| Auth | JWT via cookies (js-cookie) |
-| Icons | Lucide React |
-| Notifications | React Hot Toast |
+| **Core Framework** | [Next.js 16](https://nextjs.org/) (App Router) |
+| **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) |
+| **State & Navigation** | [framer-motion](https://www.framer.com/motion/), [lucide-react](https://lucide.dev/) |
+| **Logic Layer** | [dnd-kit](https://dndkit.com/), [js-cookie](https://github.com/js-cookie/js-cookie) |
+| **Networking** | [socket.io-client](https://socket.io/) (Real-time events) |
 
 ---
 
-## Getting Started (Frontend Only)
+## 🚦 Getting Started
 
-```bash
-# Install dependencies
-npm install
+### Prerequisites
+- Node.js 18+
+- A running instance of the [ViceKanBan Backend](https://github.com/gericandmorty/vice-kanban-backend)
 
-# Create environment file
-cp .env.example .env.local
-# Set NEXT_PUBLIC_API_URL to your backend URL
+### Installation
 
-# Run development server
-npm run dev
-```
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/gericandmorty/ViceKanban.git
+   cd ViceKanban/frontend
+   ```
 
-The app will be available at `http://localhost:3000`.
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Configure Environment**
+   Create a `.env.local` file in the root:
+   ```env
+   NEXT_PUBLIC_API_URL=http://your-backend-api-url
+   ```
+
+4. **Launch Development Server**
+   ```bash
+   npm run dev
+   ```
+
+Access the application at `http://localhost:3000`.
 
 ---
 
-## Backend
+## 📈 Recent Updates
 
-This repository contains only the frontend. The backend is a separate NestJS application using MongoDB (Mongoose) that provides all the REST API endpoints.
-
-If you need access to the backend repository or have questions about the project, contact the author:
-
-**gericmorit.dev@gmail.com**
+> [!NOTE]
+> **Privacy & Performance Upgrade (v1.0.1)**
+> - Implemented a global data purge on logout that clears both cookies and localStorage.
+> - Fixed "Sticky Breadcrumbs" issue where previous organization names would persist during navigation transitions.
+> - Optimized loading states for large projects.
 
 ---
 
-## Author
+## ✉️ Contact
 
-Built by **Geric Morit**.
+For inquiries or professional collaboration, please reach out:
+
+**Geric Morit** – [gericmorit.dev@gmail.com](mailto:gericmorit.dev@gmail.com)
+
+---
+
+<p align="center">
+  Built with ❤️ for the Developer Community.
+</p>

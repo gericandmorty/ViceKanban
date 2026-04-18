@@ -21,7 +21,7 @@ export default function LandingPage() {
       {/* Navigation */}
       <nav className="sticky top-0 z-50 w-full bg-bg-subtle text-header-text py-4 px-6 md:px-12 flex items-center justify-between border-b border-border-default/50">
         <div className="flex items-center gap-3">
-          <Image src="/icon_vice.png" alt="ViceKanBan Logo" width={32} height={32} className="rounded" />
+          <Image src="/icons/icon_vice.png" alt="ViceKanBan Logo" width={32} height={32} className="rounded" />
           <span className="font-semibold text-lg hidden md:block">ViceKanBan</span>
         </div>
         <div className="flex items-center gap-4">
@@ -71,7 +71,7 @@ export default function LandingPage() {
             className="rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden border border-border-default/50 relative bg-bg-subtle"
           >
             <Image 
-              src="/kanban_board.png?v=new" 
+              src="/landing/kanban_board.png" 
               alt="ViceKanBan Dashboard Interface" 
               width={1600} 
               height={1000} 

@@ -17,7 +17,7 @@
 
 ---
 
-## ⚡ Overview
+## Overview
 
 **ViceKanBan** is a premium Kanban project management ecosystem designed for clarity and efficiency. Borrowing the robust design language of GitHub, it offers an information-dense yet intuitive interface that developers already know and love.
 
@@ -25,7 +25,7 @@ This repository serves as the **Frontend Ecosystem**, engineered with Next.js (A
 
 ---
 
-## 🖼️ Preview
+## Preview
 
 <details open>
 <summary><b>Screenshots</b></summary>
@@ -42,7 +42,7 @@ This repository serves as the **Frontend Ecosystem**, engineered with Next.js (A
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 - **GitHub-Inspired UX**: Information-dense, clean layout with a focus on hierarchy and developers' familiarity.
 - **Organization Workspaces**: Create high-level workspaces with multiple projects and granular member management.
@@ -56,7 +56,7 @@ This repository serves as the **Frontend Ecosystem**, engineered with Next.js (A
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Domain | Technology |
 |---|---|
@@ -68,7 +68,7 @@ This repository serves as the **Frontend Ecosystem**, engineered with Next.js (A
 
 ---
 
-## 🚦 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Node.js 18+
@@ -102,7 +102,7 @@ Access the application at `http://localhost:3000`.
 
 ---
 
-## 📈 Recent Updates
+## Recent Updates
 
 > [!NOTE]
 > **Privacy & Performance Upgrade (v1.0.1)**
@@ -112,7 +112,7 @@ Access the application at `http://localhost:3000`.
 
 ---
 
-## ✉️ Contact
+## Contact
 
 For inquiries or professional collaboration, please reach out:
 
@@ -121,5 +121,5 @@ For inquiries or professional collaboration, please reach out:
 ---
 
 <p align="center">
-  Built with ❤️ for the Developer Community.
+  Built for the Developer Community.
 </p>

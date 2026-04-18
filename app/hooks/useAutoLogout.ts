@@ -9,12 +9,9 @@ export function useAutoLogout() {
   const pathname = usePathname();
 
   const logout = useCallback(() => {
-    // Clear all auth-related cookies
-    Cookies.remove('access_token');
-    Cookies.remove('user_name');
-    Cookies.remove('user_id');
-    localStorage.removeItem('session_expiry');
-    localStorage.removeItem('seen_announcements');
+    // Clear all cookies and local storage dynamically
+    Object.keys(Cookies.get()).forEach(cookieName => Cookies.remove(cookieName));
+    localStorage.clear();
     
     // Redirect to login with timeout param
     if (!pathname.startsWith('/auth')) {

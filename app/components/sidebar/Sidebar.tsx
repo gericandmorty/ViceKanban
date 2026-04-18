@@ -149,9 +149,10 @@ export default function Sidebar() {
   }, [fetchOrganizations, fetchInvitationCount, fetchUserData, fetchAssignedTasks]);
 
   const handleLogout = () => {
-    Cookies.remove('access_token');
-    Cookies.remove('user_name');
-    localStorage.removeItem('seen_announcements');
+    // Clear all cookies and local storage dynamically
+    Object.keys(Cookies.get()).forEach(cookieName => Cookies.remove(cookieName));
+    localStorage.clear();
+    
     router.push('/auth/login');
   };
 

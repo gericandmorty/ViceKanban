@@ -31,6 +31,9 @@ interface Task {
     avatarUrl?: string;
   };
   createdAt: string;
+  startDate?: string;
+  dueDate?: string;
+  priority?: string;
 }
 
 interface TaskCardProps {
@@ -95,9 +98,21 @@ export default function TaskCard({ task, onDelete, onClick, isOwnerOrCreator, is
     >
       <div className="flex flex-col gap-2 relative">
         <div className="flex justify-between items-start gap-2">
-          <h4 className="text-sm font-bold text-foreground group-hover:text-accent transition-colors">
-            {task.title}
-          </h4>
+          <div className="flex flex-col gap-1.5 flex-1">
+            {task.priority && (
+              <div className={`self-start px-1.5 py-0.5 rounded text-[8px] font-bold uppercase border ${
+                task.priority === 'urgent' ? 'bg-red-500/10 border-red-500/30 text-red-500' :
+                task.priority === 'high' ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-600' :
+                task.priority === 'medium' ? 'bg-blue-500/10 border-blue-500/30 text-blue-500' :
+                'bg-green-500/10 border-green-500/30 text-green-600'
+              }`}>
+                {task.priority}
+              </div>
+            )}
+            <h4 className="text-sm font-bold text-foreground group-hover:text-accent transition-colors leading-snug">
+              {task.title}
+            </h4>
+          </div>
           {isOwner && (
             <button 
               onClick={(e) => {

@@ -47,6 +47,8 @@ interface Task {
     avatarUrl?: string;
   };
   createdAt: string;
+  startDate?: string;
+  dueDate?: string;
 }
 
 interface KanbanBoardProps {
@@ -65,6 +67,9 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDesc, setNewTaskDesc] = useState('');
   const [newTaskAssignee, setNewTaskAssignee] = useState('');
+  const [newTaskPriority, setNewTaskPriority] = useState('low');
+  const [newTaskStartDate, setNewTaskStartDate] = useState('');
+  const [newTaskDueDate, setNewTaskDueDate] = useState('');
   const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [inspectingTask, setInspectingTask] = useState<Task | null>(null);
   const [comments, setComments] = useState<any[]>([]);
@@ -83,9 +88,15 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
   const [isEditingTask, setIsEditingTask] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
+  const [editPriority, setEditPriority] = useState('low');
+  const [editStartDate, setEditStartDate] = useState('');
+  const [editDueDate, setEditDueDate] = useState('');
   const [isUpdatingTask, setIsUpdatingTask] = useState(false);
 
   const currentUserId = Cookies.get('user_id');
+  const isOrgOwner = currentUserId === orgOwnerId;
+  const isCoOwner = members?.find(m => (m.user?._id || m.user) === currentUserId)?.role === 'co-owner';
+  const canEditDates = isOrgOwner || isCoOwner;
 
   const fetchMyProfile = useCallback(async () => {
     try {
@@ -160,6 +171,9 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
       fetchComments(inspectingTask._id);
       setEditTitle(inspectingTask.title);
       setEditDescription(inspectingTask.description || '');
+      setEditPriority((inspectingTask as any).priority || 'low');
+      setEditStartDate(inspectingTask.startDate ? new Date(inspectingTask.startDate).toISOString().split('T')[0] : '');
+      setEditDueDate(inspectingTask.dueDate ? new Date(inspectingTask.dueDate).toISOString().split('T')[0] : '');
       setIsEditingTask(false);
     } else {
       setComments([]);
@@ -295,7 +309,10 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
         },
         body: JSON.stringify({
           title: editTitle,
-          description: editDescription
+          description: editDescription,
+          priority: editPriority,
+          startDate: editStartDate || null,
+          dueDate: editDueDate || null
         })
       });
 
@@ -464,7 +481,10 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
           title: newTaskTitle,
           description: newTaskDesc,
           projectId: projectId,
-          assigneeId: newTaskAssignee || undefined
+          assigneeId: newTaskAssignee || undefined,
+          priority: newTaskPriority,
+          startDate: newTaskStartDate || undefined,
+          dueDate: newTaskDueDate || undefined
         })
       });
 
@@ -472,6 +492,9 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
         setNewTaskTitle('');
         setNewTaskDesc('');
         setNewTaskAssignee('');
+        setNewTaskPriority('low');
+        setNewTaskStartDate('');
+        setNewTaskDueDate('');
         setShowTaskForm(null);
         refreshTasks();
         window.dispatchEvent(new CustomEvent('taskUpdated')); // Sync sidebar
@@ -617,6 +640,50 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                   </div>
                 </div>
 
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-foreground/40 uppercase">Start Date</label>
+                    <input 
+                      type="date"
+                      value={newTaskStartDate}
+                      onChange={(e) => setNewTaskStartDate(e.target.value)}
+                      className="w-full bg-background border border-border-default rounded-lg px-3 py-2 text-xs text-foreground outline-none focus:ring-1 focus:ring-accent transition-all"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-foreground/40 uppercase">Due Date</label>
+                    <input 
+                      type="date"
+                      value={newTaskDueDate}
+                      onChange={(e) => setNewTaskDueDate(e.target.value)}
+                      className="w-full bg-background border border-border-default rounded-lg px-3 py-2 text-xs text-foreground outline-none focus:ring-1 focus:ring-accent transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-foreground/40 uppercase">Priority</label>
+                  <div className="flex gap-2">
+                    {['low', 'medium', 'high', 'urgent'].map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setNewTaskPriority(p)}
+                        className={`flex-1 py-1.5 rounded-md text-[10px] font-bold uppercase border transition-all ${
+                          newTaskPriority === p 
+                            ? p === 'urgent' ? 'bg-red-500 border-red-600 text-white shadow-sm' :
+                              p === 'high' ? 'bg-yellow-500 border-yellow-600 text-black shadow-sm' :
+                              p === 'medium' ? 'bg-blue-500 border-blue-600 text-white shadow-sm' :
+                              'bg-green-500 border-green-600 text-white shadow-sm'
+                            : 'bg-bg-subtle border-border-default text-foreground/40 hover:text-foreground'
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {isOwnerOrCreator && (
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-foreground/40 uppercase">Assign To</label>
@@ -753,9 +820,9 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                 </div>
 
                 {/* Meta Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 py-8 border-y border-border-default">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 py-8 border-y border-border-default">
                   <div className="space-y-2">
-                    <label className="text-[12px] font-semibold text-foreground/40">Status</label>
+                    <label className="text-[12px] font-semibold text-foreground/40 uppercase tracking-tight">Status</label>
                     <div className="flex items-center gap-2">
                       <div className={`w-2.5 h-2.5 rounded-full ${
                         inspectingTask.status === 'reviewed' ? 'bg-green-500' :
@@ -765,8 +832,81 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                       <span className="text-[14px] font-medium text-foreground capitalize">{inspectingTask.status.replace('_', ' ')}</span>
                     </div>
                   </div>
+                  
                   <div className="space-y-2">
-                    <label className="text-[12px] font-semibold text-foreground/40">Creator</label>
+                    <label className="text-[12px] font-semibold text-foreground/40 uppercase tracking-tight">Timeline</label>
+                    <div className="flex flex-col gap-1">
+                      {isEditingTask && canEditDates ? (
+                        <div className="flex flex-col gap-2">
+                          <input 
+                            type="date" 
+                            value={editStartDate}
+                            onChange={(e) => setEditStartDate(e.target.value)}
+                            className="bg-background border border-border-default rounded px-2 py-1 text-xs text-foreground focus:ring-1 focus:ring-accent outline-none"
+                          />
+                          <input 
+                            type="date" 
+                            value={editDueDate}
+                            onChange={(e) => setEditDueDate(e.target.value)}
+                            className="bg-background border border-border-default rounded px-2 py-1 text-xs text-foreground focus:ring-1 focus:ring-accent outline-none"
+                          />
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-2 text-[13px]">
+                            <span className="text-foreground/40 w-8">Start:</span>
+                            <span className="text-foreground font-medium">
+                              {inspectingTask.startDate ? new Date(inspectingTask.startDate).toLocaleDateString() : 'Set start'}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-[13px]">
+                            <span className="text-foreground/40 w-8">Due:</span>
+                            <span className="text-foreground font-medium">
+                              {inspectingTask.dueDate ? new Date(inspectingTask.dueDate).toLocaleDateString() : 'Set due'}
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[12px] font-semibold text-foreground/40 uppercase tracking-tight">Priority</label>
+                    <div className="flex items-center gap-2">
+                       {isEditingTask ? (
+                          <div className="flex flex-wrap gap-1.5">
+                             {['low', 'medium', 'high', 'urgent'].map(p => (
+                                <button 
+                                   key={p}
+                                   onClick={() => setEditPriority(p)}
+                                   className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase transition-all ${
+                                      editPriority === p 
+                                         ? p === 'urgent' ? 'bg-red-500 text-white' :
+                                           p === 'high' ? 'bg-yellow-500 text-black' :
+                                           p === 'medium' ? 'bg-blue-500 text-white' :
+                                           'bg-green-500 text-white'
+                                         : 'bg-bg-subtle text-foreground/20 hover:text-foreground'
+                                   }`}
+                                >
+                                   {p}
+                                </button>
+                             ))}
+                          </div>
+                       ) : (
+                          <div className="flex items-center gap-2">
+                             <div className={`w-2.5 h-2.5 rounded-full ${
+                                (inspectingTask as any).priority === 'urgent' ? 'bg-red-500' :
+                                (inspectingTask as any).priority === 'high' ? 'bg-yellow-500' :
+                                (inspectingTask as any).priority === 'medium' ? 'bg-blue-500' : 'bg-green-500'
+                             }`} />
+                             <span className="text-[14px] font-medium text-foreground capitalize">{(inspectingTask as any).priority || 'Low'}</span>
+                          </div>
+                       )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[12px] font-semibold text-foreground/40 uppercase tracking-tight">Creator</label>
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded-full bg-bg-subtle flex items-center justify-center text-[10px] font-bold overflow-hidden relative border border-border-default shadow-sm text-foreground">
                         {inspectingTask.creator?.avatarUrl ? (
@@ -779,7 +919,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[12px] font-semibold text-foreground/40">Assignee</label>
+                    <label className="text-[12px] font-semibold text-foreground/40 uppercase tracking-tight">Assignee</label>
                     <div className="flex items-center gap-2">
                       {(inspectingTask as any).assignee ? (
                         <>

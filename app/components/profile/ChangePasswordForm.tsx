@@ -65,23 +65,23 @@ export default function ChangePasswordForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-md w-full">
-      <div className="space-y-1">
-        <label className="text-xs font-bold text-foreground/60 uppercase tracking-wider">Current Password</label>
+    <form onSubmit={handleSubmit} className="space-y-6 w-full max-w-xl">
+      <div className="space-y-2">
+        <label className="text-[13px] font-semibold text-foreground">Current Password</label>
         <div className="relative">
           <input 
             type="password" 
             required
             value={formData.oldPassword}
             onChange={(e) => setFormData({ ...formData, oldPassword: e.target.value })}
-            className="w-full bg-background border border-border-default rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent font-sans placeholder:text-foreground/30"
+            className="w-full bg-bg-subtle/50 border border-border-default rounded-lg py-2.5 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all placeholder:text-foreground/20 font-mono"
             placeholder="••••••••"
           />
         </div>
       </div>
 
-      <div className="space-y-1">
-        <label className="text-xs font-bold text-foreground/60 uppercase tracking-wider">New Password</label>
+      <div className="space-y-2">
+        <label className="text-[13px] font-semibold text-foreground">New Password</label>
         <div className="relative">
           <input 
             type="password" 
@@ -89,15 +89,15 @@ export default function ChangePasswordForm() {
             maxLength={18}
             value={formData.newPassword}
             onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
-            className="w-full bg-background border border-border-default rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent font-sans placeholder:text-foreground/30"
-            placeholder="8-18 chars"
+            className="w-full bg-bg-subtle/50 border border-border-default rounded-lg py-2.5 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all placeholder:text-foreground/20 font-mono"
+            placeholder="Min. 8 characters"
           />
         </div>
-        <p className="text-[11px] text-foreground/40 pt-1">8-18 chars, 1 uppercase, 1 special/number required.</p>
+        <p className="text-[11px] text-foreground/40 pl-1">Must be 8-18 chars, with 1 uppercase and 1 special/number.</p>
       </div>
 
-      <div className="space-y-1">
-        <label className="text-xs font-bold text-foreground/60 uppercase tracking-wider">Confirm New Password</label>
+      <div className="space-y-2">
+        <label className="text-[13px] font-semibold text-foreground">Confirm New Password</label>
         <div className="relative">
           <input 
             type="password" 
@@ -105,26 +105,28 @@ export default function ChangePasswordForm() {
             maxLength={18}
             value={formData.confirmPassword}
             onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-            className="w-full bg-background border border-border-default rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent font-sans placeholder:text-foreground/30"
+            className="w-full bg-bg-subtle/50 border border-border-default rounded-lg py-2.5 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all placeholder:text-foreground/20 font-mono"
             placeholder="••••••••"
           />
         </div>
       </div>
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="btn btn-primary w-full py-2 px-4 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {isSubmitting ? (
-          <Loader2 className="animate-spin" size={18} />
-        ) : (
-          <>
-            <Lock size={16} />
-            <span>Update Password</span>
-          </>
-        )}
-      </button>
+      <div className="pt-2">
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="btn btn-primary px-6 h-10 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg transition-all"
+        >
+          {isSubmitting ? (
+            <Loader2 className="animate-spin" size={18} />
+          ) : (
+            <>
+              <Lock size={16} />
+              <span>Update Password</span>
+            </>
+          )}
+        </button>
+      </div>
     </form>
   );
 }

@@ -12,11 +12,13 @@ import {
   Plus, 
   ChevronRight,
   ShieldCheck,
-  AlertCircle
+  AlertCircle,
+  Pencil
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import CreateAnnouncementModal from '@/app/components/modals/CreateAnnouncementModal';
+import DeleteAnnouncementModal from '@/app/components/modals/DeleteAnnouncementModal';
 
 interface Stats {
   userCount: number;
@@ -31,6 +33,7 @@ interface Announcement {
   content: string;
   type: string;
   createdAt: string;
+  imageUrl?: string;
   creator: {
     username: string;
     avatarUrl: string;
@@ -42,6 +45,9 @@ export default function AdminPage() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
+  const [announcementToDelete, setAnnouncementToDelete] = useState<Announcement | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -63,21 +69,30 @@ export default function AdminPage() {
     fetchData();
   }, []);
 
-  const handleDeleteAnnouncement = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this global announcement? This cannot be undone.')) return;
+  const handleDeleteAnnouncement = async () => {
+    if (!announcementToDelete) return;
     
+    setIsDeleting(true);
     try {
-      const res = await apiFetch(`/system/announcements/${id}`, { method: 'DELETE' });
+      const res = await apiFetch(`/system/announcements/${announcementToDelete._id}`, { method: 'DELETE' });
       if (res.ok) {
         toast.success('Announcement deleted');
-        setAnnouncements(prev => prev.filter(a => a._id !== id));
+        setAnnouncements(prev => prev.filter(a => a._id !== announcementToDelete._id));
         if (stats) setStats({ ...stats, globalAnnouncementCount: stats.globalAnnouncementCount - 1 });
+        setAnnouncementToDelete(null);
       } else {
         toast.error('Failed to delete');
       }
     } catch (err) {
       toast.error('Something went wrong');
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const handleEdit = (ann: Announcement) => {
+    setEditingAnnouncement(ann);
+    setIsModalOpen(true);
   };
 
   if (loading) {
@@ -104,7 +119,10 @@ export default function AdminPage() {
           </div>
 
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              setEditingAnnouncement(null);
+              setIsModalOpen(true);
+            }}
             className="flex items-center gap-2 px-4 py-1.5 bg-[var(--success-fg)] hover:opacity-90 text-white rounded-md text-sm font-semibold transition-all border border-[rgba(240,246,252,0.1)] active:scale-95 shadow-sm"
           >
             <Plus size={16} />
@@ -172,11 +190,19 @@ export default function AdminPage() {
                        </div>
                     </div>
                     <div className="flex flex-col gap-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-[var(--accent-fg)] hover:underline cursor-pointer">{ann.title}</span>
+                      <div className="flex items-center gap-2 text-[var(--foreground)]">
+                        <span 
+                          onClick={() => handleEdit(ann)}
+                          className="font-semibold text-[var(--accent-fg)] hover:underline cursor-pointer"
+                        >
+                          {ann.title}
+                        </span>
                         <span className={`text-[10px] px-2 py-0.5 rounded-full border font-medium ${getTypeBadge(ann.type)}`}>
                           {ann.type}
                         </span>
+                        {ann.imageUrl && (
+                           <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-fg)] opacity-50" title="Has Attachment" />
+                        )}
                       </div>
                       <div className="text-xs text-[#8b949e] flex items-center gap-2 mt-0.5">
                         <span className="font-medium text-[var(--foreground)] opacity-70">#{ann._id.slice(-6)}</span>
@@ -190,12 +216,22 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  <button 
-                    onClick={() => handleDeleteAnnouncement(ann._id)}
-                    className="p-2 text-[#8b949e] hover:text-[#f85149] rounded-md hover:bg-[#f85149]/10 transition-all opacity-0 group-hover:opacity-100"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      onClick={() => handleEdit(ann)}
+                      className="p-2 text-[#8b949e] hover:text-[var(--accent-fg)] rounded-md hover:bg-[var(--accent-fg)]/10 transition-all"
+                      title="Edit broadcast"
+                    >
+                      <Pencil size={15} />
+                    </button>
+                    <button 
+                      onClick={() => setAnnouncementToDelete(ann)}
+                      className="p-2 text-[#8b949e] hover:text-[#f85149] rounded-md hover:bg-[#f85149]/10 transition-all"
+                      title="Delete broadcast"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </div>
               ))
             )}
@@ -206,8 +242,20 @@ export default function AdminPage() {
       <CreateAnnouncementModal
         isGlobal={true}
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingAnnouncement(null);
+        }}
         onSuccess={fetchData}
+        editingAnnouncement={editingAnnouncement}
+      />
+
+      <DeleteAnnouncementModal
+        isOpen={!!announcementToDelete}
+        onClose={() => setAnnouncementToDelete(null)}
+        onConfirm={handleDeleteAnnouncement}
+        title={announcementToDelete?.title || ''}
+        isLoading={isDeleting}
       />
     </div>
   );

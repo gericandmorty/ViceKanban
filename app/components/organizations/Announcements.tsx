@@ -13,8 +13,10 @@ import {
   ChevronLeft,
   Plus,
   Loader2,
-  Trash2
+  Trash2,
+  Pencil
 } from 'lucide-react';
+import Cookies from 'js-cookie';
 import { apiFetch } from '@/app/utils/api';
 import CreateAnnouncementModal from '../modals/CreateAnnouncementModal';
 import AnnouncementDetailModal from '../modals/AnnouncementDetailModal';
@@ -29,6 +31,7 @@ interface Announcement {
   createdAt: string;
   imageUrl?: string;
   creator: {
+    _id: string;
     username: string;
     avatarUrl?: string;
   };
@@ -53,9 +56,11 @@ const getTypeColor = (type: string) => {
 };
 
 export default function Announcements({ orgId, isAdmin }: AnnouncementsProps) {
+  const currentUserId = Cookies.get('user_id');
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
   const [announcementToDelete, setAnnouncementToDelete] = useState<Announcement | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -192,13 +197,27 @@ export default function Announcements({ orgId, isAdmin }: AnnouncementsProps) {
                       <ChevronRight size={12} />
                     </button>
                     {isAdmin && (
-                      <button 
-                        onClick={() => setAnnouncementToDelete(announcement)}
-                        className="p-1.5 text-foreground/60 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-all border border-transparent hover:border-red-500/20"
-                        title="Delete announcement"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        {announcement.creator._id === currentUserId && (
+                          <button 
+                            onClick={() => {
+                              setEditingAnnouncement(announcement);
+                              setIsModalOpen(true);
+                            }}
+                            className="p-1.5 text-foreground/60 hover:text-accent hover:bg-accent/10 rounded-md transition-all border border-transparent hover:border-accent/20"
+                            title="Edit announcement"
+                          >
+                            <Pencil size={14} />
+                          </button>
+                        )}
+                        <button 
+                          onClick={() => setAnnouncementToDelete(announcement)}
+                          className="p-1.5 text-foreground/60 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-all border border-transparent hover:border-red-500/20"
+                          title="Delete announcement"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -261,11 +280,16 @@ export default function Announcements({ orgId, isAdmin }: AnnouncementsProps) {
       <CreateAnnouncementModal
         orgId={orgId}
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingAnnouncement(null);
+        }}
         onSuccess={() => {
           setIsModalOpen(false);
+          setEditingAnnouncement(null);
           fetchAnnouncements(1);
         }}
+        editingAnnouncement={editingAnnouncement}
       />
 
       <AnnouncementDetailModal

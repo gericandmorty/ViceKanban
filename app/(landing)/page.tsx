@@ -21,7 +21,7 @@ export default function LandingPage() {
       {/* Navigation */}
       <nav className="sticky top-0 z-50 w-full bg-bg-subtle text-header-text py-4 px-6 md:px-12 flex items-center justify-between border-b border-border-default/50">
         <div className="flex items-center gap-3">
-          <Image src="/icons/icon_vice.png" alt="ViceKanBan Logo" width={32} height={32} className="rounded" />
+          <Image src="/icons/icon_vice.png" alt="ViceKanBan Logo" width={32} height={32} unoptimized={true} className="rounded" />
           <span className="font-semibold text-lg hidden md:block">ViceKanBan</span>
         </div>
         <div className="flex items-center gap-4">

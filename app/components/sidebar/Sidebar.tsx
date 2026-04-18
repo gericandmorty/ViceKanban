@@ -180,7 +180,7 @@ export default function Sidebar() {
                 onClick={closeSidebar}
                 className="flex items-center gap-3 cursor-pointer group"
               >
-                <Image src="/icon_vice.png" alt="Logo" width={32} height={32} style={{ height: 'auto' }} className="rounded group-hover:opacity-80 transition-opacity flex-shrink-0" />
+                <Image src="/icons/icon_vice.png" alt="Logo" width={32} height={32} unoptimized={true} style={{ height: 'auto' }} className="rounded group-hover:opacity-80 transition-opacity flex-shrink-0" />
                 <span className="font-semibold text-sm group-hover:text-accent transition-colors truncate">ViceKanBan</span>
               </Link>
             </div>

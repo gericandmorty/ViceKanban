@@ -17,9 +17,9 @@ export const metadata: Metadata = {
   title: "ViceKanBan",
   description: "Modern, fast, and simple Kanban tool for developer teams.",
   icons: {
-    icon: "/icon_vice.png",
-    shortcut: "/icon_vice.png",
-    apple: "/icon_vice.png",
+    icon: "/icons/icon_vice.png",
+    shortcut: "/icons/icon_vice.png",
+    apple: "/icons/icon_vice.png",
   },
 };
 

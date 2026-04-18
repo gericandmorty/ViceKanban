@@ -95,144 +95,144 @@ export default function CreateAnnouncementModal({ isOpen, onClose, orgId, onSucc
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
           />
           
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative w-full max-w-xl bg-[#0d1117] border border-[#30363d] rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
-          >
-            {/* Header */}
-            <div className="px-6 py-4 border-b border-[#30363d] bg-[#161b22] flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-semibold text-[#f0f6fc]">Create Announcement</h2>
-              </div>
-              <button 
-                onClick={onClose}
-                className="p-1.5 text-[#8b949e] hover:text-[#f0f6fc] hover:bg-[#30363d] rounded-md transition-all"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
-              {/* Scrollable Form Body */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar">
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold text-[#8b949e] uppercase tracking-wider">
-                    Title
-                  </label>
-                  <input
-                    autoFocus
-                    required
-                    type="text"
-                    placeholder="What's the update about?"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-[#0d1117] border border-[#30363d] rounded-md text-sm text-[#f0f6fc] focus:outline-none focus:ring-1 focus:ring-[#1f6feb] transition-all placeholder:text-[#484f58]"
-                  />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-xl bg-background border border-border-default rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
+            >
+              {/* Header */}
+              <div className="px-6 py-4 border-b border-border-default bg-bg-subtle flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-semibold text-foreground">Create Announcement</h2>
                 </div>
+                <button 
+                  onClick={onClose}
+                  className="p-1.5 text-foreground/60 hover:text-foreground hover:bg-border-default rounded-md transition-all"
+                >
+                  <X size={18} />
+                </button>
+              </div>
 
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold text-[#8b949e] uppercase tracking-wider">
-                    Priority
-                  </label>
-                  <div className="flex items-center gap-3">
-                    {ANNOUNCEMENT_TYPES.map((t) => (
-                      <button
-                        key={t.id}
-                        type="button"
-                        onClick={() => setType(t.id)}
-                        className={`w-10 h-10 rounded-md border-2 transition-all ${
-                          type === t.id
-                            ? 'scale-110 shadow-lg'
-                            : 'opacity-50 hover:opacity-80'
-                        }`}
-                        style={{
-                          backgroundColor: t.color,
-                          borderColor: type === t.id ? '#f0f6fc' : 'transparent',
-                        }}
-                        title={t.id.charAt(0).toUpperCase() + t.id.slice(1)}
-                      />
-                    ))}
+              <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+                {/* Scrollable Form Body */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar">
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">
+                      Title
+                    </label>
+                    <input
+                      autoFocus
+                      required
+                      type="text"
+                      placeholder="What's the update about?"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-background border border-border-default rounded-md text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent transition-all placeholder:text-foreground/40"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">
+                      Priority
+                    </label>
+                    <div className="flex items-center gap-3">
+                      {ANNOUNCEMENT_TYPES.map((t) => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => setType(t.id)}
+                          className={`w-10 h-10 rounded-md border-2 transition-all ${
+                            type === t.id
+                              ? 'scale-110 shadow-lg'
+                              : 'opacity-50 hover:opacity-80'
+                          }`}
+                          style={{
+                            backgroundColor: t.color,
+                            borderColor: type === t.id ? 'var(--text-foreground)' : 'transparent',
+                          }}
+                          title={t.id.charAt(0).toUpperCase() + t.id.slice(1)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">
+                      Content
+                    </label>
+                    <textarea
+                      required
+                      rows={5}
+                      placeholder="Share the details with your team..."
+                      value={content}
+                      onChange={(e) => setContent(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-background border border-border-default rounded-md text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent transition-all placeholder:text-foreground/40 resize-none"
+                    />
+                    <p className="text-[11px] text-foreground/40">
+                      Tip: This will be sent as a notification to all organization members.
+                    </p>
+                  </div>
+
+                  {/* Image Attachment */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">
+                      Image (optional)
+                    </label>
+                    {imagePreview ? (
+                      <div className="relative group rounded-md overflow-hidden border border-border-default bg-bg-subtle">
+                        <img src={imagePreview} alt="Preview" className="w-full max-h-[240px] object-contain" />
+                        <button
+                          type="button"
+                          onClick={removeImage}
+                          className="absolute top-2 right-2 p-1.5 bg-background/80 hover:bg-red-500/20 text-foreground/60 hover:text-red-500 rounded-md transition-all border border-border-default"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                        <div className="px-3 py-1.5 bg-background border-t border-border-default text-[11px] text-foreground/60 truncate">
+                          {imageFile?.name} ({((imageFile?.size || 0) / 1024 / 1024).toFixed(1)} MB)
+                        </div>
+                      </div>
+                    ) : (
+                      <label className="flex items-center justify-center gap-2 py-6 border border-dashed border-border-default rounded-md cursor-pointer hover:border-foreground/40 hover:bg-bg-subtle transition-all text-foreground/40 hover:text-foreground/60">
+                        <ImagePlus size={18} />
+                        <span className="text-xs font-medium">Attach an image (max 10 MB)</span>
+                        <input
+                          type="file"
+                          onChange={handleImageChange}
+                          className="hidden"
+                        />
+                      </label>
+                    )}
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold text-[#8b949e] uppercase tracking-wider">
-                    Content
-                  </label>
-                  <textarea
-                    required
-                    rows={5}
-                    placeholder="Share the details with your team..."
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-[#0d1117] border border-[#30363d] rounded-md text-sm text-[#f0f6fc] focus:outline-none focus:ring-1 focus:ring-[#1f6feb] transition-all placeholder:text-[#484f58] resize-none"
-                  />
-                  <p className="text-[11px] text-[#484f58]">
-                    Tip: This will be sent as a notification to all organization members.
-                  </p>
+                {/* Fixed Footer */}
+                <div className="px-6 py-4 border-t border-border-default bg-bg-subtle flex items-center justify-end gap-3 shrink-0">
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="btn btn-outline border-border-default px-4 py-2 text-sm font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isLoading || !title || !content}
+                    className="btn btn-primary px-6 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="animate-spin" size={16} />
+                        Posting...
+                      </>
+                    ) : (
+                      'Post Announcement'
+                    )}
+                  </button>
                 </div>
-
-                {/* Image Attachment */}
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold text-[#8b949e] uppercase tracking-wider">
-                    Image (optional)
-                  </label>
-                  {imagePreview ? (
-                    <div className="relative group rounded-md overflow-hidden border border-[#30363d] bg-[#161b22]">
-                      <img src={imagePreview} alt="Preview" className="w-full max-h-[240px] object-contain" />
-                      <button
-                        type="button"
-                        onClick={removeImage}
-                        className="absolute top-2 right-2 p-1.5 bg-[#0d1117]/80 hover:bg-[#f85149]/20 text-[#8b949e] hover:text-[#f85149] rounded-md transition-all border border-[#30363d]"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                      <div className="px-3 py-1.5 bg-[#0d1117] border-t border-[#30363d] text-[11px] text-[#8b949e] truncate">
-                        {imageFile?.name} ({((imageFile?.size || 0) / 1024 / 1024).toFixed(1)} MB)
-                      </div>
-                    </div>
-                  ) : (
-                    <label className="flex items-center justify-center gap-2 py-6 border border-dashed border-[#30363d] rounded-md cursor-pointer hover:border-[#8b949e] hover:bg-[#161b22] transition-all text-[#8b949e] hover:text-[#c9d1d9]">
-                      <ImagePlus size={18} />
-                      <span className="text-xs font-medium">Attach an image (max 10 MB)</span>
-                      <input
-                        type="file"
-                        onChange={handleImageChange}
-                        className="hidden"
-                      />
-                    </label>
-                  )}
-                </div>
-              </div>
-
-              {/* Fixed Footer */}
-              <div className="px-6 py-4 border-t border-[#30363d] bg-[#161b22] flex items-center justify-end gap-3 shrink-0">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="px-4 py-2 text-sm font-medium text-[#c9d1d9] hover:bg-[#30363d] rounded-md transition-all border border-[#30363d]"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isLoading || !title || !content}
-                  className="bg-[#238636] hover:bg-[#2ea043] text-white px-6 py-2 rounded-md text-sm font-semibold flex items-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-[rgba(240,246,252,0.1)]"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="animate-spin" size={16} />
-                      Posting...
-                    </>
-                  ) : (
-                    'Post Announcement'
-                  )}
-                </button>
-              </div>
-            </form>
-          </motion.div>
+              </form>
+            </motion.div>
         </div>
       )}
     </AnimatePresence>

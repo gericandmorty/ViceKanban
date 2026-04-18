@@ -217,13 +217,13 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
       {/* Search and Action Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
         <div className="relative w-full sm:w-80 order-2 sm:order-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8b949e]" size={14} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40" size={14} />
           <input 
             type="text"
             placeholder="Search members..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-[5px] bg-[#0d1117] border border-[#30363d] rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#1f6feb] transition-all placeholder:text-[#484f58]"
+            className="w-full pl-9 pr-4 py-[5px] bg-background border border-border-default rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-accent transition-all placeholder:text-foreground/40"
           />
         </div>
         
@@ -232,7 +232,7 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
             {!showInviteForm ? (
               <button 
                 onClick={() => setShowInviteForm(true)}
-                className="bg-[#238636] hover:bg-[#2ea043] text-[#ffffff] px-4 py-[5px] rounded-md text-xs font-semibold flex items-center gap-2 transition-colors border border-[rgba(240,246,252,0.1)]"
+                className="btn btn-primary py-1 px-3 text-xs flex items-center gap-1.5"
               >
                 <Plus size={14} /> Invite member
               </button>
@@ -245,19 +245,19 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
                     placeholder="Email address" 
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
-                    className="flex-1 sm:w-60 px-3 py-[5px] bg-[#0d1117] border border-[#30363d] rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#1f6feb] transition-all"
+                    className="flex-1 sm:w-60 px-3 py-[5px] bg-background border border-border-default rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-accent transition-all"
                   />
                   <button 
                     type="submit" 
                     disabled={isInviting || !inviteEmail}
-                    className="bg-[#238636] hover:bg-[#2ea043] text-[#ffffff] px-3 py-[5px] rounded-md text-xs font-semibold disabled:opacity-50"
+                    className="btn btn-primary px-3 py-[5px] text-xs disabled:opacity-50"
                   >
                     {isInviting ? <Loader2 className="animate-spin" size={14} /> : 'Send Invite'}
                   </button>
                 </form>
                 <button 
                   onClick={() => setShowInviteForm(false)}
-                  className="p-1.5 text-[#8b949e] hover:text-[#f0f6fc] transition-colors"
+                  className="p-1.5 text-foreground/60 hover:text-foreground transition-colors"
                 >
                   <X size={16} />
                 </button>
@@ -268,16 +268,16 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
       </div>
 
       {inviteSuccess && (
-        <div className="flex items-center gap-2 text-success text-xs bg-success/5 border border-success/20 p-2 rounded-md transition-all">
+        <div className="flex items-center gap-2 text-green-500 text-xs bg-green-500/5 border border-green-500/20 p-2 rounded-md transition-all">
           <CheckCircle2 size={12} /> Invitation sent successfully!
         </div>
       )}
 
       {/* GitHub Themed Members Table */}
-      <div className="bg-[#0d1117] border border-[#30363d] rounded-md shadow-sm">
-        <div className="px-4 py-3 border-b border-[#30363d] bg-[#161b22] rounded-t-md">
+      <div className="bg-background border border-border-default rounded-md shadow-sm">
+        <div className="px-4 py-3 border-b border-border-default bg-bg-subtle rounded-t-md">
           <div className="flex items-center justify-between">
-            <span className="text-[14px] font-semibold text-[#f0f6fc]">
+            <span className="text-[14px] font-semibold text-foreground">
               {org.members.length + (org.invitations?.filter(i => i.status === 'pending').length ?? 0)} members
             </span>
           </div>
@@ -286,20 +286,20 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
         <div className="overflow-visible">
           <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-[#30363d] text-[12px] font-semibold text-[#8b949e] bg-[#0d1117]">
+              <tr className="border-b border-border-default text-[12px] font-semibold text-foreground/60 bg-background">
                 <th className="px-4 py-3 w-3/4 font-semibold">Member</th>
                 <th className="px-4 py-3 font-semibold">Role</th>
                 <th className="px-4 py-3 text-right"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#30363d]">
+            <tbody className="divide-y divide-border-default">
               {/* Paginated Combined Content */}
               {paginatedItems.map((item, index) => (
                 item.type === 'member' ? (
                   <tr key={item.id} className={`hover:bg-bg-subtle transition-colors group ${index === paginatedItems.length - 1 ? 'rounded-b-md' : ''}`}>
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 font-semibold border border-border-default overflow-hidden relative">
+                        <div className="w-9 h-9 rounded-full bg-bg-subtle flex items-center justify-center text-foreground/40 font-semibold border border-border-default overflow-hidden relative">
                           {item.data.user.avatarUrl ? (
                             <Image
                               src={item.data.user.avatarUrl}
@@ -312,10 +312,10 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
                           )}
                         </div>
                         <div className="flex flex-col">
-                          <span className="font-bold text-[14px] text-[#f0f6fc] hover:text-[#58a6ff] hover:underline cursor-pointer transition-colors leading-tight">
+                          <span className="font-bold text-[14px] text-foreground hover:text-accent hover:underline cursor-pointer transition-colors leading-tight">
                             {item.data.user.username}
                           </span>
-                          <span className="text-[12px] text-[#8b949e]">
+                          <span className="text-[12px] text-foreground/60">
                             {item.data.user.email}
                           </span>
                         </div>
@@ -324,9 +324,9 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2">
                         <span className={`text-[12px] font-medium capitalize ${
-                          item.data.role === 'owner' ? 'text-[#f78166] font-semibold' : 
-                          item.data.role === 'co-owner' ? 'text-[#ffad33] font-semibold' : 
-                          'text-[#8b949e]'
+                          item.data.role === 'owner' ? 'text-orange-500 font-semibold' : 
+                          item.data.role === 'co-owner' ? 'text-yellow-500 font-semibold' : 
+                          'text-foreground/60'
                         }`}>
                           {item.data.role === 'owner' ? 'Owner' : 
                           item.data.role === 'co-owner' ? 'Co-owner' : 
@@ -345,8 +345,8 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
                               }}
                               className={`p-1.5 rounded-md transition-all flex items-center justify-center ${
                                 activeMenuId === item.data.user._id 
-                                  ? 'bg-[#30363d] text-[#f0f6fc]' 
-                                  : 'text-[#8b949e] hover:bg-[#21262d] hover:text-[#f0f6fc] border border-transparent hover:border-[#30363d]'
+                                  ? 'bg-border-default text-foreground' 
+                                  : 'text-foreground/60 hover:bg-bg-subtle hover:text-foreground border border-transparent hover:border-border-default'
                               }`}
                             >
                               {isUpdatingRole === item.data.user._id ? (
@@ -365,39 +365,39 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
                                 {(() => {
                                   const isNearBottom = index >= paginatedItems.length - 2;
                                   return (
-                                    <div className={`absolute right-0 w-44 bg-[#161b22] border border-[#30363d] rounded-md shadow-[0_8px_24px_rgba(0,0,0,0.5)] z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 ${
+                                    <div className={`absolute right-0 w-44 bg-background border border-border-default rounded-md shadow-lg z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 ${
                                       isNearBottom ? 'bottom-full mb-2 origin-bottom-right' : 'top-full mt-2 origin-top-right'
                                     }`}>
                                       <div className="py-1">
-                                        <div className="px-3 py-1.5 border-b border-[#30363d] mb-1">
-                                          <p className="text-[10px] uppercase font-bold text-[#8b949e] tracking-wider">Manage Member</p>
+                                        <div className="px-3 py-1.5 border-b border-border-default mb-1">
+                                          <p className="text-[10px] uppercase font-bold text-foreground/60 tracking-wider">Manage Member</p>
                                         </div>
                                     
                                     {item.data.role === 'developer' ? (
                                       <button 
                                         onClick={() => handleRoleUpdate(item.data.user._id, 'co-owner')}
-                                        className="w-full text-left px-3 py-2 text-xs text-[#f0f6fc] hover:bg-[#1f6feb] flex items-center gap-2 transition-colors"
+                                        className="w-full text-left px-3 py-2 text-xs text-foreground hover:bg-accent hover:text-white flex items-center gap-2 transition-colors"
                                       >
-                                        <Shield size={14} className="text-[#ffad33]" />
+                                        <Shield size={14} className="text-yellow-500" />
                                         Promote to Co-owner
                                       </button>
                                     ) : item.data.role === 'co-owner' ? (
                                       <button 
                                         onClick={() => handleRoleUpdate(item.data.user._id, 'developer')}
-                                        className="w-full text-left px-3 py-2 text-xs text-[#f0f6fc] hover:bg-[#1f6feb] flex items-center gap-2 transition-colors"
+                                        className="w-full text-left px-3 py-2 text-xs text-foreground hover:bg-accent hover:text-white flex items-center gap-2 transition-colors"
                                       >
-                                        <UserCheck size={14} className="text-[#8b949e]" />
+                                        <UserCheck size={14} className="text-foreground/60" />
                                         Demote to Developer
                                       </button>
                                     ) : null}
 
-                                    <div className="border-t border-[#30363d] mt-1 pt-1">
+                                    <div className="border-t border-border-default mt-1 pt-1">
                                       <button 
                                         onClick={() => {
                                           setRemovalTarget({ id: item.data.user._id, username: item.data.user.username });
                                           setActiveMenuId(null);
                                         }}
-                                        className="w-full text-left px-3 py-2 text-xs text-[#f85149] hover:bg-[#f85149] hover:text-white flex items-center gap-2 transition-colors"
+                                        className="w-full text-left px-3 py-2 text-xs text-red-500 hover:bg-red-500 hover:text-white flex items-center gap-2 transition-colors"
                                       >
                                         <UserMinus size={14} />
                                         Remove from Org
@@ -417,14 +417,14 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
                   <tr key={item.id} className="hover:bg-bg-subtle transition-colors group">
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-transparent flex items-center justify-center text-zinc-600 font-bold border border-border-default border-dashed text-xs">
+                        <div className="w-9 h-9 rounded-full bg-transparent flex items-center justify-center text-foreground/40 font-bold border border-border-default border-dashed text-xs">
                           ?
                         </div>
                         <div className="flex flex-col opacity-70">
-                          <span className="font-semibold text-[14px] text-[#f0f6fc] italic">
+                          <span className="font-semibold text-[14px] text-foreground italic">
                             Invitation sent...
                           </span>
-                          <span className="text-[12px] text-[#8b949e]">
+                          <span className="text-[12px] text-foreground/60">
                             {item.data}
                           </span>
                         </div>
@@ -432,8 +432,8 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2">
-                        <span className="text-[12px] text-[#8b949e]">Developer</span>
-                        <span className="text-[10px] uppercase font-bold text-[#8b949e] bg-[#21262d] border border-[#30363d] px-1.5 py-0.5 rounded leading-none">PENDING</span>
+                        <span className="text-[12px] text-foreground/60">Developer</span>
+                        <span className="text-[10px] uppercase font-bold text-foreground/60 bg-bg-subtle border border-border-default px-1.5 py-0.5 rounded leading-none">PENDING</span>
                       </div>
                     </td>
                     <td className="px-4 py-4 text-right">
@@ -454,7 +454,7 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
           </table>
           
           {paginatedItems.length === 0 && (
-            <div className="p-12 text-center text-zinc-500 text-sm">
+            <div className="p-12 text-center text-foreground/40 text-sm">
               No members match your search.
             </div>
           )}
@@ -462,25 +462,25 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
 
         {/* Pagination Controls */}
         {totalPages > 1 && (
-          <div className="px-4 py-3 border-t border-[#30363d] flex items-center justify-between bg-[#161b22] rounded-b-md">
+          <div className="px-4 py-3 border-t border-border-default flex items-center justify-between bg-bg-subtle rounded-b-md">
             <div className="flex gap-2">
               <button
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
-                className="px-3 py-1 border border-[#30363d] rounded-md text-[12px] font-medium text-[#c9d1d9] hover:bg-[#30363d] disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                className="px-3 py-1 border border-border-default rounded-md text-[12px] font-medium text-foreground hover:bg-border-default disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
               >
                 Previous
               </button>
               <button
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
-                className="px-3 py-1 border border-[#30363d] rounded-md text-[12px] font-medium text-[#c9d1d9] hover:bg-[#30363d] disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                className="px-3 py-1 border border-border-default rounded-md text-[12px] font-medium text-foreground hover:bg-border-default disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
               >
                 Next
               </button>
             </div>
-            <div className="text-[12px] text-[#8b949e]">
-              Page <span className="text-[#f0f6fc] font-semibold">{currentPage}</span> of <span className="text-[#f0f6fc] font-semibold">{totalPages}</span>
+            <div className="text-[12px] text-foreground/60">
+              Page <span className="text-foreground font-semibold">{currentPage}</span> of <span className="text-foreground font-semibold">{totalPages}</span>
             </div>
           </div>
         )}

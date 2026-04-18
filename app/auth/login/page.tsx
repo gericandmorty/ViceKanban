@@ -69,14 +69,14 @@ function LoginContent() {
         <div className="bg-background border border-border-default rounded-md p-4 shadow-sm">
           <form onSubmit={handleLogin} className="space-y-4">
             {isTimeout && !error && (
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-md flex items-center gap-2 text-amber-800 text-xs mb-4 animate-shake">
+              <div className="p-3 bg-accent/5 border border-accent/20 rounded-md flex items-center gap-2 text-accent text-xs mb-4">
                 <Clock size={14} className="shrink-0" />
                 <span>Session timed out. Please login again.</span>
               </div>
             )}
             
             {error && (
-              <div className="p-3 bg-red-100 border border-red-200 rounded-md flex items-center gap-2 text-red-800 text-xs">
+              <div className="p-3 bg-red-500/5 border border-red-500/20 rounded-md flex items-center gap-2 text-red-500 text-xs text-center justify-center">
                 <AlertCircle size={14} className="shrink-0" />
                 <span>{error}</span>
               </div>
@@ -89,7 +89,7 @@ function LoginContent() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full bg-background border border-border-default rounded-md py-[5px] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition-all"
+                className="w-full bg-background border border-border-default rounded-md py-[5px] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition-all placeholder:text-foreground/40"
               />
             </div>
 
@@ -109,7 +109,7 @@ function LoginContent() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-foreground transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground transition-colors"
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -131,7 +131,7 @@ function LoginContent() {
         </div>
 
         <div className="mt-4 p-4 border border-border-default rounded-md flex items-center justify-center gap-2 text-sm text-foreground">
-          <span>New to ViceKanBan?</span>
+          <span className="text-foreground/60">New to ViceKanBan?</span>
           <Link href="/auth/register" className="text-accent hover:underline">Create an account</Link>
         </div>
       </motion.div>

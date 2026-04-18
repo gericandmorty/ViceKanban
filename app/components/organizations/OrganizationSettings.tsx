@@ -147,20 +147,20 @@ export default function OrganizationSettings({ org, isOwner, isAdmin, onRefresh 
 
   return (
     <div className="max-w-3xl mx-auto py-8 px-4 space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      <div className="space-y-2 border-b border-[#30363d] pb-6">
-        <h2 className="text-[32px] font-bold text-[#f0f6fc]">Organization Settings</h2>
-        <p className="text-[14px] text-[#8b949e]">
+      <div className="space-y-2 border-b border-border-default pb-6">
+        <h2 className="text-[32px] font-bold text-foreground">Organization Settings</h2>
+        <p className="text-[14px] text-foreground/60">
           Manage your organization name, description, and general preferences.
         </p>
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-[14px] font-semibold text-[#f0f6fc] uppercase tracking-wide">General Details</h3>
+        <h3 className="text-[14px] font-semibold text-foreground uppercase tracking-wide">General Details</h3>
         
-        <form onSubmit={handleUpdateDetails} className="bg-[#0d1117] border border-[#30363d] rounded-md overflow-hidden">
+        <form onSubmit={handleUpdateDetails} className="bg-background border border-border-default rounded-md overflow-hidden">
           {/* Organization Name Row */}
-          <div className="px-6 py-6 border-b border-[#30363d] flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors">
-            <label className="text-[14px] font-semibold text-[#f0f6fc] w-full sm:w-1/3">
+          <div className="px-6 py-6 border-b border-border-default flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors">
+            <label className="text-[14px] font-semibold text-foreground w-full sm:w-1/3">
               Organization name
             </label>
             <div className="w-full sm:w-2/3">
@@ -169,14 +169,14 @@ export default function OrganizationSettings({ org, isOwner, isAdmin, onRefresh 
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 disabled={!isAdmin || isUpdatingDetails}
-                className="w-full px-3 py-[5px] bg-[#0d1117] border border-[#30363d] rounded-md text-[14px] text-[#f0f6fc] focus:outline-none focus:ring-1 focus:ring-[#1f6feb] transition-all disabled:opacity-50"
+                className="w-full px-3 py-[5px] bg-background border border-border-default rounded-md text-[14px] text-foreground focus:outline-none focus:ring-1 focus:ring-accent transition-all disabled:opacity-50"
               />
             </div>
           </div>
 
           {/* Organization Description Row */}
-          <div className="px-6 py-6 border-b border-[#30363d] flex flex-col sm:flex-row sm:items-start justify-between gap-4 transition-colors">
-            <label className="text-[14px] font-semibold text-[#f0f6fc] w-full sm:w-1/3 mt-1">
+          <div className="px-6 py-6 border-b border-border-default flex flex-col sm:flex-row sm:items-start justify-between gap-4 transition-colors">
+            <label className="text-[14px] font-semibold text-foreground w-full sm:w-1/3 mt-1">
               Description
             </label>
             <div className="w-full sm:w-2/3">
@@ -185,25 +185,25 @@ export default function OrganizationSettings({ org, isOwner, isAdmin, onRefresh 
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={!isAdmin || isUpdatingDetails}
                 placeholder="Add a description for your organization..."
-                className="w-full px-3 py-[7px] bg-[#0d1117] border border-[#30363d] rounded-md text-[14px] text-[#f0f6fc] focus:outline-none focus:ring-1 focus:ring-[#1f6feb] transition-all min-h-[120px] resize-none disabled:opacity-50"
+                className="w-full px-3 py-[7px] bg-background border border-border-default rounded-md text-[14px] text-foreground focus:outline-none focus:ring-1 focus:ring-accent transition-all min-h-[120px] resize-none disabled:opacity-50"
               />
             </div>
           </div>
 
-          <div className="px-6 py-4 bg-[#161b22]/30 flex justify-end gap-3 items-center">
+          <div className="px-6 py-4 bg-bg-subtle flex justify-end gap-3 items-center">
             {isAdmin && (
               <>
                 <button 
                   type="button"
                   onClick={() => { setName(org.name); setDescription(org.description || ''); }}
-                  className="text-[14px] text-[#8b949e] hover:text-[#f0f6fc] transition-colors px-3 py-[5px]"
+                  className="text-[14px] text-foreground/60 hover:text-foreground transition-colors px-3 py-[5px]"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit"
                   disabled={isUpdatingDetails || !name.trim() || (name === org.name && description === (org.description || ''))}
-                  className="bg-[#238636] hover:bg-[#2ea043] text-[#ffffff] px-4 py-[5px] rounded-md text-[14px] font-semibold flex items-center gap-2 transition-colors border border-[rgba(240,246,252,0.1)] disabled:opacity-50"
+                  className="btn btn-primary px-4 py-[5px] text-[14px]"
                 >
                   {isUpdatingDetails ? <Loader2 className="animate-spin" size={16} /> : 'Save changes'}
                 </button>
@@ -214,12 +214,12 @@ export default function OrganizationSettings({ org, isOwner, isAdmin, onRefresh 
       </div>
 
       <div className="space-y-4 pt-4">
-        <h3 className="text-[14px] font-semibold text-[#f0f6fc] uppercase tracking-wide">Organization Branding</h3>
+        <h3 className="text-[14px] font-semibold text-foreground uppercase tracking-wide">Organization Branding</h3>
         
-        <div className="bg-[#0d1117] border border-[#30363d] rounded-md p-6">
+        <div className="bg-background border border-border-default rounded-md p-6">
           <div className="flex flex-col sm:flex-row items-center gap-6">
             <div className="relative group">
-              <div className="w-24 h-24 rounded-xl overflow-hidden relative flex items-center justify-center">
+              <div className="w-24 h-24 rounded-xl overflow-hidden relative border border-border-default bg-bg-subtle flex items-center justify-center">
                 {logoPreview ? (
                   <Image 
                     src={logoPreview} 
@@ -228,7 +228,7 @@ export default function OrganizationSettings({ org, isOwner, isAdmin, onRefresh 
                     className="object-cover"
                   />
                 ) : (
-                  <div className="text-[#8b949e] flex flex-col items-center">
+                  <div className="text-foreground/40 flex flex-col items-center">
                     <ImageIcon size={32} strokeWidth={1.5} />
                     <span className="text-[10px] mt-1 font-medium">NO LOGO</span>
                   </div>
@@ -249,13 +249,13 @@ export default function OrganizationSettings({ org, isOwner, isAdmin, onRefresh 
             </div>
 
             <div className="flex-1 space-y-2 text-center sm:text-left">
-              <h4 className="text-[16px] font-semibold text-[#f0f6fc]">Organization Logo</h4>
-              <p className="text-[14px] text-[#8b949e]">
+              <h4 className="text-[16px] font-semibold text-foreground">Organization Logo</h4>
+              <p className="text-[14px] text-foreground/60">
                 This logo will be displayed in the sidebar, dashboard, and invitations.
               </p>
               {isAdmin && (
                 <div className="pt-2 flex flex-wrap justify-center sm:justify-start gap-2">
-                  <label className="cursor-pointer bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] px-3 py-1.5 rounded-md text-[12px] font-semibold border border-[#30363d] transition-all">
+                  <label className="cursor-pointer btn btn-outline border-border-default py-1 px-3 text-[12px] font-semibold">
                     Change logo
                     <input 
                       type="file" 
@@ -268,7 +268,7 @@ export default function OrganizationSettings({ org, isOwner, isAdmin, onRefresh 
                   {logoPreview !== org.avatarUrl && (
                     <button 
                       onClick={() => { setLogoFile(null); setLogoPreview(org.avatarUrl || ''); }}
-                      className="text-[12px] text-[#f85149] hover:underline px-2 py-1.5"
+                      className="text-[12px] text-red-500 hover:underline px-2 py-1.5"
                       disabled={isUpdatingLogo}
                     >
                       Reset changes
@@ -276,18 +276,18 @@ export default function OrganizationSettings({ org, isOwner, isAdmin, onRefresh 
                   )}
                 </div>
               )}
-              <p className="text-[11px] text-[#8b949e] mt-2">
+              <p className="text-[11px] text-foreground/40 mt-2">
                 Maximum file size: 5MB. Supported formats: PNG, JPG, WEBP.
               </p>
             </div>
           </div>
           
           {isAdmin && (
-            <div className="mt-8 pt-4 border-t border-[#30363d] flex justify-end bg-[#161b22]/30 -mx-6 -mb-6 px-6 py-4">
+            <div className="mt-8 pt-4 border-t border-border-default flex justify-end bg-bg-subtle -mx-6 -mb-6 px-6 py-4">
               <button 
                 onClick={handleUpdateLogo}
                 disabled={isUpdatingLogo || !logoFile}
-                className="bg-[#238636] hover:bg-[#2ea043] text-[#ffffff] px-4 py-[5px] rounded-md text-[14px] font-semibold flex items-center gap-2 transition-colors border border-[rgba(240,246,252,0.1)] disabled:opacity-50"
+                className="btn btn-primary px-4 py-[5px] text-[14px]"
               >
                 {isUpdatingLogo ? <Loader2 className="animate-spin" size={16} /> : 'Save Logo'}
               </button>
@@ -303,19 +303,19 @@ export default function OrganizationSettings({ org, isOwner, isAdmin, onRefresh 
       {isOwner && (
         <div className="space-y-4 pt-10">
           <h3 className="text-[14px] font-semibold text-red-500 uppercase tracking-wide">Danger Zone</h3>
-          <div className="bg-[#000000]/20 border border-red-500/50 rounded-md overflow-hidden">
-            <div className="p-4 border-b border-red-500/30 bg-red-500/5">
+          <div className="bg-red-500/5 border border-red-500/30 rounded-md overflow-hidden">
+            <div className="p-4 border-b border-red-500/30 bg-red-500/10">
               <h4 className="text-[14px] font-semibold text-red-500">Critical Actions</h4>
             </div>
             <div className="px-6 py-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
               <div className="space-y-2">
-                <h4 className="text-[16px] font-semibold text-[#f0f6fc]">Delete this organization</h4>
-                <p className="text-[14px] text-[#8b949e] max-w-md">Once you delete an organization, there is no going back. All projects, tasks, and data will be permanently wiped.</p>
+                <h4 className="text-[16px] font-semibold text-foreground">Delete this organization</h4>
+                <p className="text-[14px] text-foreground/60 max-w-md">Once you delete an organization, there is no going back. All projects, tasks, and data will be permanently wiped.</p>
               </div>
               <button 
                 type="button"
                 onClick={() => setShowDeleteModal(true)}
-                className="bg-[#21262d] hover:bg-red-500 hover:text-white text-red-500 border border-[#30363d] px-5 py-2 rounded-md text-[14px] font-bold transition-all shadow-sm"
+                className="btn btn-outline border-border-default text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 px-5 py-2 text-[14px] font-bold"
               >
                 Delete Organization
               </button>
@@ -371,19 +371,19 @@ function LeaveOrgSection({ org, onRefresh }: { org: any, onRefresh: () => void }
   return (
     <div className="space-y-4 pt-10">
       <h3 className="text-[14px] font-semibold text-red-500 uppercase tracking-wide">Danger Zone</h3>
-      <div className="bg-[#000000]/20 border border-red-500/50 rounded-md overflow-hidden">
-        <div className="p-4 border-b border-red-500/30 bg-red-500/5">
+      <div className="bg-red-500/5 border border-red-500/30 rounded-md overflow-hidden">
+        <div className="p-4 border-b border-red-500/30 bg-red-500/10">
            <h4 className="text-[14px] font-semibold text-red-500">Voluntary Departure</h4>
         </div>
         <div className="px-6 py-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="space-y-2">
-            <h4 className="text-[16px] font-semibold text-[#f0f6fc]">Leave this organization</h4>
-            <p className="text-[14px] text-[#8b949e] max-w-md">Once you leave, you will lose access to all projects and private data. Your work history will be preserved.</p>
+            <h4 className="text-[16px] font-semibold text-foreground">Leave this organization</h4>
+            <p className="text-[14px] text-foreground/60 max-w-md">Once you leave, you will lose access to all projects and private data. Your work history will be preserved.</p>
           </div>
           <button 
             type="button"
             onClick={() => setShowConfirm(true)}
-            className="bg-[#21262d] hover:bg-red-500 hover:text-white text-red-500 border border-[#30363d] px-5 py-2 rounded-md text-[14px] font-bold transition-all shadow-sm"
+            className="btn btn-outline border-border-default text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 px-5 py-2 text-[14px] font-bold"
           >
             Leave Organization
           </button>

@@ -66,22 +66,22 @@ export default function RegisterPage() {
         <div className="flex-1 space-y-8 order-2 md:order-1">
           <div className="space-y-2">
             <h2 className="text-3xl font-bold">The developer's kanban.</h2>
-            <p className="text-zinc-500">Built for individuals and small teams to ship fast and stay organized.</p>
+            <p className="text-foreground/60">Built for individuals and small teams to ship fast and stay organized.</p>
           </div>
           
           <div className="space-y-6">
             <div className="flex gap-4">
-              <div className="w-1 h-12 bg-success rounded-full self-center" />
+              <div className="w-1 h-12 bg-green-500 rounded-full self-center" />
               <div>
-                <h4 className="font-bold">Simple by design</h4>
-                <p className="text-sm text-zinc-500">No complex configuration. Just cards and columns.</p>
+                <h4 className="font-bold text-foreground">Simple by design</h4>
+                <p className="text-sm text-foreground/60">No complex configuration. Just cards and columns.</p>
               </div>
             </div>
             <div className="flex gap-4">
               <div className="w-1 h-12 bg-accent rounded-full self-center" />
               <div>
-                <h4 className="font-bold">Team ready</h4>
-                <p className="text-sm text-zinc-500">Invite colleagues and collaborate in real-time.</p>
+                <h4 className="font-bold text-foreground">Team ready</h4>
+                <p className="text-sm text-foreground/60">Invite colleagues and collaborate in real-time.</p>
               </div>
             </div>
           </div>
@@ -95,14 +95,14 @@ export default function RegisterPage() {
                 animate={{ opacity: 1 }}
                 className="flex flex-col items-center justify-center py-6 text-center"
               >
-                <CheckCircle2 size={48} className="text-success mb-4" />
+                <CheckCircle2 size={48} className="text-green-500 mb-4" />
                 <h3 className="text-lg font-bold">Successfully Registered!</h3>
-                <p className="text-sm text-zinc-500 mt-2">Redirecting you to sign in...</p>
+                <p className="text-sm text-foreground/60 mt-2">Redirecting you to sign in...</p>
               </motion.div>
             ) : (
               <form onSubmit={handleRegister} className="space-y-4">
                 {error && (
-                  <div className="p-3 bg-red-100 border border-red-200 rounded-md flex items-center gap-2 text-red-800 text-xs">
+                  <div className="p-3 bg-red-500/5 border border-red-500/20 rounded-md flex items-center gap-2 text-red-500 text-xs">
                     <AlertCircle size={14} className="shrink-0" />
                     <span>{error}</span>
                   </div>
@@ -116,7 +116,7 @@ export default function RegisterPage() {
                     onChange={(e) => setUsername(e.target.value)}
                     required
                     maxLength={20}
-                    className="w-full bg-background border border-border-default rounded-md py-[5px] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition-all"
+                    className="w-full bg-background border border-border-default rounded-md py-[5px] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition-all placeholder:text-foreground/40"
                   />
                 </div>
 
@@ -128,7 +128,7 @@ export default function RegisterPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     maxLength={50}
-                    className="w-full bg-background border border-border-default rounded-md py-[5px] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition-all"
+                    className="w-full bg-background border border-border-default rounded-md py-[5px] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition-all placeholder:text-foreground/40"
                   />
                 </div>
 
@@ -146,15 +146,15 @@ export default function RegisterPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-foreground transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground transition-colors"
                     >
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
-                  <p className="text-[11px] text-zinc-500">8-18 chars, 1 uppercase, 1 special/number required.</p>
+                  <p className="text-[11px] text-foreground/40">8-18 chars, 1 uppercase, 1 special/number required.</p>
                 </div>
 
-                <p className="text-[11px] text-zinc-500 py-2">
+                <p className="text-[11px] text-foreground/40 py-2">
                   By creating an account, you agree to the <Link href="/terms" className="text-accent hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-accent hover:underline">Privacy Policy</Link>.
                 </p>
 
@@ -174,7 +174,7 @@ export default function RegisterPage() {
           </div>
           
           <div className="mt-6 text-center text-sm">
-            <span className="text-zinc-500">Already have an account? </span>
+            <span className="text-foreground/60">Already have an account? </span>
             <Link href="/auth/login" className="text-accent hover:underline">Sign in</Link>
           </div>
         </div>

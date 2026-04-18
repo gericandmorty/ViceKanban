@@ -1,17 +1,21 @@
 @import "tailwindcss";
 
-:root {
+:root, 
+.light,
+[data-theme='light'] {
   /* GitHub Light Theme Tokens */
   --background: #ffffff;
   --foreground: #1f2328;
   --bg-subtle: #f6f8fa;
+  --border-default: #d0d7de;
   --accent-fg: #0969da;
-  --tab-accent: #f78166; /* GitHub orange-red underline */
-  --success-fg: #238636;
-  --header-bg: #010409;
-  --header-text: #ffffff;
+  --tab-accent: #f78166;
+  --success-fg: #1f883d;
+  --header-bg: #f6f8fa;
+  --header-text: #1f2328;
   
   --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  color-scheme: light;
 }
 
 @theme inline {
@@ -27,19 +31,19 @@
   --font-sans: var(--font-stack);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* GitHub Dark Theme Tokens */
-    --background: #0d1117;
-    --foreground: #e6edf3;
-    --bg-subtle: #161b22;
-    --border-default: #30363d;
-    --accent-fg: #2f81f7;
-    --tab-accent: #f78166;
-    --success-fg: #238636;
-    --header-bg: #010409;
-    --header-text: #ffffff;
-  }
+.dark,
+[data-theme='dark'] {
+  /* GitHub Dark Theme Tokens */
+  --background: #0d1117;
+  --foreground: #e6edf3;
+  --bg-subtle: #161b22;
+  --border-default: #30363d;
+  --accent-fg: #2f81f7;
+  --tab-accent: #f78166;
+  --success-fg: #238636;
+  --header-bg: #010409;
+  --header-text: #ffffff;
+  color-scheme: dark;
 }
 
 body {

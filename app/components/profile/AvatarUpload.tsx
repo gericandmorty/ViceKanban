@@ -84,7 +84,7 @@ export default function AvatarUpload({ currentAvatar, onSuccess }: AvatarUploadP
               className="object-cover"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-tr from-purple-500 to-blue-500" />
+            <div className="w-full h-full bg-gradient-to-tr from-accent/50 to-accent" />
           )}
           {isUploading && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
@@ -93,7 +93,7 @@ export default function AvatarUpload({ currentAvatar, onSuccess }: AvatarUploadP
           )}
         </div>
         
-        <label className="absolute bottom-1 right-1 bg-accent hover:bg-accent-hover text-white p-2 rounded-full cursor-pointer shadow-lg transition-all transform hover:scale-110 active:scale-95">
+        <label className="absolute bottom-1 right-1 bg-accent hover:opacity-90 text-white p-2 rounded-full cursor-pointer shadow-lg transition-all transform hover:scale-110 active:scale-95">
           <Camera size={18} />
           <input 
             type="file" 
@@ -104,7 +104,7 @@ export default function AvatarUpload({ currentAvatar, onSuccess }: AvatarUploadP
           />
         </label>
       </div>
-      <p className="text-xs text-zinc-500 font-medium">Recommended: Square JPG, PNG or WebP</p>
+      <p className="text-xs text-foreground/40 font-medium">Recommended: Square JPG, PNG or WebP</p>
 
       {selectedImage && (
         <CropImageModal 

@@ -72,20 +72,20 @@ export default function KanbanColumn({
   return (
     <div 
       id={`column-${id}`}
-      className="flex flex-col w-[85vw] sm:w-[300px] md:w-[calc(25%-18px)] h-full bg-[#f6f8fa]/50 dark:bg-[#161b22]/50 rounded-xl p-2.5 flex-shrink-0 border border-border-default/50 snap-center shadow-sm"
+      className="flex flex-col w-[85vw] sm:w-[300px] md:w-[calc(25%-18px)] h-full bg-bg-subtle/50 rounded-xl p-2.5 flex-shrink-0 border border-border-default/50 snap-center shadow-sm"
     >
       <div className="flex items-center justify-between mb-3 px-2">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-bold text-foreground capitalize">{title.replace('_', ' ')}</h3>
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-border-default text-zinc-500">
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-border-default text-foreground/60">
             {tasks.length}
           </span>
-          {isLocked && <Lock size={12} className="text-zinc-400 ml-1" />}
+          {isLocked && <Lock size={12} className="text-foreground/40 ml-1" />}
         </div>
         <div className="flex items-center gap-1 relative">
           <button 
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className={`p-1 rounded transition-colors ${isMenuOpen ? 'bg-border-default text-accent' : 'text-zinc-400 hover:bg-border-default'}`}
+            className={`p-1 rounded transition-colors ${isMenuOpen ? 'bg-border-default text-accent' : 'text-foreground/40 hover:bg-border-default'}`}
           >
             <MoreHorizontal size={14} />
           </button>
@@ -93,16 +93,16 @@ export default function KanbanColumn({
           {isMenuOpen && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setIsMenuOpen(false)} />
-              <div className="absolute top-full right-0 mt-1 w-48 bg-[#161b22] border border-[#30363d] rounded-md shadow-xl z-20 py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
-                <div className="px-3 py-1.5 border-b border-[#30363d] flex items-center gap-2">
-                  <Calendar size={12} className="text-zinc-500" />
-                  <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Column Actions</span>
+              <div className="absolute top-full right-0 mt-1 w-48 bg-background border border-border-default rounded-md shadow-xl z-20 py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                <div className="px-3 py-1.5 border-b border-border-default flex items-center gap-2">
+                  <Calendar size={12} className="text-foreground/40" />
+                  <span className="text-[10px] uppercase font-bold text-foreground/40 tracking-wider">Column Actions</span>
                 </div>
 
                 {!isLocked && onAddTask && (
                   <button 
                     onClick={() => { onAddTask(); setIsMenuOpen(false); }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-zinc-300 hover:bg-[#1f242c] transition-colors border-b border-[#30363d]/50"
+                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-foreground/70 hover:bg-bg-subtle transition-colors border-b border-border-default/50"
                   >
                     <Plus size={14} className="text-accent" />
                     Add Task
@@ -111,7 +111,7 @@ export default function KanbanColumn({
                 
                 <button 
                   onClick={() => { setSortOrder('manual'); setIsMenuOpen(false); }}
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-xs transition-colors ${sortOrder === 'manual' ? 'text-accent bg-accent/5' : 'text-zinc-300 hover:bg-[#1f242c]'}`}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-xs transition-colors ${sortOrder === 'manual' ? 'text-accent bg-accent/5' : 'text-foreground/70 hover:bg-bg-subtle'}`}
                 >
                   <ListOrdered size={14} />
                   Manual Sort
@@ -119,7 +119,7 @@ export default function KanbanColumn({
                 
                 <button 
                   onClick={() => { setSortOrder('newest'); setIsMenuOpen(false); }}
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-xs transition-colors ${sortOrder === 'newest' ? 'text-accent bg-accent/5' : 'text-zinc-300 hover:bg-[#1f242c]'}`}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-xs transition-colors ${sortOrder === 'newest' ? 'text-accent bg-accent/5' : 'text-foreground/70 hover:bg-bg-subtle'}`}
                 >
                   <ArrowDownAz size={14} />
                   Newest First
@@ -127,7 +127,7 @@ export default function KanbanColumn({
                 
                 <button 
                   onClick={() => { setSortOrder('oldest'); setIsMenuOpen(false); }}
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-xs transition-colors ${sortOrder === 'oldest' ? 'text-accent bg-accent/5' : 'text-zinc-300 hover:bg-[#1f242c]'}`}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-xs transition-colors ${sortOrder === 'oldest' ? 'text-accent bg-accent/5' : 'text-foreground/70 hover:bg-bg-subtle'}`}
                 >
                   <ArrowUpAz size={14} />
                   Oldest First
@@ -164,7 +164,7 @@ export default function KanbanColumn({
           {!isLocked && onAddTask && (
             <button 
               onClick={onAddTask}
-              className="w-full flex items-center gap-2 px-2 py-2 text-xs text-zinc-500 hover:text-accent hover:bg-bg-subtle rounded-lg transition-all group"
+              className="w-full flex items-center gap-2 px-2 py-2 text-xs text-foreground/40 hover:text-accent hover:bg-bg-subtle rounded-lg transition-all group"
             >
               <Plus size={14} className="group-hover:scale-110 transition-transform" />
               Add a card

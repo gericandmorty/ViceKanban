@@ -343,7 +343,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-3 overflow-hidden">
             <button
               onClick={toggleSidebar}
-              className="lg:hidden p-2 -ml-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors text-zinc-500 hover:text-accent"
+              className="lg:hidden p-2 -ml-2 hover:bg-border-default rounded-lg transition-colors text-foreground/60 hover:text-accent"
               title="Toggle Sidebar"
             >
               <Menu size={20} />
@@ -361,13 +361,13 @@ export default function DashboardPage() {
                 }}
                 className="flex items-center gap-1.5 group"
               >
-                <UserIcon size={14} className="shrink-0 text-[#8b949e] group-hover:text-accent transition-colors" />
-                <span className="text-[#8b949e] group-hover:text-[#f0f6fc] transition-colors max-w-[120px] truncate">
+                <UserIcon size={14} className="shrink-0 text-foreground/60 group-hover:text-accent transition-colors" />
+                <span className="text-foreground/60 group-hover:text-foreground transition-colors max-w-[120px] truncate">
                   {username}
                 </span>
               </Link>
 
-              <span className="shrink-0 mx-2 text-[#484f58]">/</span>
+              <span className="shrink-0 mx-2 text-foreground/30">/</span>
 
               <div className="flex items-center gap-1.5 min-w-0 truncate">
                 {orgIdFromUrl ? (
@@ -378,11 +378,11 @@ export default function DashboardPage() {
                         e.preventDefault();
                         handleGoHome();
                       }}
-                      className="text-[#8b949e] hover:text-[#f0f6fc] transition-colors"
+                      className="text-foreground/60 hover:text-foreground transition-colors"
                     >
                       Organizations
                     </Link>
-                    <span className="shrink-0 mx-2 text-[#484f58]">/</span>
+                    <span className="shrink-0 mx-2 text-foreground/30">/</span>
                     {detailedOrg && detailedOrg._id === orgIdFromUrl ? (
                       <>
                         <Link
@@ -396,24 +396,24 @@ export default function DashboardPage() {
                             setActiveTab('Board');
                             closeSidebar();
                           }}
-                          className={`hover:underline truncate ${!currentProject ? 'font-semibold text-[#f0f6fc]' : 'text-[#8b949e]'}`}
+                          className={`hover:underline truncate ${!currentProject ? 'font-semibold text-foreground' : 'text-foreground/60'}`}
                           title={detailedOrg.name}
                         >
                           {detailedOrg.name}
                         </Link>
                         {currentProject && (
                           <>
-                            <span className="shrink-0 mx-2 text-[#484f58]">/</span>
-                            <span className="font-semibold text-[#f0f6fc] truncate" title={currentProject.name}>{currentProject.name}</span>
+                            <span className="shrink-0 mx-2 text-foreground/30">/</span>
+                            <span className="font-semibold text-foreground truncate" title={currentProject.name}>{currentProject.name}</span>
                           </>
                         )}
                       </>
                     ) : (
-                      <span className="h-4 w-24 bg-[#30363d] animate-pulse rounded" />
+                      <span className="h-4 w-24 bg-border-default animate-pulse rounded" />
                     )}
                   </>
                 ) : (
-                  <span className="font-semibold text-[#f0f6fc]">Organizations</span>
+                  <span className="font-semibold text-foreground">Organizations</span>
                 )}
               </div>
             </div>
@@ -424,12 +424,12 @@ export default function DashboardPage() {
               <button 
                 onClick={() => setIsNotifOpen(!isNotifOpen)}
                 className={`p-2 rounded-md transition-all relative ${
-                  isNotifOpen ? 'bg-border-default text-accent shadow-inner' : 'hover:bg-border-default/80 text-zinc-500'
+                  isNotifOpen ? 'bg-border-default text-accent shadow-inner' : 'hover:bg-border-default/80 text-foreground/60'
                 }`}
               >
                 <Bell size={18} className={unreadCount > 0 ? 'animate-wiggle' : ''} />
                 {unreadCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#2f81f7] rounded-full border border-bg-subtle" />
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-accent rounded-full border border-bg-subtle" />
                 )}
               </button>
 
@@ -455,8 +455,8 @@ export default function DashboardPage() {
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`flex items-center gap-2 py-2.5 text-sm font-medium border-b-2 transition-all relative ${activeTab === tab
-                    ? 'border-[#f78166] text-foreground'
-                    : 'border-transparent text-[#8b949e] hover:text-foreground hover:border-[#30363d]'
+                    ? 'border-tab-accent text-foreground'
+                    : 'border-transparent text-foreground/60 hover:text-foreground hover:border-border-default'
                   }`}
               >
                 {tab === 'Board' && <Kanban size={16} className="opacity-70" />}
@@ -472,7 +472,7 @@ export default function DashboardPage() {
       </header>
 
       {/* Content Area */}
-      <div className="flex-1 min-h-0 flex flex-col bg-[#fafafa] dark:bg-[#0d1117] relative">
+      <div className="flex-1 min-h-0 flex flex-col bg-background relative">
         {/* Top Progress Loader (The "Lines" loader) */}
         <AnimatePresence>
           {(isLoading || isDetailLoading) && (
@@ -494,7 +494,7 @@ export default function DashboardPage() {
             {/* Organizations List */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">Your Organizations</h2>
+                <h2 className="text-sm font-semibold text-foreground/60 uppercase tracking-wider">Your Organizations</h2>
                 {isMounted && (
                   <button
                     onClick={() => setIsOrgModalOpen(true)}
@@ -507,12 +507,12 @@ export default function DashboardPage() {
 
               {organizations.length === 0 ? (
                 <div className="rounded-lg border border-border-default border-dashed bg-background p-12 text-center space-y-3">
-                  <div className="w-12 h-12 rounded-xl bg-bg-subtle border border-border-default flex items-center justify-center mx-auto text-zinc-500">
+                  <div className="w-12 h-12 rounded-xl bg-bg-subtle border border-border-default flex items-center justify-center mx-auto text-foreground/40">
                     <Plus size={24} />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-sm">Create your first organization</h3>
-                    <p className="text-xs text-zinc-500 mt-1">Organizations are shared spaces where teams can collaborate on projects.</p>
+                    <h3 className="font-semibold text-sm text-foreground">Create your first organization</h3>
+                    <p className="text-xs text-foreground/60 mt-1">Organizations are shared spaces where teams can collaborate on projects.</p>
                   </div>
                   <button
                     onClick={() => setIsOrgModalOpen(true)}
@@ -537,18 +537,18 @@ export default function DashboardPage() {
                           {org.avatarUrl ? (
                             <Image src={org.avatarUrl} alt={org.name} fill sizes="40px" className="object-cover" />
                           ) : (
-                            <Building2 className={orgIdFromUrl === org._id ? 'text-accent' : 'text-zinc-500'} size={20} />
+                            <Building2 className={orgIdFromUrl === org._id ? 'text-accent' : 'text-foreground/40'} size={20} />
                           )}
                         </div>
                         <div>
-                          <p className="text-sm font-semibold group-hover:text-accent transition-colors">{org.name}</p>
+                          <p className="text-sm font-semibold text-foreground group-hover:text-accent transition-colors">{org.name}</p>
                           <div className="flex items-center gap-3 mt-0.5">
-                            <span className="text-[11px] text-zinc-500 flex items-center gap-1"><Shield size={10} /> Member</span>
-                            <span className="text-[11px] text-zinc-500 flex items-center gap-1"><Users size={10} /> {org.members?.length || 1} members</span>
+                            <span className="text-[11px] text-foreground/60 flex items-center gap-1"><Shield size={10} /> Member</span>
+                            <span className="text-[11px] text-foreground/60 flex items-center gap-1"><Users size={10} /> {org.members?.length || 1} members</span>
                           </div>
                         </div>
                       </div>
-                      <ChevronRight size={16} className="text-zinc-400 group-hover:text-accent group-hover:translate-x-0.5 transition-all" />
+                      <ChevronRight size={16} className="text-foreground/30 group-hover:text-accent group-hover:translate-x-0.5 transition-all" />
                     </div>
                   ))}
                 </div>
@@ -584,12 +584,12 @@ export default function DashboardPage() {
                               )}
                             </div>
                             <div>
-                              <p className="text-sm font-semibold">{inv.name}</p>
-                              <p className="text-xs text-zinc-500">
+                              <p className="text-sm font-semibold text-foreground">{inv.name}</p>
+                              <p className="text-xs text-foreground/60">
                                 {senderName ? `${senderName} invited you to join` : 'You\'ve been invited to join this organization'}
                               </p>
                               {hoursLeft !== null && (
-                                <p className="text-[10px] text-zinc-600 mt-0.5">
+                                <p className="text-[10px] text-foreground/40 mt-0.5">
                                   Expires in {hoursLeft}h
                                 </p>
                               )}

@@ -35,44 +35,40 @@ export default function DeleteAnnouncementModal({
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative w-full max-w-md bg-[#0d1117] border border-[#30363d] rounded-xl shadow-2xl overflow-hidden"
+            className="relative w-full max-w-md bg-background border border-border-default rounded-xl shadow-2xl overflow-hidden"
           >
             {/* Header */}
-            <div className="px-6 py-4 border-b border-[#30363d] bg-[#161b22] flex items-center justify-between">
-              <div className="flex items-center gap-2 text-[#f85149]">
-                <AlertTriangle size={18} />
-                <h2 className="text-base font-semibold">Delete Announcement</h2>
-              </div>
+            <div className="px-6 py-4 border-b border-border-default bg-bg-subtle flex items-center justify-between">
+              <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                Delete Announcement
+              </h3>
               <button 
                 onClick={onClose}
-                className="p-1.5 text-[#8b949e] hover:text-[#f0f6fc] hover:bg-[#30363d] rounded-md transition-all"
+                className="p-1.5 text-foreground/60 hover:text-foreground hover:bg-border-default rounded-md transition-all"
               >
                 <X size={18} />
               </button>
             </div>
 
             {/* Body */}
-            <div className="p-6">
-              <p className="text-sm text-[#c9d1d9] leading-relaxed">
-                Are you sure you want to delete <span className="font-bold text-[#f0f6fc] underline underline-offset-4 decoration-[#30363d]">"{title}"</span>? 
-                This action is permanent and will remove the announcement for all organization members.
+            <div className="p-6 space-y-4">
+              <p className="text-sm text-foreground/80 leading-relaxed">
+                Are you sure you want to delete <span className="font-bold text-foreground underline underline-offset-4 decoration-border-default">"{title}"</span>? 
+                This action is permanent and cannot be undone.
               </p>
-              
-              <div className="mt-4 p-3 bg-[#f85149]/5 border border-[#f85149]/20 rounded-md">
-                <p className="text-[11px] text-[#f85149] font-medium uppercase tracking-wider">
-                  Danger Zone
-                </p>
-                <p className="text-[11px] text-[#8b949e] mt-1">
-                  Once deleted, members will no longer be able to see the full content of this update.
+              <div className="flex items-start gap-3 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                <AlertCircle className="text-red-500 shrink-0 mt-0.5" size={16} />
+                <p className="text-[11px] text-red-500/80 mt-1">
+                  This will remove the announcement for all organization members immediately.
                 </p>
               </div>
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-[#30363d] bg-[#161b22] flex items-center justify-end gap-3">
-              <button
+            <div className="px-6 py-4 border-t border-border-default bg-bg-subtle flex items-center justify-end gap-3">
+              <button 
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-semibold text-[#c9d1d9] hover:bg-[#30363d] rounded-md transition-all border border-[#30363d]"
+                className="btn btn-outline py-2 px-4 shadow-sm"
               >
                 Cancel
               </button>

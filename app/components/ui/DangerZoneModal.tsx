@@ -54,15 +54,15 @@ export default function DangerZoneModal({
             initial={{ scale: 0.95, opacity: 0, y: 10 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 10 }}
-            className="relative w-full max-w-md bg-[#0d1117] border border-[#30363d] rounded-lg shadow-xl overflow-hidden"
+            className="relative w-full max-w-md bg-background border border-border-default rounded-lg shadow-xl overflow-hidden"
           >
             {/* Header - Styled like comment header */}
-            <div className="bg-[#161b22] px-4 py-2.5 border-b border-[#30363d] flex items-center justify-between">
-              <span className="text-[13px] font-semibold text-[#f0f6fc]">{title}</span>
+            <div className="bg-bg-subtle px-4 py-2.5 border-b border-border-default flex items-center justify-between">
+              <span className="text-[13px] font-semibold text-foreground">{title}</span>
               <button 
                 onClick={onClose}
                 disabled={isLoading}
-                className="text-[#8b949e] hover:text-[#f0f6fc] transition-colors disabled:opacity-30"
+                className="text-foreground/40 hover:text-foreground transition-colors disabled:opacity-30"
               >
                 <X size={16} />
               </button>
@@ -72,10 +72,10 @@ export default function DangerZoneModal({
               {step === 1 ? (
                 <div className="space-y-6">
                   <div className="space-y-3">
-                    <p className="text-[14px] text-[#f0f6fc] leading-[1.5]">
+                    <p className="text-[14px] text-foreground leading-[1.5]">
                       You are about to delete <span className="font-bold">{itemName}</span>. This will permanently remove all associated tasks and data.
                     </p>
-                    <p className="text-[13px] text-[#8b949e]">
+                    <p className="text-[13px] text-foreground/60">
                       This action cannot be undone. Are you sure you want to proceed?
                     </p>
                   </div>
@@ -84,13 +84,13 @@ export default function DangerZoneModal({
                     <button 
                       onClick={onClose}
                       disabled={isLoading}
-                      className="px-4 py-1.5 text-[13px] font-semibold text-[#8b949e] hover:text-[#f0f6fc] transition-colors"
+                      className="px-4 py-1.5 text-[13px] font-semibold text-foreground/60 hover:text-foreground transition-colors"
                     >
                       Cancel
                     </button>
                     <button 
                       onClick={() => setStep(2)}
-                      className="px-5 py-2 bg-[#238636] hover:bg-[#2ea043] text-white text-[13px] font-bold rounded-md transition-all shadow-sm"
+                      className="btn btn-primary px-5 py-2 text-[13px] font-bold"
                     >
                       I understand
                     </button>
@@ -99,7 +99,7 @@ export default function DangerZoneModal({
               ) : (
                 <div className="space-y-6">
                   <div className="space-y-4">
-                    <p className="text-[14px] text-[#f0f6fc]">
+                    <p className="text-[14px] text-foreground">
                       To verify, type <span className="font-mono font-bold text-accent">{itemName}</span> below:
                     </p>
                     <input 
@@ -108,7 +108,7 @@ export default function DangerZoneModal({
                       value={confirmText}
                       onChange={(e) => setConfirmText(e.target.value)}
                       placeholder="Type name here..."
-                      className="w-full bg-[#010409] border border-[#30363d] rounded-md px-4 py-2.5 text-[14px] text-[#f0f6fc] outline-none focus:ring-1 focus:ring-accent transition-all"
+                      className="w-full bg-background border border-border-default rounded-md px-4 py-2.5 text-[14px] text-foreground outline-none focus:ring-1 focus:ring-accent transition-all placeholder:text-foreground/30"
                     />
                   </div>
 
@@ -116,14 +116,14 @@ export default function DangerZoneModal({
                     <button 
                       onClick={() => setStep(1)}
                       disabled={isLoading}
-                      className="px-4 py-1.5 text-[13px] font-semibold text-[#8b949e] hover:text-[#f0f6fc] transition-colors"
+                      className="px-4 py-1.5 text-[13px] font-semibold text-foreground/60 hover:text-foreground transition-colors"
                     >
                       Back
                     </button>
                     <button 
                       onClick={onConfirm}
                       disabled={!isMatched || isLoading}
-                      className="px-5 py-2 bg-[#238636] hover:bg-[#2ea043] text-white text-[13px] font-bold rounded-md disabled:opacity-50 transition-all shadow-sm flex items-center gap-2"
+                      className="btn btn-primary px-5 py-2 text-[13px] font-bold disabled:opacity-50 flex items-center gap-2"
                     >
                       {isLoading ? (
                         <>

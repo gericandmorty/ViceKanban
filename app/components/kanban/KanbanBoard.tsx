@@ -499,13 +499,13 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
     <div className="flex-1 overflow-hidden h-full pb-2 flex flex-col">
       {/* Board Toolbar */}
       <div className="flex items-center justify-between px-2 mb-3 md:mb-4 shrink-0">
-        <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-900/50 p-1 rounded-lg border border-border-default/50 self-start">
+        <div className="flex items-center gap-1.5 bg-bg-subtle p-1 rounded-lg border border-border-default self-start">
           <button 
             onClick={() => setFilterOnlyMe(false)}
             className={`px-3 py-1.5 text-[10px] md:text-xs font-semibold rounded-md transition-all ${
               !filterOnlyMe 
                 ? 'bg-background shadow-sm text-foreground' 
-                : 'text-zinc-500 hover:text-foreground'
+                : 'text-foreground/40 hover:text-foreground'
             }`}
           >
             All Tasks
@@ -515,7 +515,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
             className={`px-3 py-1.5 text-[10px] md:text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${
               filterOnlyMe 
                 ? 'bg-accent text-white shadow-sm' 
-                : 'text-zinc-500 hover:text-foreground'
+                : 'text-foreground/40 hover:text-foreground'
             }`}
           >
             <UserIcon size={12} />
@@ -581,60 +581,60 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
               className="relative w-full max-w-sm bg-background border border-border-default rounded-xl shadow-2xl"
             >
               <div className="px-6 py-4 border-b border-border-default flex items-center justify-between bg-bg-subtle rounded-t-xl">
-                <h3 className="font-bold flex items-center gap-2">
+                <h3 className="font-bold flex items-center gap-2 text-foreground">
                   <Plus size={16} className="text-accent" />
                   Add New Task
                 </h3>
-                <button onClick={() => setShowTaskForm(null)}>
+                <button onClick={() => setShowTaskForm(null)} className="text-foreground/40 hover:text-foreground">
                   <X size={18} />
                 </button>
               </div>
               <form onSubmit={handleCreateTask} className="p-6 space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-zinc-500 uppercase">Task Title</label>
+                  <label className="text-[10px] font-bold text-foreground/40 uppercase">Task Title</label>
                   <div className="relative">
-                    <Type className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={14} />
+                    <Type className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/20" size={14} />
                     <input 
                       autoFocus
                       required
                       value={newTaskTitle}
                       onChange={(e) => setNewTaskTitle(e.target.value)}
                       placeholder="What needs to be done?"
-                      className="w-full pl-9 pr-4 py-2 bg-background border border-border-default rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-accent transition-all"
+                      className="w-full pl-9 pr-4 py-2 bg-background border border-border-default rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-accent transition-all placeholder:text-foreground/20"
                     />
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-zinc-500 uppercase">Description</label>
+                  <label className="text-[10px] font-bold text-foreground/40 uppercase">Description</label>
                   <div className="relative">
-                    <FileText className="absolute left-3 top-2 text-zinc-400" size={14} />
+                    <FileText className="absolute left-3 top-2 text-foreground/20" size={14} />
                     <textarea 
                       value={newTaskDesc}
                       onChange={(e) => setNewTaskDesc(e.target.value)}
                       placeholder="Optional details..."
-                      className="w-full pl-9 pr-4 py-2 bg-background border border-border-default rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-accent transition-all min-h-[80px] resize-none"
+                      className="w-full pl-9 pr-4 py-2 bg-background border border-border-default rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-accent transition-all min-h-[80px] resize-none placeholder:text-foreground/20"
                     />
                   </div>
                 </div>
 
                 {isOwnerOrCreator && (
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-zinc-500 uppercase">Assign To</label>
+                    <label className="text-[10px] font-bold text-foreground/40 uppercase">Assign To</label>
                     <div className="relative">
                       <div 
                         onClick={() => setIsAssigneeDropdownOpen(!isAssigneeDropdownOpen)}
                         className="w-full pl-9 pr-4 py-2 bg-background border border-border-default rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-accent transition-all cursor-pointer flex items-center justify-between group"
                       >
-                        <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 group-hover:text-accent transition-colors" size={14} />
-                        <span className="truncate">
+                        <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/20 group-hover:text-accent transition-colors" size={14} />
+                        <span className="truncate text-foreground">
                           {newTaskAssignee ? (
                             members.find(m => m.user._id === newTaskAssignee)?.user?.username || 'Selected User'
                           ) : (
-                            <span className="text-zinc-500">Unassigned</span>
+                            <span className="text-foreground/40">Unassigned</span>
                           )}
                         </span>
                         <div className={`transition-transform duration-200 ${isAssigneeDropdownOpen ? 'rotate-180' : ''}`}>
-                          <Send size={10} className="rotate-90 text-zinc-500" />
+                          <Send size={10} className="rotate-90 text-foreground/40" />
                         </div>
                       </div>
 
@@ -650,7 +650,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                               initial={{ opacity: 0, y: -10 }}
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: -10 }}
-                              className="absolute left-0 right-0 mt-1 bg-[#161b22] border border-[#30363d] rounded-lg shadow-xl z-[130] overflow-hidden"
+                              className="absolute left-0 right-0 mt-1 bg-background border border-border-default rounded-lg shadow-xl z-[130] overflow-hidden"
                             >
                               <div className="max-h-[160px] overflow-y-auto custom-scrollbar py-1">
                                 <div 
@@ -658,9 +658,9 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                                     setNewTaskAssignee('');
                                     setIsAssigneeDropdownOpen(false);
                                   }}
-                                  className={`px-4 py-2 text-sm cursor-pointer hover:bg-[#1f6feb] transition-colors flex items-center gap-2 ${!newTaskAssignee ? 'bg-[#1f6feb]/20 text-[#58a6ff]' : 'text-[#8b949e]'}`}
+                                  className={`px-4 py-2 text-sm cursor-pointer hover:bg-accent hover:text-white transition-colors flex items-center gap-2 ${!newTaskAssignee ? 'bg-accent/10 text-accent font-semibold' : 'text-foreground/60'}`}
                                 >
-                                  <div className="w-5 h-5 rounded-full border border-dashed border-[#30363d] flex items-center justify-center text-[10px]">
+                                  <div className="w-5 h-5 rounded-full border border-dashed border-border-default flex items-center justify-center text-[10px]">
                                     <X size={10} />
                                   </div>
                                   Unassigned
@@ -672,9 +672,9 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                                       setNewTaskAssignee(member.user._id);
                                       setIsAssigneeDropdownOpen(false);
                                     }}
-                                    className={`px-4 py-2 text-sm cursor-pointer hover:bg-[#1f6feb] hover:text-white transition-colors flex items-center gap-2 ${newTaskAssignee === member.user._id ? 'bg-[#1f6feb]/20 text-[#58a6ff]' : 'text-[#f0f6fc]'}`}
+                                    className={`px-4 py-2 text-sm cursor-pointer hover:bg-accent hover:text-white transition-colors flex items-center gap-2 ${newTaskAssignee === member.user._id ? 'bg-accent/10 text-accent font-semibold' : 'text-foreground'}`}
                                   >
-                                    <div className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] font-bold overflow-hidden relative border border-[#30363d]">
+                                    <div className="w-5 h-5 rounded-full bg-bg-subtle flex items-center justify-center text-[10px] font-bold overflow-hidden relative border border-border-default">
                                       {member?.user?.avatarUrl ? (
                                         <Image src={member.user.avatarUrl} alt={member.user.username || 'User'} fill sizes="20px" className="object-cover" />
                                       ) : (
@@ -715,85 +715,85 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="bg-background border border-border-default w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
             >
-              <div className="flex items-center justify-between px-6 py-3 border-b border-[#30363d] bg-[#161b22]">
+              <div className="flex items-center justify-between px-6 py-3 border-b border-border-default bg-bg-subtle">
                 <div className="flex items-center gap-3">
-                  <div className="p-1.5 border border-[#30363d] rounded-md text-[#8b949e] bg-[#0d1117]">
+                  <div className="p-1.5 border border-border-default rounded-md text-foreground/60 bg-background">
                     <FileText size={18} />
                   </div>
                   <div>
-                    <h2 className="text-[14px] font-semibold text-[#f0f6fc]">Task Details</h2>
-                    <p className="text-[10px] text-[#8b949e] font-mono uppercase tracking-wider">ID: {inspectingTask._id}</p>
+                    <h2 className="text-[14px] font-semibold text-foreground">Task Details</h2>
+                    <p className="text-[10px] text-foreground/40 font-mono uppercase tracking-wider">ID: {inspectingTask._id}</p>
                   </div>
                 </div>
                 <button 
                   onClick={() => setInspectingTask(null)}
-                  className="p-1 px-2 text-[#8b949e] hover:text-[#f0f6fc] hover:bg-[#30363d]/50 rounded-md transition-all"
+                  className="p-1 px-2 text-foreground/40 hover:text-foreground hover:bg-border-default rounded-md transition-all"
                 >
                   <X size={18} />
                 </button>
               </div>
 
               {/* Modal Body */}
-              <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-10 bg-[#0d1117]">
+              <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-10 bg-background">
                 {/* Title Section */}
                 <div className="space-y-1">
-                  <label className="text-[12px] font-semibold text-[#8b949e]">Title</label>
+                  <label className="text-[12px] font-semibold text-foreground/40">Title</label>
                   {isEditingTask ? (
                     <input 
                       autoFocus
                       value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
-                      className="w-full bg-[#010409] border border-[#30363d] rounded-lg px-4 py-2 text-[18px] font-bold text-[#f0f6fc] outline-none focus:ring-1 focus:ring-accent"
+                      className="w-full bg-background border border-border-default rounded-lg px-4 py-2 text-[18px] font-bold text-foreground outline-none focus:ring-1 focus:ring-accent"
                     />
                   ) : (
-                    <h1 className="text-[24px] font-bold text-[#f0f6fc] tracking-tight">
+                    <h1 className="text-[24px] font-bold text-foreground tracking-tight">
                       {inspectingTask.title}
                     </h1>
                   )}
                 </div>
 
                 {/* Meta Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 py-8 border-y border-[#30363d]">
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 py-8 border-y border-border-default">
                   <div className="space-y-2">
-                    <label className="text-[12px] font-semibold text-[#8b949e]">Status</label>
+                    <label className="text-[12px] font-semibold text-foreground/40">Status</label>
                     <div className="flex items-center gap-2">
                       <div className={`w-2.5 h-2.5 rounded-full ${
-                        inspectingTask.status === 'reviewed' ? 'bg-[#3fb950]' :
-                        inspectingTask.status === 'done' ? 'bg-[#238636]' :
-                        inspectingTask.status === 'in_progress' ? 'bg-[#1f6feb]' : 'bg-[#8b949e]'
+                        inspectingTask.status === 'reviewed' ? 'bg-green-500' :
+                        inspectingTask.status === 'done' ? 'bg-green-600' :
+                        inspectingTask.status === 'in_progress' ? 'bg-accent' : 'bg-foreground/20'
                       }`} />
-                      <span className="text-[14px] font-medium text-[#f0f6fc] capitalize">{inspectingTask.status.replace('_', ' ')}</span>
+                      <span className="text-[14px] font-medium text-foreground capitalize">{inspectingTask.status.replace('_', ' ')}</span>
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[12px] font-semibold text-[#8b949e]">Creator</label>
+                    <label className="text-[12px] font-semibold text-foreground/40">Creator</label>
                     <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-[#161b22] flex items-center justify-center text-[10px] font-bold overflow-hidden relative border border-[#30363d] shadow-sm">
+                      <div className="w-6 h-6 rounded-full bg-bg-subtle flex items-center justify-center text-[10px] font-bold overflow-hidden relative border border-border-default shadow-sm text-foreground">
                         {inspectingTask.creator?.avatarUrl ? (
                           <Image src={inspectingTask.creator.avatarUrl} alt={inspectingTask.creator.username || 'Owner'} fill sizes="24px" className="object-cover" />
                         ) : (
                           inspectingTask.creator?.username?.charAt(0).toUpperCase() || '?'
                         )}
                       </div>
-                      <span className="text-[14px] font-medium text-[#f0f6fc]">{inspectingTask.creator.username}</span>
+                      <span className="text-[14px] font-medium text-foreground">{inspectingTask.creator.username}</span>
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[12px] font-semibold text-[#8b949e]">Assignee</label>
+                    <label className="text-[12px] font-semibold text-foreground/40">Assignee</label>
                     <div className="flex items-center gap-2">
                       {(inspectingTask as any).assignee ? (
                         <>
-                          <div className="w-6 h-6 rounded-full bg-[#1f6feb]/10 flex items-center justify-center text-[10px] font-bold text-[#1f6feb] overflow-hidden relative border border-[#1f6feb]/20 shadow-sm">
+                          <div className="w-6 h-6 rounded-full bg-accent/10 flex items-center justify-center text-[10px] font-bold text-accent overflow-hidden relative border border-accent/20 shadow-sm">
                             {(inspectingTask as any).assignee?.avatarUrl ? (
                               <Image src={(inspectingTask as any).assignee.avatarUrl} alt={(inspectingTask as any).assignee.username || 'Assignee'} fill sizes="24px" className="object-cover" />
                             ) : (
                               (inspectingTask as any).assignee?.username?.charAt(0).toUpperCase() || '?'
                             )}
                           </div>
-                          <span className="text-[14px] font-medium text-[#f0f6fc]">{(inspectingTask as any).assignee.username}</span>
+                          <span className="text-[14px] font-medium text-foreground">{(inspectingTask as any).assignee.username}</span>
                         </>
                       ) : (
-                        <span className="text-[14px] text-[#8b949e] italic font-normal">Unassigned</span>
+                        <span className="text-[14px] text-foreground/20 italic font-normal">Unassigned</span>
                       )}
                     </div>
                   </div>
@@ -802,62 +802,62 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                 {/* Description */}
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 px-1">
-                    <Type size={16} className="text-[#8b949e]" />
-                    <label className="text-[14px] font-semibold text-[#f0f6fc]">Description</label>
+                    <Type size={16} className="text-foreground/60" />
+                    <label className="text-[14px] font-semibold text-foreground">Description</label>
                   </div>
                   {isEditingTask ? (
                     <textarea 
                       value={editDescription}
                       onChange={(e) => setEditDescription(e.target.value)}
-                      className="w-full bg-[#010409] border border-[#30363d] rounded-lg px-4 py-3 text-[14px] text-[#f0f6fc] outline-none min-h-[150px] resize-none focus:ring-1 focus:ring-accent leading-[1.6]"
+                      className="w-full bg-background border border-border-default rounded-lg px-4 py-3 text-[14px] text-foreground outline-none min-h-[150px] resize-none focus:ring-1 focus:ring-accent leading-[1.6]"
                       placeholder="Add a more detailed description..."
                     />
                   ) : (
-                    <div className="bg-[#010409] border border-[#30363d] rounded-lg p-5 min-h-[120px] shadow-inner">
+                    <div className="bg-bg-subtle border border-border-default rounded-lg p-5 min-h-[120px] shadow-inner">
                       {inspectingTask.description ? (
-                        <p className="text-[14px] text-[#f0f6fc] leading-[1.6] whitespace-pre-wrap font-normal">
+                        <p className="text-[14px] text-foreground leading-[1.6] whitespace-pre-wrap font-normal">
                           {inspectingTask.description}
                         </p>
                       ) : (
-                        <p className="text-[13px] text-[#8b949e] italic">No description provided for this task.</p>
+                        <p className="text-[13px] text-foreground/50 italic">No description provided for this task.</p>
                       )}
                     </div>
                   )}
                 </div>
 
                 {/* Discussion Section */}
-                <div className="space-y-6 pt-10 border-t border-[#30363d]">
+                <div className="space-y-6 pt-10 border-t border-border-default">
                   <div className="flex items-center gap-2 px-1">
-                    <MessageSquare size={16} className="text-[#8b949e]" />
-                    <label className="text-[14px] font-semibold text-[#f0f6fc]">Activity</label>
+                    <MessageSquare size={16} className="text-foreground/60" />
+                    <label className="text-[14px] font-semibold text-foreground">Activity</label>
                   </div>
 
                   {/* Comment List */}
                   <div className="space-y-6">
                     {isFetchingComments ? (
                       <div className="flex justify-center py-6">
-                        <Loader2 className="animate-spin text-[#8b949e]" size={24} />
+                        <Loader2 className="animate-spin text-foreground/40" size={24} />
                       </div>
                     ) : comments.length === 0 ? (
-                      <p className="text-[13px] text-[#8b949e] italic px-1">No comments yet. Start a discussion below.</p>
+                      <p className="text-[13px] text-foreground/40 italic px-1">No comments yet. Start a discussion below.</p>
                     ) : (
                       <div className="space-y-8">
                         {comments.filter(c => !c.parentComment).map((comment) => (
                           <div key={comment._id} className="space-y-4">
                             {/* Main Comment */}
                             <div className="flex gap-4">
-                              <div className="w-10 h-10 rounded-full bg-[#161b22] flex-shrink-0 flex items-center justify-center text-[11px] font-bold border border-[#30363d] shadow-sm overflow-hidden relative mt-1">
+                              <div className="w-10 h-10 rounded-full bg-bg-subtle flex-shrink-0 flex items-center justify-center text-[11px] font-bold border border-border-default shadow-sm overflow-hidden relative mt-1 text-foreground">
                                 {comment.author.avatarUrl ? (
                                   <Image src={comment.author.avatarUrl} alt={comment.author.username} fill sizes="40px" className="object-cover" />
                                 ) : (
                                   comment.author.username.charAt(0).toUpperCase()
                                 )}
                               </div>
-                              <div className="flex-1 border border-[#30363d] rounded-lg overflow-hidden bg-[#0d1117] shadow-sm transition-shadow hover:shadow-md">
-                                  <div className="bg-[#161b22] px-4 py-2.5 border-b border-[#30363d] flex items-center justify-between">
+                              <div className="flex-1 border border-border-default rounded-lg overflow-hidden bg-background shadow-sm transition-shadow hover:shadow-md">
+                                  <div className="bg-bg-subtle px-4 py-2.5 border-b border-border-default flex items-center justify-between">
                                   <div className="flex items-center gap-2">
-                                    <span className="text-[14px] font-semibold text-[#f0f6fc]">{comment.author.username}</span>
-                                    <span className="text-[12px] text-[#8b949e]">commented on {new Date(comment.createdAt).toLocaleDateString()}</span>
+                                    <span className="text-[14px] font-semibold text-foreground">{comment.author.username}</span>
+                                    <span className="text-[12px] text-foreground/40">commented on {new Date(comment.createdAt).toLocaleDateString()}</span>
                                   </div>
                                   <div className="flex items-center gap-3">
                                     {comment.author._id === currentUserId && (
@@ -867,13 +867,13 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                                             setEditingCommentId(comment._id);
                                             setEditingContent(comment.content);
                                           }}
-                                          className="text-[12px] font-semibold text-[#8b949e] hover:text-accent transition-colors"
+                                          className="text-[12px] font-semibold text-foreground/40 hover:text-accent transition-colors"
                                         >
                                           Edit
                                         </button>
                                         <button 
                                           onClick={() => handleDeleteComment(comment._id)}
-                                          className="text-[12px] font-semibold text-[#8b949e] hover:text-red-500 transition-colors"
+                                          className="text-[12px] font-semibold text-foreground/40 hover:text-red-500 transition-colors"
                                         >
                                           Delete
                                         </button>
@@ -881,31 +881,31 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                                     )}
                                     <button 
                                       onClick={() => setReplyingTo(replyingTo === comment._id ? null : comment._id)}
-                                      className="text-[12px] font-semibold text-[#8b949e] hover:text-[#1f6feb] transition-colors"
+                                      className="text-[12px] font-semibold text-foreground/40 hover:text-accent transition-colors"
                                     >
                                       Reply
                                     </button>
                                   </div>
                                 </div>
-                                <div className="px-4 py-3.5 text-[14px] text-[#f0f6fc] leading-[1.6]">
+                                <div className="px-4 py-3.5 text-[14px] text-foreground leading-[1.6]">
                                   {editingCommentId === comment._id ? (
                                     <div className="space-y-3">
                                       <textarea 
                                         autoFocus
                                         value={editingContent}
                                         onChange={(e) => setEditingContent(e.target.value)}
-                                        className="w-full bg-[#010409] border border-[#30363d] rounded-md px-3 py-2 text-[14px] text-[#f0f6fc] outline-none min-h-[100px] resize-none focus:ring-1 focus:ring-accent"
+                                        className="w-full bg-background border border-border-default rounded-md px-3 py-2 text-[14px] text-foreground outline-none min-h-[100px] resize-none focus:ring-1 focus:ring-accent"
                                       />
                                       <div className="flex justify-end gap-2">
                                         <button 
                                           onClick={() => setEditingCommentId(null)}
-                                          className="px-3 py-1.5 text-[12px] font-semibold text-[#8b949e] hover:text-[#f0f6fc]"
+                                          className="px-3 py-1.5 text-[12px] font-semibold text-foreground/60 hover:text-foreground"
                                         >
                                           Cancel
                                         </button>
                                         <button 
                                           onClick={() => handleUpdateComment(comment._id)}
-                                          className="px-4 py-1.5 bg-[#238636] text-white text-[12px] font-bold rounded-md hover:bg-[#2ea043]"
+                                          className="px-4 py-1.5 btn btn-primary text-[12px] font-bold rounded-md"
                                         >
                                           Update
                                         </button>
@@ -921,18 +921,18 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                             {/* Replies */}
                             {comments.filter(r => r.parentComment === comment._id).map((reply) => (
                               <div key={reply._id} className="flex gap-4 ml-14">
-                                <div className="w-8 h-8 rounded-full bg-[#161b22] flex-shrink-0 flex items-center justify-center text-[9px] font-bold border border-[#30363d] shadow-sm overflow-hidden relative mt-1">
+                                <div className="w-8 h-8 rounded-full bg-bg-subtle flex-shrink-0 flex items-center justify-center text-[9px] font-bold border border-border-default shadow-sm overflow-hidden relative mt-1 text-foreground">
                                   {reply.author.avatarUrl ? (
                                     <Image src={reply.author.avatarUrl} alt={reply.author.username} fill sizes="32px" className="object-cover" />
                                   ) : (
                                     reply.author.username.charAt(0).toUpperCase()
                                   )}
                                 </div>
-                                <div className="flex-1 border border-[#30363d] rounded-lg overflow-hidden bg-[#0d1117] shadow-sm">
-                                  <div className="bg-[#161b22]/50 px-3 py-2 border-b border-[#30363d] flex items-center justify-between">
+                                <div className="flex-1 border border-border-default rounded-lg overflow-hidden bg-background shadow-sm">
+                                  <div className="bg-bg-subtle/50 px-3 py-2 border-b border-border-default flex items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                      <span className="text-[13px] font-semibold text-[#f0f6fc]">{reply.author.username}</span>
-                                      <span className="text-[11px] text-[#8b949e]">{new Date(reply.createdAt).toLocaleDateString()}</span>
+                                      <span className="text-[13px] font-semibold text-foreground">{reply.author.username}</span>
+                                      <span className="text-[11px] text-foreground/40">{new Date(reply.createdAt).toLocaleDateString()}</span>
                                     </div>
                                     {reply.author._id === currentUserId && (
                                       <div className="flex items-center gap-3">
@@ -941,38 +941,38 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                                             setEditingCommentId(reply._id);
                                             setEditingContent(reply.content);
                                           }}
-                                          className="text-[11px] font-semibold text-[#8b949e] hover:text-accent transition-colors"
+                                          className="text-[11px] font-semibold text-foreground/40 hover:text-accent transition-colors"
                                         >
                                           Edit
                                         </button>
                                         <button 
                                           onClick={() => handleDeleteComment(reply._id)}
-                                          className="text-[11px] font-semibold text-[#8b949e] hover:text-red-500 transition-colors"
+                                          className="text-[11px] font-semibold text-foreground/40 hover:text-red-500 transition-colors"
                                         >
                                           Delete
                                         </button>
                                       </div>
                                     )}
                                   </div>
-                                  <div className="px-3 py-2.5 text-[13px] text-[#f0f6fc] leading-[1.5]">
+                                  <div className="px-3 py-2.5 text-[13px] text-foreground leading-[1.5]">
                                     {editingCommentId === reply._id ? (
                                       <div className="space-y-3">
                                         <textarea 
                                           autoFocus
                                           value={editingContent}
                                           onChange={(e) => setEditingContent(e.target.value)}
-                                          className="w-full bg-[#010409] border border-[#30363d] rounded-md px-3 py-2 text-[13px] text-[#f0f6fc] outline-none min-h-[80px] resize-none focus:ring-1 focus:ring-accent"
+                                          className="w-full bg-background border border-border-default rounded-md px-3 py-2 text-[13px] text-foreground outline-none min-h-[80px] resize-none focus:ring-1 focus:ring-accent"
                                         />
                                         <div className="flex justify-end gap-2">
                                           <button 
                                             onClick={() => setEditingCommentId(null)}
-                                            className="px-2 py-1 text-[11px] font-semibold text-[#8b949e] hover:text-[#f0f6fc]"
+                                            className="px-2 py-1 text-[11px] font-semibold text-foreground/60 hover:text-foreground"
                                           >
                                             Cancel
                                           </button>
                                           <button 
                                             onClick={() => handleUpdateComment(reply._id)}
-                                            className="px-3 py-1 bg-[#238636] text-white text-[11px] font-bold rounded-md hover:bg-[#2ea043]"
+                                            className="px-3 py-1 btn btn-primary text-[11px] font-bold rounded-md"
                                           >
                                             Update
                                           </button>
@@ -989,25 +989,25 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                             {/* Reply Input Box */}
                             {replyingTo === comment._id && (
                               <div className="ml-14 mt-3">
-                                <div className="border border-[#30363d] rounded-lg bg-[#0d1117] overflow-hidden focus-within:ring-1 focus-within:ring-[#1f6feb]">
+                                <div className="border border-border-default rounded-lg bg-background overflow-hidden focus-within:ring-1 focus-within:ring-accent">
                                   <textarea 
                                     autoFocus
                                     value={newCommentContent}
                                     onChange={(e) => setNewCommentContent(e.target.value)}
                                     placeholder="Write a reply..."
-                                    className="w-full bg-[#010409] border-none px-4 py-3 text-[13px] text-[#f0f6fc] outline-none min-h-[80px] resize-none"
+                                    className="w-full bg-background border-none px-4 py-3 text-[13px] text-foreground outline-none min-h-[80px] resize-none"
                                   />
-                                  <div className="px-3 py-2 bg-[#161b22] border-t border-[#30363d] flex justify-end gap-2">
+                                  <div className="px-3 py-2 bg-bg-subtle border-t border-border-default flex justify-end gap-2">
                                     <button 
                                       onClick={() => setReplyingTo(null)}
-                                      className="px-3 py-1.5 text-[12px] font-semibold text-[#8b949e] hover:text-[#f0f6fc] transition-colors"
+                                      className="px-3 py-1.5 text-[12px] font-semibold text-foreground/60 hover:text-foreground transition-colors"
                                     >
                                       Cancel
                                     </button>
                                     <button 
                                       onClick={() => handleCreateComment(comment._id)}
                                       disabled={!newCommentContent.trim() || isSendingComment}
-                                      className="px-4 py-1.5 bg-[#238636] hover:bg-[#2ea043] text-white text-[12px] font-bold rounded-md disabled:opacity-50 transition-all shadow-sm flex items-center gap-2"
+                                      className="px-4 py-1.5 btn btn-primary text-[12px] font-bold rounded-md disabled:opacity-50 transition-all shadow-sm flex items-center gap-2"
                                     >
                                       {isSendingComment ? <Loader2 className="animate-spin" size={12} /> : 'Post Reply'}
                                     </button>
@@ -1025,25 +1025,25 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                   {!replyingTo && (
                     <div className="pt-4 px-1">
                       <div className="flex gap-4">
-                        <div className="w-10 h-10 rounded-full bg-[#161b22] flex-shrink-0 flex items-center justify-center text-[11px] font-bold border border-[#30363d] shadow-sm overflow-hidden relative mt-1">
+                        <div className="w-10 h-10 rounded-full bg-bg-subtle flex-shrink-0 flex items-center justify-center text-[11px] font-bold border border-border-default shadow-sm overflow-hidden relative mt-1 text-foreground">
                           {currentUserAvatar ? (
                             <Image src={currentUserAvatar} alt="My Avatar" fill sizes="40px" className="object-cover" />
                           ) : (
                             '?'
                           )}
                         </div>
-                        <div className="flex-1 border border-[#30363d] rounded-lg bg-[#0d1117] overflow-hidden focus-within:ring-1 focus-within:ring-[#1f6feb] shadow-sm">
+                        <div className="flex-1 border border-border-default rounded-lg bg-background overflow-hidden focus-within:ring-1 focus-within:ring-accent shadow-sm">
                           <textarea 
                             value={newCommentContent}
                             onChange={(e) => setNewCommentContent(e.target.value)}
                             placeholder="Add a comment..."
-                            className="w-full bg-[#010409] px-4 py-3 text-[14px] text-[#f0f6fc] outline-none min-h-[100px] resize-none"
+                            className="w-full bg-background px-4 py-3 text-[14px] text-foreground outline-none min-h-[100px] resize-none"
                           />
-                          <div className="px-3 py-2 bg-[#161b22] border-t border-[#30363d] flex justify-end">
+                          <div className="px-3 py-2 bg-bg-subtle border-t border-border-default flex justify-end">
                             <button 
                               onClick={() => handleCreateComment()}
                               disabled={!newCommentContent.trim() || isSendingComment}
-                              className="px-5 py-2 bg-[#238636] hover:bg-[#2ea043] text-white text-[13px] font-bold rounded-md disabled:opacity-50 transition-all shadow-sm flex items-center gap-2"
+                              className="px-5 py-2 btn btn-primary text-[13px] font-bold rounded-md disabled:opacity-50 transition-all shadow-sm flex items-center gap-2"
                             >
                               {isSendingComment ? <Loader2 className="animate-spin" size={14} /> : 'Comment'}
                             </button>
@@ -1056,7 +1056,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
               </div>
 
                {/* Modal Footer */}
-               <div className="px-6 py-4 border-t border-[#30363d] bg-[#161b22] flex justify-between items-center shadow-sm">
+               <div className="px-6 py-4 border-t border-border-default bg-bg-subtle flex justify-between items-center shadow-sm">
                 <div className="flex items-center gap-2">
                   {(() => {
                     const currentUserId = Cookies.get('user_id');
@@ -1077,13 +1077,13 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                             <button 
                               onClick={handleUpdateTask}
                               disabled={isUpdatingTask || !editTitle.trim()}
-                              className="px-5 py-1.5 bg-[#238636] hover:bg-[#2ea043] text-white text-[13px] font-bold rounded-md disabled:opacity-50 transition-all flex items-center gap-2"
+                              className="px-5 py-1.5 btn btn-primary text-[13px] font-bold rounded-md disabled:opacity-50 transition-all flex items-center gap-2"
                             >
                               {isUpdatingTask ? <Loader2 className="animate-spin" size={14} /> : 'Save Changes'}
                             </button>
                             <button 
                               onClick={() => setIsEditingTask(false)}
-                              className="px-4 py-1.5 text-[13px] font-semibold text-[#8b949e] hover:text-[#f0f6fc] transition-colors"
+                              className="px-4 py-1.5 text-[13px] font-semibold text-foreground/60 hover:text-foreground transition-colors"
                             >
                               Cancel
                             </button>
@@ -1091,7 +1091,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                         ) : (
                           <button 
                             onClick={() => setIsEditingTask(true)}
-                            className="px-4 py-1.5 text-[13px] font-semibold text-[#8b949e] hover:text-accent hover:bg-accent/10 rounded-md transition-colors flex items-center gap-2"
+                            className="px-4 py-1.5 text-[13px] font-semibold text-foreground/40 hover:text-accent hover:bg-accent/10 rounded-md transition-colors flex items-center gap-2"
                           >
                             <Plus size={16} className="rotate-45" />
                             Edit Task
@@ -1101,7 +1101,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                         {!isEditingTask && (
                           <button 
                             onClick={() => setTaskToConfirmDelete(inspectingTask)}
-                            className="px-4 py-1.5 text-[13px] font-semibold text-[#da3633] hover:bg-[#da3633]/10 rounded-md transition-colors flex items-center gap-2"
+                            className="px-4 py-1.5 text-[13px] font-semibold text-red-500 hover:bg-red-500/10 rounded-md transition-colors flex items-center gap-2"
                           >
                             <Trash2 size={16} />
                             Delete Task
@@ -1113,7 +1113,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                 </div>
                 <button 
                   onClick={() => setInspectingTask(null)}
-                  className="px-6 py-1.5 bg-[#21262d] hover:bg-[#30363d] text-[#f0f6fc] border border-[#30363d] text-[13px] font-bold rounded-md transition-colors shadow-sm"
+                  className="px-6 py-1.5 bg-background hover:bg-bg-subtle text-foreground border border-border-default text-[13px] font-bold rounded-md transition-colors shadow-sm"
                 >
                   Close
                 </button>

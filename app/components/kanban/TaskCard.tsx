@@ -87,7 +87,7 @@ export default function TaskCard({ task, onDelete, onClick, isOwnerOrCreator, is
       onClick={onClick}
       className={`bg-background border rounded-lg p-3 shadow-sm hover:border-accent group mb-3 transition-all hover:shadow-md ${
         isAssignedToMe 
-          ? 'border-[#388bfd] shadow-[0_0_12px_rgba(56,139,253,0.15)] ring-1 ring-[#388bfd]/30' 
+          ? 'border-accent shadow-[0_0_12px_rgba(var(--accent-rgb),0.15)] ring-1 ring-accent/30' 
           : 'border-border-default'
       } ${
         (canDrag && !isSortingActive) ? 'cursor-pointer active:cursor-grabbing' : 'cursor-default'
@@ -104,7 +104,7 @@ export default function TaskCard({ task, onDelete, onClick, isOwnerOrCreator, is
                 e.stopPropagation();
                 onDelete?.();
               }}
-              className="p-1 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-all opacity-0 group-hover:opacity-100"
+              className="p-1 text-foreground/40 hover:text-red-500 hover:bg-red-500/10 rounded transition-all opacity-0 group-hover:opacity-100"
             >
               <Trash2 size={13} />
             </button>
@@ -112,14 +112,14 @@ export default function TaskCard({ task, onDelete, onClick, isOwnerOrCreator, is
         </div>
         
         {task.description && (
-          <p className="text-[11px] text-zinc-500 line-clamp-2">
+          <p className="text-[11px] text-foreground/50 line-clamp-2">
             {task.description}
           </p>
         )}
 
         <div className="flex items-center justify-between mt-2 pt-2 border-t border-border-default/50">
           <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-1.5 text-[9px] text-zinc-400">
+            <div className="flex items-center gap-1.5 text-[9px] text-foreground/40">
               <span className="opacity-70 font-medium">By:</span>
               <span>{task.creator.username}</span>
             </div>
@@ -146,7 +146,7 @@ export default function TaskCard({ task, onDelete, onClick, isOwnerOrCreator, is
                 )}
               </div>
             ) : (
-              <div className="w-6 h-6 rounded-full bg-zinc-800 border border-border-default flex items-center justify-center text-[9px] font-bold text-zinc-500 italic" title="Unassigned">
+              <div className="w-6 h-6 rounded-full bg-bg-subtle border border-border-default flex items-center justify-center text-[9px] font-bold text-foreground/40 italic" title="Unassigned">
                 ?
               </div>
             )}

@@ -147,15 +147,15 @@ export default function OrgInviteModal({ notification, onClose, onAction }: OrgI
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.94, y: 12 }}
           transition={{ type: 'spring', stiffness: 480, damping: 32 }}
-          className="relative z-10 w-full max-w-[360px] bg-[#0d1117] border border-[#30363d] rounded-2xl shadow-[0_24px_64px_rgba(0,0,0,0.8)] overflow-hidden"
+          className="relative z-10 w-full max-w-[360px] bg-background border border-border-default rounded-2xl shadow-[0_24px_64px_rgba(0,0,0,0.4)] overflow-hidden"
         >
           {/* Top thin accent */}
-          <div className="h-[3px] w-full bg-gradient-to-r from-[#1f6feb] via-[#2f81f7] to-[#58a6ff]" />
+          <div className="h-[3px] w-full bg-accent" />
 
           {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute top-3.5 right-3.5 p-1.5 rounded-md text-[#8b949e] hover:bg-[#21262d] hover:text-[#f0f6fc] transition-all"
+            className="absolute top-3.5 right-3.5 p-1.5 rounded-md text-foreground/60 hover:bg-border-default/50 hover:text-foreground transition-all"
           >
             <X size={14} />
           </button>
@@ -166,20 +166,20 @@ export default function OrgInviteModal({ notification, onClose, onAction }: OrgI
             {/* ── Org Logo + Identity ── */}
             <div className="flex items-center gap-4">
               {/* Logo */}
-              <div className="w-14 h-14 rounded-xl overflow-hidden relative flex-shrink-0 bg-[#161b22] flex items-center justify-center">
+              <div className="w-14 h-14 rounded-xl overflow-hidden relative flex-shrink-0 bg-bg-subtle border border-border-default flex items-center justify-center">
                 {orgLogo ? (
                   <Image src={orgLogo} alt={orgName} fill sizes="56px" className="object-cover" />
                 ) : (
-                  <Building2 size={26} className="text-[#2f81f7]" strokeWidth={1.5} />
+                  <Building2 size={26} className="text-accent" strokeWidth={1.5} />
                 )}
               </div>
 
               {/* Name + badge */}
               <div className="min-w-0">
-                <p className="text-[10px] font-semibold text-[#8b949e] uppercase tracking-widest mb-0.5">Organization</p>
-                <h2 className="text-[18px] font-bold text-[#f0f6fc] leading-tight truncate">{orgName}</h2>
+                <p className="text-[10px] font-semibold text-foreground/60 uppercase tracking-widest mb-0.5">Organization</p>
+                <h2 className="text-[18px] font-bold text-foreground leading-tight truncate">{orgName}</h2>
                 {memberCount !== null && (
-                  <p className="text-[11px] text-[#8b949e] flex items-center gap-1 mt-0.5">
+                  <p className="text-[11px] text-foreground/60 flex items-center gap-1 mt-0.5">
                     <Users size={11} className="opacity-70" />
                     {memberCount} {memberCount === 1 ? 'member' : 'members'}
                   </p>
@@ -188,13 +188,13 @@ export default function OrgInviteModal({ notification, onClose, onAction }: OrgI
             </div>
 
             {/* ── Divider ── */}
-            <div className="border-t border-[#21262d]" />
+            <div className="border-t border-border-default" />
 
             {/* ── Inviter card ── */}
             {notification.sender && (
               <div className="flex items-center gap-3">
                 {/* Inviter avatar */}
-                <div className="w-8 h-8 rounded-full overflow-hidden relative flex-shrink-0 bg-[#21262d] border border-[#30363d]">
+                <div className="w-8 h-8 rounded-full overflow-hidden relative flex-shrink-0 bg-bg-subtle border border-border-default">
                   {notification.sender.avatarUrl ? (
                     <Image
                       src={notification.sender.avatarUrl}
@@ -203,22 +203,22 @@ export default function OrgInviteModal({ notification, onClose, onAction }: OrgI
                       className="object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-[11px] font-bold text-[#f0f6fc]">
+                    <div className="w-full h-full flex items-center justify-center text-[11px] font-bold text-foreground">
                       {notification.sender.username.charAt(0).toUpperCase()}
                     </div>
                   )}
                 </div>
                 <div>
-                  <p className="text-[11px] text-[#8b949e]">Invited by</p>
-                  <p className="text-[13px] font-semibold text-[#f0f6fc]">{notification.sender.username}</p>
+                  <p className="text-[11px] text-foreground/60">Invited by</p>
+                  <p className="text-[13px] font-semibold text-foreground">{notification.sender.username}</p>
                 </div>
               </div>
             )}
 
             {/* ── Description ── */}
-            <p className="text-[13px] text-[#8b949e] leading-relaxed">
+            <p className="text-[13px] text-foreground/80 leading-relaxed">
               You've been invited to collaborate in{' '}
-              <span className="text-[#f0f6fc] font-medium">{orgName}</span>.
+              <span className="text-foreground font-medium">{orgName}</span>.
               {' '}This invitation will expire in 24 hours.
             </p>
 
@@ -227,7 +227,7 @@ export default function OrgInviteModal({ notification, onClose, onAction }: OrgI
               <button
                 onClick={handleDecline}
                 disabled={isLoading}
-                className="flex-1 py-[7px] rounded-md border border-[#30363d] bg-[#21262d] text-[#c9d1d9] hover:bg-[#30363d] hover:border-[#8b949e] text-[13px] font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
+                className="btn btn-outline flex-1 py-1.5 text-[13px]"
               >
                 {isDeclining ? <Loader2 size={13} className="animate-spin" /> : <X size={13} />}
                 Decline
@@ -235,7 +235,7 @@ export default function OrgInviteModal({ notification, onClose, onAction }: OrgI
               <button
                 onClick={handleAccept}
                 disabled={isLoading}
-                className="flex-1 py-[7px] rounded-md bg-[#238636] hover:bg-[#2ea043] text-white text-[13px] font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 border border-[rgba(240,246,252,0.1)] shadow-sm"
+                className="btn btn-primary flex-1 py-1.5 text-[13px]"
               >
                 {isAccepting ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
                 Accept invitation

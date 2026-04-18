@@ -210,13 +210,15 @@ export default function Announcements({ orgId, isAdmin }: AnnouncementsProps) {
                             <Pencil size={14} />
                           </button>
                         )}
-                        <button 
-                          onClick={() => setAnnouncementToDelete(announcement)}
-                          className="p-1.5 text-foreground/60 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-all border border-transparent hover:border-red-500/20"
-                          title="Delete announcement"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                        {announcement.creator._id === currentUserId && (
+                          <button 
+                            onClick={() => setAnnouncementToDelete(announcement)}
+                            className="p-1.5 text-foreground/60 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-all border border-transparent hover:border-red-500/20"
+                            title="Delete announcement"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>

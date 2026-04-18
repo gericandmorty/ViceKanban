@@ -20,7 +20,8 @@ import {
   Menu,
   Kanban,
   User as UserIcon,
-  Building2
+  Building2,
+  GanttChartSquare
 } from 'lucide-react';
 import CreateOrgModal from '@/app/components/modals/CreateOrgModal';
 import CreateProjectModal from '@/app/components/modals/CreateProjectModal';
@@ -30,6 +31,7 @@ import ProjectSettings from '@/app/components/organizations/ProjectSettings';
 import Contributions from '@/app/components/organizations/Contributions';
 import KanbanBoard from '@/app/components/kanban/KanbanBoard';
 import Announcements from '@/app/components/organizations/Announcements';
+import GanttChart from '@/app/components/organizations/GanttChart';
 import AnnouncementDetailModal from '@/app/components/modals/AnnouncementDetailModal';
 import AnnouncementStackModal from '@/app/components/modals/AnnouncementStackModal';
 import Cookies from 'js-cookie';
@@ -472,7 +474,7 @@ export default function DashboardPage() {
 
         {detailedOrg && (
           <div className="px-4 md:px-6 flex gap-4 md:gap-8 items-end overflow-x-auto no-scrollbar border-b border-border-default">
-            {['Board', 'Announcements', 'Members', 'Contributions', 'Settings'].map((tab: any) => (
+            {['Board', 'Gantt Chart', 'Announcements', 'Members', 'Contributions', 'Settings'].map((tab: any) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -482,6 +484,7 @@ export default function DashboardPage() {
                   }`}
               >
                 {tab === 'Board' && <Kanban size={16} className="opacity-70" />}
+                {tab === 'Gantt Chart' && <GanttChartSquare size={16} className="opacity-70" />}
                 {tab === 'Announcements' && <Megaphone size={16} className="opacity-70" />}
                 {tab === 'Members' && <Users size={16} className="opacity-70" />}
                 {tab === 'Contributions' && <Activity size={16} className="opacity-70" />}
@@ -649,6 +652,11 @@ export default function DashboardPage() {
                   <p className="text-sm text-zinc-500">Loading organization workspace...</p>
                 </div>
               </div>
+            ) : activeTab === 'Gantt Chart' ? (
+              <GanttChart 
+                orgId={orgIdFromUrl as string} 
+                projectId={projectIdFromUrl} 
+              />
             ) : activeTab === 'Members' ? (
               <MembersTable org={detailedOrg} onRefresh={() => fetchOrgDetails(orgIdFromUrl as string)} />
             ) : activeTab === 'Announcements' ? (

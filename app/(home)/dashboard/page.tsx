@@ -64,6 +64,7 @@ export default function DashboardPage() {
 
   // Announcement popup state
   const [popupAnnouncements, setPopupAnnouncements] = useState<any[]>([]);
+  const hasCheckedInitialPopups = useRef(false);
 
   // Notification state
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -223,53 +224,74 @@ export default function DashboardPage() {
     };
   }, [orgIdFromUrl, projectIdFromUrl, detailedOrg?._id]);
 
-  // Auto-popup the latest announcement when entering an org
-  useEffect(() => {
-    if (!orgIdFromUrl) return;
+  // Auto-popup the latest announcement when entering an org OR global updates
+  const refreshPopups = useCallback(async (isManualRefresh = false) => {
+    // If we're already showing popups, don't interrupt the user
+    if (popupAnnouncements.length > 0 && !isManualRefresh) return;
 
-    const fetchLatestAnnouncements = async () => {
-      try {
-        const res = await apiFetch(`/organizations/${orgIdFromUrl}/announcements?page=1&limit=50`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.announcements && data.announcements.length > 0) {
-            const seenAnnouncements = JSON.parse(localStorage.getItem('seen_announcements') || '[]');
-            
-            // Filter out already seen ones
-            const unread = data.announcements.filter((a: any) => !seenAnnouncements.includes(a._id));
-            
-            if (unread.length > 0) {
-              // Priority Weights: red (maintenance) > blue (system) > orange (feature) > green (update)
-              const priorityWeights: Record<string, number> = {
-                maintenance: 4,
-                system: 3,
-                feature: 2,
-                update: 1
-              };
-
-              const sorted = [...unread].sort((a, b) => {
-                const weightA = priorityWeights[a.type.toLowerCase()] || 0;
-                const weightB = priorityWeights[b.type.toLowerCase()] || 0;
-
-                if (weightA !== weightB) {
-                  return weightB - weightA; // Higher weight first
-                }
-                
-                // Same priority, sort by date descending
-                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-              });
-              
-              setPopupAnnouncements(sorted);
-            }
-          }
-        }
-      } catch (err) {
-        console.error('Failed to fetch latest announcements:', err);
+    try {
+      // 1. Fetch System (Global) announcements
+      const systemRes = await apiFetch('/system/announcements');
+      let systemAnnouncements: any[] = [];
+      if (systemRes.ok) {
+        systemAnnouncements = await systemRes.json();
       }
-    };
 
-    fetchLatestAnnouncements();
+      // 2. Fetch Organizational announcements if in an org
+      let orgAnnouncements: any[] = [];
+      if (orgIdFromUrl) {
+        const orgRes = await apiFetch(`/organizations/${orgIdFromUrl}/announcements?page=1&limit=50`);
+        if (orgRes.ok) {
+          const data = await orgRes.json();
+          orgAnnouncements = data.announcements || [];
+        }
+      }
+
+      const allAnnouncements = [...systemAnnouncements, ...orgAnnouncements];
+      
+      if (allAnnouncements.length > 0) {
+        const seenAnnouncements = JSON.parse(localStorage.getItem('seen_announcements') || '[]');
+        
+        // Filter out already seen ones
+        const unread = allAnnouncements.filter((a: any) => !seenAnnouncements.includes(a._id));
+        
+        if (unread.length > 0) {
+          // Priority Weights: red (maintenance) > blue (system) > orange (feature) > green (update)
+          const priorityWeights: Record<string, number> = {
+            maintenance: 4,
+            system: 3,
+            feature: 2,
+            update: 1
+          };
+
+          const sorted = [...unread].sort((a, b) => {
+            const weightA = priorityWeights[a.type.toLowerCase()] || 0;
+            const weightB = priorityWeights[b.type.toLowerCase()] || 0;
+
+            if (weightA !== weightB) {
+              return weightB - weightA; // Higher weight first
+            }
+            
+            // Same priority, sort by date descending
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          });
+          
+          setPopupAnnouncements(sorted);
+        }
+      }
+      hasCheckedInitialPopups.current = true;
+    } catch (err) {
+      console.error('Failed to fetch popups:', err);
+    }
   }, [orgIdFromUrl]);
+
+  useEffect(() => {
+    refreshPopups();
+
+    const handleRefresh = () => refreshPopups(true);
+    window.addEventListener('systemAnnouncementPosted', handleRefresh);
+    return () => window.removeEventListener('systemAnnouncementPosted', handleRefresh);
+  }, [refreshPopups]);
 
   const handleAcceptInvite = async (orgId: string, orgName: string) => {
     try {

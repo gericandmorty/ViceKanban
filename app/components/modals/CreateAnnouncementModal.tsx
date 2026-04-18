@@ -9,7 +9,8 @@ import toast from 'react-hot-toast';
 interface CreateAnnouncementModalProps {
   isOpen: boolean;
   onClose: () => void;
-  orgId: string;
+  orgId?: string;
+  isGlobal?: boolean;
   onSuccess: () => void;
 }
 
@@ -20,7 +21,7 @@ const ANNOUNCEMENT_TYPES = [
   { id: 'update', color: '#3fb950' },
 ];
 
-export default function CreateAnnouncementModal({ isOpen, onClose, orgId, onSuccess }: CreateAnnouncementModalProps) {
+export default function CreateAnnouncementModal({ isOpen, onClose, orgId, isGlobal = false, onSuccess }: CreateAnnouncementModalProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [type, setType] = useState('update');
@@ -48,6 +49,10 @@ export default function CreateAnnouncementModal({ isOpen, onClose, orgId, onSucc
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !content) return;
+    if (!isGlobal && !orgId) {
+        toast.error('Organization ID is missing');
+        return;
+    }
 
     setIsLoading(true);
     try {
@@ -59,13 +64,17 @@ export default function CreateAnnouncementModal({ isOpen, onClose, orgId, onSucc
         formData.append('image', imageFile);
       }
 
-      const response = await apiFetch(`/organizations/${orgId}/announcements`, {
+      const apiPath = isGlobal 
+        ? '/system/announcements' 
+        : `/organizations/${orgId}/announcements`;
+
+      const response = await apiFetch(apiPath, {
         method: 'POST',
         body: formData,
       });
 
       if (response.ok) {
-        toast.success('Announcement posted and members notified!');
+        toast.success(isGlobal ? 'System announcement posted!' : 'Announcement posted and members notified!');
         setTitle('');
         setContent('');
         setType('update');
@@ -104,7 +113,14 @@ export default function CreateAnnouncementModal({ isOpen, onClose, orgId, onSucc
               {/* Header */}
               <div className="px-6 py-4 border-b border-border-default bg-bg-subtle flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-base font-semibold text-foreground">Create Announcement</h2>
+                  <h2 className="text-base font-semibold text-foreground">
+                    {isGlobal ? 'Post Global Announcement' : 'Create Announcement'}
+                  </h2>
+                  {isGlobal && (
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-accent/10 text-accent uppercase tracking-wider">
+                      System Admin
+                    </span>
+                  )}
                 </div>
                 <button 
                   onClick={onClose}
@@ -125,7 +141,7 @@ export default function CreateAnnouncementModal({ isOpen, onClose, orgId, onSucc
                       autoFocus
                       required
                       type="text"
-                      placeholder="What's the update about?"
+                      placeholder={isGlobal ? "e.g. New Theme: Dark Mode is here!" : "What's the update about?"}
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       className="w-full px-4 py-2.5 bg-background border border-border-default rounded-md text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent transition-all placeholder:text-foreground/40"
@@ -164,13 +180,15 @@ export default function CreateAnnouncementModal({ isOpen, onClose, orgId, onSucc
                     <textarea
                       required
                       rows={5}
-                      placeholder="Share the details with your team..."
+                      placeholder={isGlobal ? "Enter the details that all platform users will see..." : "Share the details with your team..."}
                       value={content}
                       onChange={(e) => setContent(e.target.value)}
                       className="w-full px-4 py-2.5 bg-background border border-border-default rounded-md text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent transition-all placeholder:text-foreground/40 resize-none"
                     />
                     <p className="text-[11px] text-foreground/40">
-                      Tip: This will be sent as a notification to all organization members.
+                      {isGlobal 
+                        ? 'Tip: This will be visible to every user on the platform upon their next login/refresh.'
+                        : 'Tip: This will be sent as a notification to all organization members.'}
                     </p>
                   </div>
 

@@ -11,6 +11,7 @@ interface Announcement {
   type: string;
   createdAt: string;
   imageUrl?: string;
+  isGlobal?: boolean;
   creator: {
     username: string;
     avatarUrl?: string;
@@ -126,8 +127,8 @@ export default function AnnouncementStackModal({ isOpen, onClose, announcements 
           {/* Paged Footer */}
           <div className="px-6 py-4 border-t border-border-default bg-bg-subtle flex items-center justify-between shrink-0">
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-[0.1em]">
-                Organization Announcement
+              <span className={`text-[10px] font-bold uppercase tracking-[0.1em] ${current.isGlobal ? 'text-accent' : 'text-foreground/40'}`}>
+                {current.isGlobal ? 'ViceKanBan Update' : 'Organization Announcement'}
               </span>
               <span className="text-[13px] font-semibold text-foreground/60">
                 {currentIndex + 1} of {announcements.length}

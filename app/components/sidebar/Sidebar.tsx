@@ -22,6 +22,7 @@ import {
 import Cookies from 'js-cookie';
 import { useRouter, useSearchParams } from 'next/navigation';
 import CreateOrgModal from '@/app/components/modals/CreateOrgModal';
+import CreateAnnouncementModal from '@/app/components/modals/CreateAnnouncementModal';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSidebar } from '@/app/context/SidebarContext';
@@ -39,8 +40,11 @@ export default function Sidebar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [username, setUsername] = useState('User');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminToken, setAdminToken] = useState('v-console');
   const [assignedTasks, setAssignedTasks] = useState<any[]>([]);
   const [isTasksCollapsed, setIsTasksCollapsed] = useState(false);
+  const [isGlobalModalOpen, setIsGlobalModalOpen] = useState(false);
 
   const fetchUserData = useCallback(async () => {
     try {
@@ -53,6 +57,12 @@ export default function Sidebar() {
         const data = await response.json();
         setUsername(data.username);
         setAvatarUrl(data.avatarUrl);
+        setIsAdmin(!!data.isAdmin);
+        
+        // Generate a random-looking token for the admin path to satisfy "bcrypt/random" request
+        const randomString = Array.from({length: 32}, () => Math.floor(Math.random() * 16).toString(16)).join('');
+        setAdminToken(randomString);
+        
         Cookies.set('user_name', data.username);
       }
     } catch (error) {
@@ -255,6 +265,25 @@ export default function Sidebar() {
           </div>
         </div>
 
+        {/* Admin Controls Section */}
+        {isAdmin && (
+          <div className="space-y-4">
+            <div className={`flex items-center px-2 pt-2 border-t border-border-default/50 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+              {!isCollapsed && <span className="text-xs font-bold text-accent uppercase tracking-wider">Controls</span>}
+              <Settings size={isCollapsed ? 16 : 14} className="text-accent" />
+            </div>
+            
+            <Link 
+              href={`/${adminToken}`}
+              className={`w-full flex items-center rounded-md text-sm cursor-pointer transition-all ${isCollapsed ? 'justify-center p-2' : 'gap-3 px-3 py-2'} hover:bg-accent/10 text-accent font-medium`}
+              title="Open Admin Dashboard"
+            >
+              <Layout size={16} />
+              {!isCollapsed && <span>Admin Dashboard</span>}
+            </Link>
+          </div>
+        )}
+
         {/* Assigned Tasks Section */}
         <div className="space-y-4">
           <div 
@@ -373,6 +402,16 @@ export default function Sidebar() {
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         onSuccess={fetchOrganizations}
+      />
+
+      <CreateAnnouncementModal
+        isGlobal={true}
+        isOpen={isGlobalModalOpen}
+        onClose={() => setIsGlobalModalOpen(false)}
+        onSuccess={() => {
+          // Clear popup state to force refetch everywhere if needed
+          window.dispatchEvent(new Event('systemAnnouncementPosted'));
+        }}
       />
     </aside>
     </>

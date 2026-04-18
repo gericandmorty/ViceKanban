@@ -12,6 +12,7 @@ interface CreateAnnouncementModalProps {
   orgId?: string;
   isGlobal?: boolean;
   onSuccess: () => void;
+  editingAnnouncement?: any; 
 }
 
 const ANNOUNCEMENT_TYPES = [
@@ -21,29 +22,76 @@ const ANNOUNCEMENT_TYPES = [
   { id: 'update', color: '#3fb950' },
 ];
 
-export default function CreateAnnouncementModal({ isOpen, onClose, orgId, isGlobal = false, onSuccess }: CreateAnnouncementModalProps) {
+export default function CreateAnnouncementModal({ 
+  isOpen, 
+  onClose, 
+  orgId, 
+  isGlobal = false, 
+  onSuccess,
+  editingAnnouncement 
+}: CreateAnnouncementModalProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [type, setType] = useState('update');
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Image states
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+  const [removeExistingImage, setRemoveExistingImage] = useState(false);
+
+  // Sync state with editingAnnouncement
+  React.useEffect(() => {
+    if (isOpen) {
+      if (editingAnnouncement) {
+        setTitle(editingAnnouncement.title || '');
+        setContent(editingAnnouncement.content || '');
+        setType(editingAnnouncement.type || 'update');
+        setExistingImageUrl(editingAnnouncement.imageUrl || null);
+        setRemoveExistingImage(false);
+      } else {
+        // Reset for new announcement
+        setTitle('');
+        setContent('');
+        setType('update');
+        setExistingImageUrl(null);
+        setRemoveExistingImage(false);
+      }
+      setImageFile(null);
+      setImagePreview(null);
+    }
+  }, [isOpen, editingAnnouncement]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Validate file type
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+      toast.error('Please upload an image file (PNG, JPG, WEBP, or GIF)');
+      return;
+    }
+
     if (file.size > 10 * 1024 * 1024) {
       toast.error('Image must be under 10MB');
       return;
     }
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
+    setRemoveExistingImage(false); // Picking a new one overrides "remove"
   };
 
   const removeImage = () => {
     setImageFile(null);
     if (imagePreview) URL.revokeObjectURL(imagePreview);
     setImagePreview(null);
+  };
+
+  const handleRemoveExisting = () => {
+    setRemoveExistingImage(true);
+    setExistingImageUrl(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,30 +108,37 @@ export default function CreateAnnouncementModal({ isOpen, onClose, orgId, isGlob
       formData.append('title', title);
       formData.append('content', content);
       formData.append('type', type);
+      
       if (imageFile) {
         formData.append('image', imageFile);
+      } else if (removeExistingImage) {
+        formData.append('removeImage', 'true');
       }
 
-      const apiPath = isGlobal 
+      let apiPath = isGlobal 
         ? '/system/announcements' 
         : `/organizations/${orgId}/announcements`;
+      
+      if (editingAnnouncement) {
+        apiPath += `/${editingAnnouncement._id}`;
+      }
 
       const response = await apiFetch(apiPath, {
-        method: 'POST',
+        method: editingAnnouncement ? 'PATCH' : 'POST',
         body: formData,
       });
 
       if (response.ok) {
-        toast.success(isGlobal ? 'System announcement posted!' : 'Announcement posted and members notified!');
-        setTitle('');
-        setContent('');
-        setType('update');
-        removeImage();
+        toast.success(
+          editingAnnouncement 
+            ? 'Announcement updated!' 
+            : (isGlobal ? 'System announcement posted!' : 'Announcement posted and members notified!')
+        );
         onSuccess();
         onClose();
       } else {
         const error = await response.json();
-        toast.error(error.message || 'Failed to post announcement');
+        toast.error(error.message || 'Failed to process request');
       }
     } catch (err) {
       toast.error('Something went wrong');
@@ -91,6 +146,8 @@ export default function CreateAnnouncementModal({ isOpen, onClose, orgId, isGlob
       setIsLoading(false);
     }
   };
+
+  const isEdit = !!editingAnnouncement;
 
   return (
     <AnimatePresence>
@@ -114,9 +171,12 @@ export default function CreateAnnouncementModal({ isOpen, onClose, orgId, isGlob
               <div className="px-6 py-4 border-b border-border-default bg-bg-subtle flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-2">
                   <h2 className="text-base font-semibold text-foreground">
-                    {isGlobal ? 'Post Global Announcement' : 'Create Announcement'}
+                    {isEdit 
+                      ? (isGlobal ? 'Edit Global Announcement' : 'Edit Announcement')
+                      : (isGlobal ? 'Post Global Announcement' : 'Create Announcement')
+                    }
                   </h2>
-                  {isGlobal && (
+                  {isGlobal && !isEdit && (
                     <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-accent/10 text-accent uppercase tracking-wider">
                       System Admin
                     </span>
@@ -185,19 +245,39 @@ export default function CreateAnnouncementModal({ isOpen, onClose, orgId, isGlob
                       onChange={(e) => setContent(e.target.value)}
                       className="w-full px-4 py-2.5 bg-background border border-border-default rounded-md text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent transition-all placeholder:text-foreground/40 resize-none"
                     />
-                    <p className="text-[11px] text-foreground/40">
-                      {isGlobal 
-                        ? 'Tip: This will be visible to every user on the platform upon their next login/refresh.'
-                        : 'Tip: This will be sent as a notification to all organization members.'}
-                    </p>
                   </div>
 
                   {/* Image Attachment */}
                   <div className="space-y-2">
                     <label className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">
-                      Image (optional)
+                      Image
                     </label>
-                    {imagePreview ? (
+                    
+                    {/* 1. Show existing image (if editing and haven't removed it yet) */}
+                    {isEdit && existingImageUrl && !imagePreview && (
+                      <div className="relative group rounded-md overflow-hidden border border-border-default bg-bg-subtle">
+                        <img src={existingImageUrl} alt="Current" className="w-full max-h-[180px] object-contain opacity-80" />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                          <label className="cursor-pointer bg-background/90 hover:bg-background px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-2 border border-border-default">
+                             <ImagePlus size={14} /> Replace
+                             <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                          </label>
+                          <button
+                            type="button"
+                            onClick={handleRemoveExisting}
+                            className="bg-red-500/90 hover:bg-red-500 px-3 py-1.5 rounded-md text-xs font-semibold text-white flex items-center gap-2"
+                          >
+                            <Trash2 size={14} /> Remove
+                          </button>
+                        </div>
+                        <div className="px-3 py-1.5 bg-background border-t border-border-default text-[10px] text-foreground/40 uppercase tracking-tight">
+                           Current Attachment
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 2. Show new image preview (if picked) */}
+                    {imagePreview && (
                       <div className="relative group rounded-md overflow-hidden border border-border-default bg-bg-subtle">
                         <img src={imagePreview} alt="Preview" className="w-full max-h-[240px] object-contain" />
                         <button
@@ -207,16 +287,20 @@ export default function CreateAnnouncementModal({ isOpen, onClose, orgId, isGlob
                         >
                           <Trash2 size={14} />
                         </button>
-                        <div className="px-3 py-1.5 bg-background border-t border-border-default text-[11px] text-foreground/60 truncate">
-                          {imageFile?.name} ({((imageFile?.size || 0) / 1024 / 1024).toFixed(1)} MB)
+                        <div className="px-3 py-1.5 bg-background border-t border-accent/20 text-[11px] text-accent font-medium truncate">
+                           New file: {imageFile?.name}
                         </div>
                       </div>
-                    ) : (
+                    )}
+
+                    {/* 3. Empty state (if no image exists or it was removed) */}
+                    {(!existingImageUrl && !imagePreview) && (
                       <label className="flex items-center justify-center gap-2 py-6 border border-dashed border-border-default rounded-md cursor-pointer hover:border-foreground/40 hover:bg-bg-subtle transition-all text-foreground/40 hover:text-foreground/60">
                         <ImagePlus size={18} />
                         <span className="text-xs font-medium">Attach an image (max 10 MB)</span>
                         <input
                           type="file"
+                          accept="image/*"
                           onChange={handleImageChange}
                           className="hidden"
                         />
@@ -242,10 +326,10 @@ export default function CreateAnnouncementModal({ isOpen, onClose, orgId, isGlob
                     {isLoading ? (
                       <>
                         <Loader2 className="animate-spin" size={16} />
-                        Posting...
+                        {isEdit ? 'Saving...' : 'Posting...'}
                       </>
                     ) : (
-                      'Post Announcement'
+                      isEdit ? 'Save Changes' : 'Post Announcement'
                     )}
                   </button>
                 </div>

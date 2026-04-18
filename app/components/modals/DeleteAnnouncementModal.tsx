@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, AlertTriangle, Loader2 } from 'lucide-react';
+import { X, AlertTriangle, AlertCircle, Loader2 } from 'lucide-react';
 
 interface DeleteAnnouncementModalProps {
   isOpen: boolean;

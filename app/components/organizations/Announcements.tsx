@@ -20,6 +20,7 @@ import Cookies from 'js-cookie';
 import { apiFetch } from '@/app/utils/api';
 import CreateAnnouncementModal from '../modals/CreateAnnouncementModal';
 import AnnouncementDetailModal from '../modals/AnnouncementDetailModal';
+import AnnouncementStackModal from '../modals/AnnouncementStackModal';
 import DeleteAnnouncementModal from '../modals/DeleteAnnouncementModal';
 import toast from 'react-hot-toast';
 
@@ -64,6 +65,8 @@ export default function Announcements({ orgId, isAdmin }: AnnouncementsProps) {
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
   const [announcementToDelete, setAnnouncementToDelete] = useState<Announcement | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isStackOpen, setIsStackOpen] = useState(false);
+  const [stackIndex, setStackIndex] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 5;
@@ -172,7 +175,10 @@ export default function Announcements({ orgId, isAdmin }: AnnouncementsProps) {
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div className="flex items-center gap-4 min-w-0 flex-1">
                       <h3 
-                        onClick={() => setSelectedAnnouncement(announcement)}
+                        onClick={() => {
+                          setStackIndex(announcements.indexOf(announcement));
+                          setIsStackOpen(true);
+                        }}
                         className="text-[14px] font-semibold text-foreground group-hover:text-accent transition-colors cursor-pointer truncate"
                         title={announcement.title}
                       >
@@ -190,7 +196,10 @@ export default function Announcements({ orgId, isAdmin }: AnnouncementsProps) {
 
                   <div className="shrink-0 flex items-center gap-2">
                     <button 
-                      onClick={() => setSelectedAnnouncement(announcement)}
+                      onClick={() => {
+                        setStackIndex(announcements.indexOf(announcement));
+                        setIsStackOpen(true);
+                      }}
                       className="text-[11px] font-semibold text-foreground/80 bg-border-default/50 hover:bg-border-default px-3 py-1 rounded-md border border-border-default flex items-center gap-1 transition-all"
                     >
                       Detail
@@ -306,6 +315,13 @@ export default function Announcements({ orgId, isAdmin }: AnnouncementsProps) {
         onConfirm={handleDelete}
         title={announcementToDelete?.title || ''}
         isLoading={isDeleting}
+      />
+
+      <AnnouncementStackModal
+        isOpen={isStackOpen}
+        onClose={() => setIsStackOpen(false)}
+        announcements={announcements as any}
+        initialIndex={stackIndex}
       />
     </div>
   );

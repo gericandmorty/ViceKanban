@@ -66,6 +66,9 @@ export default function DashboardPage() {
 
   // Announcement popup state
   const [popupAnnouncements, setPopupAnnouncements] = useState<any[]>([]);
+  const [allSystemAnnouncements, setAllSystemAnnouncements] = useState<any[]>([]);
+  const [isSystemViewerOpen, setIsSystemViewerOpen] = useState(false);
+  const [systemViewerIndex, setSystemViewerIndex] = useState(0);
   const hasCheckedInitialPopups = useRef(false);
 
   // Notification state
@@ -228,8 +231,9 @@ export default function DashboardPage() {
 
   // Auto-popup the latest announcement when entering an org OR global updates
   const refreshPopups = useCallback(async (isManualRefresh = false) => {
-    // If we're already showing popups, don't interrupt the user
-    if (popupAnnouncements.length > 0 && !isManualRefresh) return;
+    // CRITICAL: If a popup is already active, DO NOT modify the state. 
+    // This prevents the 'sudden close' or 'shifting index' bug when background data refreshes.
+    if ((popupAnnouncements.length > 0 || isSystemViewerOpen) && !isManualRefresh) return;
 
     try {
       // 1. Fetch System (Global) announcements
@@ -237,6 +241,7 @@ export default function DashboardPage() {
       let systemAnnouncements: any[] = [];
       if (systemRes.ok) {
         systemAnnouncements = await systemRes.json();
+        setAllSystemAnnouncements(systemAnnouncements);
       }
 
       // 2. Fetch Organizational announcements if in an org
@@ -248,9 +253,9 @@ export default function DashboardPage() {
           orgAnnouncements = data.announcements || [];
         }
       }
+      // Separate context: Global announcements on Home, Org announcements inside Orgs
+      const allAnnouncements = orgIdFromUrl ? orgAnnouncements : systemAnnouncements;
 
-      const allAnnouncements = [...systemAnnouncements, ...orgAnnouncements];
-      
       if (allAnnouncements.length > 0) {
         const seenAnnouncements = JSON.parse(localStorage.getItem('seen_announcements') || '[]');
         
@@ -258,27 +263,10 @@ export default function DashboardPage() {
         const unread = allAnnouncements.filter((a: any) => !seenAnnouncements.includes(a._id));
         
         if (unread.length > 0) {
-          // Priority Weights: red (maintenance) > blue (system) > orange (feature) > green (update)
-          const priorityWeights: Record<string, number> = {
-            maintenance: 4,
-            system: 3,
-            feature: 2,
-            update: 1
-          };
-
-          const sorted = [...unread].sort((a, b) => {
-            const weightA = priorityWeights[a.type.toLowerCase()] || 0;
-            const weightB = priorityWeights[b.type.toLowerCase()] || 0;
-
-            if (weightA !== weightB) {
-              return weightB - weightA; // Higher weight first
-            }
-            
-            // Same priority, sort by date descending
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-          });
-          
-          setPopupAnnouncements(sorted);
+          // If any are unread, we show the full recent stack (up to 5)
+          // This ensures they have context and can use the 'Next' button
+          const recentStack = allAnnouncements.slice(0, 5);
+          setPopupAnnouncements(recentStack);
         }
       }
       hasCheckedInitialPopups.current = true;
@@ -347,6 +335,12 @@ export default function DashboardPage() {
     setIsDetailLoading(false);
     setIsLoading(false);
     router.push('/dashboard');
+    refreshPopups(true); // Re-fetch system updates on home entry
+  };
+
+  const handleOpenSystemViewer = (index: number) => {
+    setSystemViewerIndex(index);
+    setIsSystemViewerOpen(true);
   };
 
   const currentProject = projects.find(p => p._id === projectIdFromUrl);
@@ -513,7 +507,59 @@ export default function DashboardPage() {
 
         {!detailedOrg && !isLoading && !isDetailLoading ? (
           /* "Home" View with Organizations and Invitations */
-          <div className="w-full py-8 px-6 space-y-8 overflow-y-auto h-full">
+          <div className="w-full py-8 px-6 space-y-10 overflow-y-auto h-full max-w-5xl mx-auto custom-scrollbar">
+            
+            {/* System Updates Section - Global Only */}
+            {allSystemAnnouncements.length > 0 && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-[12px] font-bold text-foreground/40 uppercase tracking-[0.2em] flex items-center gap-2">
+                    <Activity size={14} className="text-accent/60" />
+                    System Updates
+                  </h2>
+                </div>
+
+                <div className="grid grid-cols-1 gap-1.5">
+                   {allSystemAnnouncements.slice(0, 3).map((ann, idx) => (
+                      <div 
+                        key={ann._id}
+                        onClick={() => handleOpenSystemViewer(idx)}
+                        className="group relative bg-bg-subtle/30 hover:bg-bg-subtle/60 border border-border-default/40 hover:border-accent/20 px-5 py-3 rounded-lg transition-all cursor-pointer flex items-center justify-between overflow-hidden"
+                      >
+                         <div className="flex items-center gap-4 min-w-0 flex-1">
+                            {/* Small Type Indicator */}
+                            <div className={`w-1 h-4 rounded-full ${
+                               ann.type === 'maintenance' ? 'bg-[#f85149]' : 
+                               ann.type === 'system' ? 'bg-[#2f81f7]' : 
+                               ann.type === 'feature' ? 'bg-[#f78166]' : 'bg-[#3fb950]'
+                            }`} />
+
+                            <div className="min-w-0 flex-1">
+                               <div className="flex items-center gap-3">
+                                  <h3 className="text-sm font-semibold text-foreground/80 group-hover:text-foreground truncate transition-colors font-sans">{ann.title}</h3>
+                                  <span className="text-[9px] font-bold text-foreground/20 uppercase tabular-nums whitespace-nowrap">
+                                     {new Date(ann.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                  </span>
+                               </div>
+                               <p className="text-[11px] text-foreground/40 mt-0.5 line-clamp-1 group-hover:text-foreground/60 transition-colors uppercase tracking-tight font-medium opacity-80">{ann.content}</p>
+                            </div>
+                         </div>
+
+                         <ChevronRight size={14} className="text-foreground/10 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all ml-4" />
+                      </div>
+                   ))}
+                   {allSystemAnnouncements.length > 3 && (
+                      <button 
+                        onClick={() => handleOpenSystemViewer(0)}
+                        className="text-[10px] font-bold text-foreground/30 hover:text-accent/60 transition-colors py-1 pl-12 flex items-center gap-1 group/more"
+                      >
+                         View changelog archives
+                         <ChevronRight size={10} className="group-hover/more:translate-x-0.5 transition-transform" />
+                      </button>
+                   )}
+                </div>
+              </div>
+            )}
 
 
             {/* Organizations List */}
@@ -777,10 +823,17 @@ export default function DashboardPage() {
 
       {/* Multi-announcement stack modal */}
       <AnnouncementStackModal
-        key={orgIdFromUrl || 'global-stack'}
         isOpen={popupAnnouncements.length > 0}
         onClose={() => setPopupAnnouncements([])}
         announcements={popupAnnouncements}
+      />
+
+      {/* Manual Full System Viewer */}
+      <AnnouncementStackModal
+        isOpen={isSystemViewerOpen}
+        onClose={() => setIsSystemViewerOpen(false)}
+        announcements={allSystemAnnouncements}
+        initialIndex={systemViewerIndex}
       />
     </div>
   );

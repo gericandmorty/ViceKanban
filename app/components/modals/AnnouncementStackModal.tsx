@@ -22,6 +22,7 @@ interface AnnouncementStackModalProps {
   isOpen: boolean;
   onClose: () => void;
   announcements: Announcement[];
+  initialIndex?: number;
 }
 
 const getTypeColor = (type: string) => {
@@ -33,8 +34,8 @@ const getTypeColor = (type: string) => {
   }
 };
 
-export default function AnnouncementStackModal({ isOpen, onClose, announcements }: AnnouncementStackModalProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
+export default function AnnouncementStackModal({ isOpen, onClose, announcements, initialIndex = 0 }: AnnouncementStackModalProps) {
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
 
   // Mark current as seen when viewing
   useEffect(() => {
@@ -47,12 +48,14 @@ export default function AnnouncementStackModal({ isOpen, onClose, announcements 
     }
   }, [isOpen, currentIndex, announcements]);
 
-  // Reset index when opening/closing
+  // Synchronize index when it opens
   useEffect(() => {
-    if (!isOpen) {
+    if (isOpen) {
+      setCurrentIndex(initialIndex);
+    } else {
       setCurrentIndex(0);
     }
-  }, [isOpen]);
+  }, [isOpen, initialIndex]);
 
   if (!isOpen || announcements.length === 0) return null;
 

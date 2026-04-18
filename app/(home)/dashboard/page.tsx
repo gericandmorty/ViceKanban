@@ -156,6 +156,17 @@ export default function DashboardPage() {
   }, [fetchOrganizations, fetchInvitations, fetchUserProfile]);
 
   useEffect(() => {
+    // Synchronously clear state if Org ID changed to prevent stale breadcrumbs/content
+    // This addresses the "sticky breadcrumb" bug where old names persist during loading
+    if (orgIdFromUrl && detailedOrg && detailedOrg._id !== orgIdFromUrl) {
+      setDetailedOrg(null);
+      setProjects([]);
+    } else if (!orgIdFromUrl && (detailedOrg || projects.length > 0)) {
+      setDetailedOrg(null);
+      setProjects([]);
+      setActiveTab('Board');
+    }
+
     let isCurrent = true;
 
     const loadData = async () => {
@@ -372,7 +383,7 @@ export default function DashboardPage() {
                       Organizations
                     </Link>
                     <span className="shrink-0 mx-2 text-[#484f58]">/</span>
-                    {detailedOrg ? (
+                    {detailedOrg && detailedOrg._id === orgIdFromUrl ? (
                       <>
                         <Link
                           href={`/dashboard?orgId=${orgIdFromUrl}`}

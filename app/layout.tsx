@@ -24,22 +24,49 @@ export const metadata: Metadata = {
 };
 
 import SessionGuard from "./components/SessionGuard";
+import { ThemeProvider } from "./context/ThemeContext";
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const theme = "light"; // Default to light for SSR
+
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable} ${theme} h-full antialiased`}
+      style={{ colorScheme: theme }}
     >
-      <body className="min-h-full flex flex-col">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var raw = localStorage.getItem('_vk_pref_node');
+                  var theme = raw === '1' ? 'dark' : (raw === '0' ? 'light' : null);
+                  if (theme) {
+                    document.documentElement.classList.remove('light', 'dark');
+                    document.documentElement.classList.add(theme);
+                    document.documentElement.setAttribute('data-theme', theme);
+                    document.documentElement.style.colorScheme = theme;
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
+      <body className="min-h-full flex flex-col bg-background text-foreground transition-colors duration-300">
         <Toaster position="top-right" />
-        <SessionGuard>
-          {children}
-        </SessionGuard>
+        <ThemeProvider initialTheme={theme}>
+          <SessionGuard>
+            {children}
+          </SessionGuard>
+        </ThemeProvider>
       </body>
     </html>
   );

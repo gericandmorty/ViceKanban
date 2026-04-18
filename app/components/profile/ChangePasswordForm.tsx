@@ -67,21 +67,21 @@ export default function ChangePasswordForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-w-md w-full">
       <div className="space-y-1">
-        <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Current Password</label>
+        <label className="text-xs font-bold text-foreground/60 uppercase tracking-wider">Current Password</label>
         <div className="relative">
           <input 
             type="password" 
             required
             value={formData.oldPassword}
             onChange={(e) => setFormData({ ...formData, oldPassword: e.target.value })}
-            className="w-full bg-background border border-border-default rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent font-sans"
+            className="w-full bg-background border border-border-default rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent font-sans placeholder:text-foreground/30"
             placeholder="••••••••"
           />
         </div>
       </div>
 
       <div className="space-y-1">
-        <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">New Password</label>
+        <label className="text-xs font-bold text-foreground/60 uppercase tracking-wider">New Password</label>
         <div className="relative">
           <input 
             type="password" 
@@ -89,15 +89,15 @@ export default function ChangePasswordForm() {
             maxLength={18}
             value={formData.newPassword}
             onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
-            className="w-full bg-background border border-border-default rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent font-sans"
+            className="w-full bg-background border border-border-default rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent font-sans placeholder:text-foreground/30"
             placeholder="8-18 chars"
           />
         </div>
-        <p className="text-[11px] text-zinc-500 pt-1">8-18 chars, 1 uppercase, 1 special/number required.</p>
+        <p className="text-[11px] text-foreground/40 pt-1">8-18 chars, 1 uppercase, 1 special/number required.</p>
       </div>
 
       <div className="space-y-1">
-        <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Confirm New Password</label>
+        <label className="text-xs font-bold text-foreground/60 uppercase tracking-wider">Confirm New Password</label>
         <div className="relative">
           <input 
             type="password" 
@@ -105,7 +105,7 @@ export default function ChangePasswordForm() {
             maxLength={18}
             value={formData.confirmPassword}
             onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-            className="w-full bg-background border border-border-default rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent font-sans"
+            className="w-full bg-background border border-border-default rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent font-sans placeholder:text-foreground/30"
             placeholder="••••••••"
           />
         </div>
@@ -114,7 +114,7 @@ export default function ChangePasswordForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full bg-accent hover:bg-accent-hover text-white font-bold py-2 px-4 rounded-md transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+        className="btn btn-primary w-full py-2 px-4 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isSubmitting ? (
           <Loader2 className="animate-spin" size={18} />

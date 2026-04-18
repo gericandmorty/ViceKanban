@@ -89,20 +89,20 @@ export default function ProjectSettings({ project, orgId, isAdmin, isOrgOwner, i
 
   return (
     <div className="max-w-3xl mx-auto py-8 px-4 space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      <div className="space-y-2 border-b border-[#30363d] pb-6">
-        <h2 className="text-[32px] font-bold text-[#f0f6fc]">Project Settings</h2>
-        <p className="text-[14px] text-[#8b949e]">
+      <div className="space-y-2 border-b border-border-default pb-6">
+        <h2 className="text-[32px] font-bold text-foreground">Project Settings</h2>
+        <p className="text-[14px] text-foreground/60">
           Manage your project name and description.
         </p>
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-[14px] font-semibold text-[#f0f6fc] uppercase tracking-wide">General Details</h3>
+        <h3 className="text-[14px] font-semibold text-foreground uppercase tracking-wide">General Details</h3>
         
-        <form onSubmit={handleUpdate} className="bg-[#0d1117] border border-[#30363d] rounded-md overflow-hidden">
+        <form onSubmit={handleUpdate} className="bg-background border border-border-default rounded-md overflow-hidden">
           {/* Project Name Row */}
-          <div className="px-6 py-6 border-b border-[#30363d] flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors">
-            <label className="text-[14px] font-semibold text-[#f0f6fc] w-full sm:w-1/3">
+          <div className="px-6 py-6 border-b border-border-default flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors">
+            <label className="text-[14px] font-semibold text-foreground w-full sm:w-1/3">
               Project name
             </label>
             <div className="w-full sm:w-2/3">
@@ -111,14 +111,14 @@ export default function ProjectSettings({ project, orgId, isAdmin, isOrgOwner, i
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 disabled={!canEdit || isUpdating}
-                className="w-full px-3 py-[5px] bg-[#0d1117] border border-[#30363d] rounded-md text-[14px] text-[#f0f6fc] focus:outline-none focus:ring-1 focus:ring-[#1f6feb] transition-all disabled:opacity-50"
+                className="w-full px-3 py-[5px] bg-background border border-border-default rounded-md text-[14px] text-foreground focus:outline-none focus:ring-1 focus:ring-accent transition-all disabled:opacity-50"
               />
             </div>
           </div>
 
           {/* Project Description Row */}
-          <div className="px-6 py-6 border-b border-[#30363d] flex flex-col sm:flex-row sm:items-start justify-between gap-4 transition-colors">
-            <label className="text-[14px] font-semibold text-[#f0f6fc] w-full sm:w-1/3 mt-1">
+          <div className="px-6 py-6 border-b border-border-default flex flex-col sm:flex-row sm:items-start justify-between gap-4 transition-colors">
+            <label className="text-[14px] font-semibold text-foreground w-full sm:w-1/3 mt-1">
               Description
             </label>
             <div className="w-full sm:w-2/3">
@@ -127,25 +127,25 @@ export default function ProjectSettings({ project, orgId, isAdmin, isOrgOwner, i
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={!canEdit || isUpdating}
                 placeholder="Add a description for your project..."
-                className="w-full px-3 py-[7px] bg-[#0d1117] border border-[#30363d] rounded-md text-[14px] text-[#f0f6fc] focus:outline-none focus:ring-1 focus:ring-[#1f6feb] transition-all min-h-[120px] resize-none disabled:opacity-50"
+                className="w-full px-3 py-[7px] bg-background border border-border-default rounded-md text-[14px] text-foreground focus:outline-none focus:ring-1 focus:ring-accent transition-all min-h-[120px] resize-none disabled:opacity-50"
               />
             </div>
           </div>
 
-          <div className="px-6 py-4 bg-[#161b22]/30 flex justify-end gap-3 items-center">
+          <div className="px-6 py-4 bg-bg-subtle flex justify-end gap-3 items-center">
             {canEdit && (
               <>
                 <button 
                   type="button"
                   onClick={() => { setName(project.name); setDescription(project.description || ''); }}
-                  className="text-[14px] text-[#8b949e] hover:text-[#f0f6fc] transition-colors px-3 py-[5px]"
+                  className="text-[14px] text-foreground/60 hover:text-foreground transition-colors px-3 py-[5px]"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit"
                   disabled={isUpdating || !name.trim() || (name === project.name && description === (project.description || ''))}
-                  className="bg-[#238636] hover:bg-[#2ea043] text-[#ffffff] px-4 py-[5px] rounded-md text-[14px] font-semibold flex items-center gap-2 transition-colors border border-[rgba(240,246,252,0.1)] disabled:opacity-50"
+                  className="btn btn-primary px-4 py-[5px] text-[14px]"
                 >
                   {isUpdating ? <Loader2 className="animate-spin" size={16} /> : 'Save changes'}
                 </button>
@@ -158,16 +158,16 @@ export default function ProjectSettings({ project, orgId, isAdmin, isOrgOwner, i
       {isOrgOwner && (
         <div className="space-y-4 pt-4">
           <h3 className="text-[14px] font-semibold text-red-500 uppercase tracking-wide">Danger Zone</h3>
-          <div className="bg-[#000000]/20 border border-red-500/30 rounded-md overflow-hidden">
+          <div className="bg-red-500/5 border border-red-500/30 rounded-md overflow-hidden">
             <div className="px-6 py-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
               <div className="space-y-2">
-                <h4 className="text-[16px] font-semibold text-[#f0f6fc]">Delete this project</h4>
-                <p className="text-[14px] text-[#8b949e] max-w-md">Once you delete this project, there is no going back. All tasks and history will be permanently wiped.</p>
+                <h4 className="text-[16px] font-semibold text-foreground">Delete this project</h4>
+                <p className="text-[14px] text-foreground/60 max-w-md">Once you delete this project, there is no going back. All tasks and history will be permanently wiped.</p>
               </div>
               <button 
                 type="button"
                 onClick={() => setShowDeleteModal(true)}
-                className="bg-[#21262d] hover:bg-red-500 hover:text-white text-red-500 border border-[#30363d] px-5 py-2 rounded-md text-[14px] font-bold transition-all shadow-sm"
+                className="btn btn-outline border-border-default text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 px-5 py-2 text-[14px] font-bold"
               >
                 Delete Project
               </button>

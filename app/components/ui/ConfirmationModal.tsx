@@ -40,28 +40,28 @@ export default function ConfirmationModal({
             initial={{ scale: 0.95, opacity: 0, y: 10 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 10 }}
-            className="relative w-full max-w-sm bg-[#0d1117] border border-[#30363d] rounded-lg shadow-xl overflow-hidden"
+            className="relative w-full max-w-sm bg-background border border-border-default rounded-lg shadow-xl overflow-hidden"
           >
             {/* Header - Styled like comment header */}
-            <div className="bg-[#161b22] px-4 py-2.5 border-b border-[#30363d] flex items-center justify-between">
-              <span className="text-[13px] font-semibold text-[#f0f6fc]">{title}</span>
+            <div className="bg-bg-subtle px-4 py-2.5 border-b border-border-default flex items-center justify-between">
+              <span className="text-[13px] font-semibold text-foreground">{title}</span>
               <button 
                 onClick={onClose}
-                className="text-[#8b949e] hover:text-[#f0f6fc] transition-colors"
+                className="text-foreground/60 hover:text-foreground transition-colors"
               >
                 <X size={16} />
               </button>
             </div>
 
             <div className="p-6 space-y-6">
-              <p className="text-[14px] text-[#f0f6fc] leading-[1.5]">
+              <p className="text-[14px] text-foreground leading-[1.5]">
                 {message}
               </p>
 
               <div className="flex justify-end gap-3 pt-2">
                 <button 
                   onClick={onClose}
-                  className="px-4 py-1.5 text-[13px] font-semibold text-[#8b949e] hover:text-[#f0f6fc] transition-colors"
+                  className="px-4 py-1.5 text-[13px] font-semibold text-foreground/60 hover:text-foreground transition-colors"
                 >
                   {cancelText}
                 </button>
@@ -72,8 +72,8 @@ export default function ConfirmationModal({
                   }}
                   className={`px-5 py-2 text-[13px] font-bold rounded-md transition-all shadow-sm ${
                     type === 'danger' 
-                      ? 'bg-[#238636] hover:bg-[#2ea043] text-white' 
-                      : 'bg-[#21262d] text-[#f0f6fc] border border-[#30363d] hover:bg-[#30363d]'
+                      ? 'btn btn-primary' 
+                      : 'bg-bg-subtle text-foreground border border-border-default hover:bg-border-default'
                   }`}
                 >
                   {confirmText}

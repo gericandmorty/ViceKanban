@@ -118,7 +118,7 @@ export default function CreateOrgModal({ isOpen, onClose, onSuccess }: CreateOrg
               </div>
               <button 
                 onClick={onClose}
-                className="p-1 hover:bg-border-default rounded-md transition-colors text-zinc-500"
+                className="p-1 hover:bg-border-default rounded-md transition-colors text-foreground/60"
               >
                 <X size={18} />
               </button>
@@ -140,15 +140,15 @@ export default function CreateOrgModal({ isOpen, onClose, onSuccess }: CreateOrg
                   placeholder="e.g. Acme Corp"
                   required
                   autoFocus
-                  className="w-full bg-background border border-border-default rounded-md py-1.5 px-3 text-[14px] focus:outline-none focus:ring-1 focus:ring-accent/40 focus:border-accent transition-all placeholder:text-zinc-500/50"
+                  className="w-full bg-background border border-border-default rounded-md py-1.5 px-3 text-[14px] focus:outline-none focus:ring-1 focus:ring-accent/40 focus:border-accent transition-all placeholder:text-foreground/30"
                 />
-                <p className="text-xs text-zinc-500 leading-relaxed">
+                <p className="text-xs text-foreground/60 leading-relaxed">
                   This will be the main workspace for your projects and team members.
                 </p>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[14px] font-medium text-foreground">Organization Logo <span className="text-zinc-500 font-normal">(Optional)</span></label>
+                <label className="text-[14px] font-medium text-foreground">Organization Logo <span className="text-foreground/50 font-normal">(Optional)</span></label>
                 
                 <div className="flex items-center gap-4">
                   {logoPreview ? (
@@ -168,7 +168,7 @@ export default function CreateOrgModal({ isOpen, onClose, onSuccess }: CreateOrg
                       </button>
                     </div>
                   ) : (
-                    <label className="w-14 h-14 rounded-md border border-dashed border-border-default flex flex-col items-center justify-center cursor-pointer hover:border-accent hover:bg-accent/5 transition-all text-zinc-500 group">
+                    <label className="w-14 h-14 rounded-md border border-dashed border-border-default flex flex-col items-center justify-center cursor-pointer hover:border-accent hover:bg-accent/5 transition-all text-foreground/50 group">
                       <Upload size={16} className="group-hover:text-accent transition-colors" />
                       <span className="text-[9px] mt-0.5 font-medium group-hover:text-accent transition-colors">Upload</span>
                       <input 
@@ -181,10 +181,10 @@ export default function CreateOrgModal({ isOpen, onClose, onSuccess }: CreateOrg
                   )}
                   
                   <div className="flex-1 space-y-1">
-                    <p className="text-xs text-zinc-500 leading-snug">
+                    <p className="text-xs text-foreground/60 leading-snug">
                       Upload a logo for your organization. (Max 5MB)
                     </p>
-                    <p className="text-[11px] text-zinc-400">
+                    <p className="text-[11px] text-foreground/40">
                       PNG, JPG or WEBP recommended.
                     </p>
                   </div>

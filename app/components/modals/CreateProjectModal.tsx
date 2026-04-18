@@ -94,7 +94,7 @@ export default function CreateProjectModal({
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto">
               {error && (
-                <div className="p-3 bg-red-100 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-md flex items-center gap-2 text-red-800 dark:text-red-400 text-xs">
+                <div className="p-3 bg-red-100 border border-red-200 rounded-md flex items-center gap-2 text-red-800 text-xs shadow-sm">
                   <AlertCircle size={14} className="shrink-0" />
                   <span>{error}</span>
                 </div>

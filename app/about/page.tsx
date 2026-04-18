@@ -40,22 +40,22 @@ const PortfolioPreview = ({ url, title }: { url: string; title: string }) => {
   }, []);
 
   return (
-    <div ref={containerRef} className="relative w-full aspect-video rounded-xl border border-[#30363d] bg-[#161b22] overflow-hidden shadow-2xl group select-none">
+    <div ref={containerRef} className="relative w-full aspect-video rounded-xl border border-border-default bg-bg-subtle overflow-hidden shadow-2xl group select-none">
       {/* Browser Header - Stays crisp/unscaled */}
-      <div className="absolute top-0 left-0 right-0 z-20 bg-[#161b22] border-b border-[#30363d] px-4 py-3 flex items-center gap-2">
+      <div className="absolute top-0 left-0 right-0 z-20 bg-bg-subtle border-b border-border-default px-4 py-3 flex items-center gap-2">
         <div className="flex gap-1.5">
           <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
           <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
           <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
         </div>
-        <div className="flex-1 ml-4 py-1 px-3 bg-[#0d1117] border border-[#30363d] rounded text-[10px] text-[#8b949e] truncate font-mono">
+        <div className="flex-1 ml-4 py-1 px-3 bg-background border border-border-default rounded text-[10px] text-foreground/40 truncate font-mono">
           {url}
         </div>
       </div>
       
       {/* Scaled Iframe Content */}
       <div 
-        className="absolute top-[48px] left-0 origin-top-left overflow-hidden bg-[#0d1117]"
+        className="absolute top-[48px] left-0 origin-top-left overflow-hidden bg-background"
         style={{ 
           width: '1280px', 
           height: '800px', // Fixed desktop height for consistent rendering
@@ -101,25 +101,25 @@ export default function AboutPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0d1117] flex flex-col font-sans selection:bg-accent/30 text-[#c9d1d9]">
+    <div className="min-h-screen bg-background flex flex-col font-sans selection:bg-accent/30 text-foreground">
       {/* Header */}
-      <header className="px-6 md:px-12 py-4 border-b border-[#30363d] bg-[#161b22] flex items-center justify-between sticky top-0 z-50">
+      <header className="px-6 md:px-12 py-4 border-b border-border-default bg-bg-subtle flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <Link href="/">
             <Layout size={24} className="text-foreground hover:text-accent transition-colors" />
           </Link>
-          <span className="font-semibold text-sm text-[#f0f6fc]">About the Team</span>
+          <span className="font-semibold text-sm text-foreground">About the Team</span>
         </div>
-        <Link href="/" className="flex items-center gap-2 text-xs text-[#8b949e] hover:text-accent transition-colors group">
+        <Link href="/" className="flex items-center gap-2 text-xs text-foreground/40 hover:text-accent transition-colors group">
           <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> Back to ViceKanBan
         </Link>
       </header>
       
       <main className="flex-1 w-full max-w-6xl mx-auto px-6 py-12 md:py-20 space-y-16">
         {/* Hero Section */}
-        <div className="border-b border-[#30363d] pb-10">
-          <h1 className="text-3xl font-extrabold text-[#f0f6fc] mb-3 tracking-tight">The Team behind the Code.</h1>
-          <p className="text-[#8b949e] text-lg max-w-2xl">
+        <div className="border-b border-border-default pb-10">
+          <h1 className="text-3xl font-extrabold text-foreground mb-3 tracking-tight">The Team behind the Code.</h1>
+          <p className="text-foreground/40 text-lg max-w-2xl">
             We are a small, dedicated group of engineers passionate about building high-performance developer tools that stay out of your way.
           </p>
         </div>
@@ -127,10 +127,10 @@ export default function AboutPage() {
         {/* Team Grid */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {developers.map((dev) => (
-            <div key={dev.name} className="flex flex-col md:flex-row gap-6 p-6 rounded-lg border border-[#30363d] bg-[#161b22] hover:border-[#8b949e] transition-all group">
+            <div key={dev.name} className="flex flex-col md:flex-row gap-6 p-6 rounded-lg border border-border-default bg-bg-subtle hover:border-foreground/20 transition-all group">
               {/* Profile Image - GitHub Style */}
               <div className="shrink-0">
-                <div className="w-24 h-24 md:w-32 md:h-32 rounded-md border border-[#30363d] overflow-hidden grayscale-[0.3] group-hover:grayscale-0 transition-all shadow-sm">
+                <div className="w-24 h-24 md:w-32 md:h-32 rounded-md border border-border-default overflow-hidden grayscale-[0.3] group-hover:grayscale-0 transition-all shadow-sm">
                   <Image 
                     src={dev.image} 
                     alt={dev.name} 
@@ -144,27 +144,27 @@ export default function AboutPage() {
               {/* Dev Info */}
               <div className="flex flex-col justify-between space-y-4 flex-1">
                 <div className="space-y-1">
-                  <h2 className="text-xl font-bold text-[#f0f6fc] hover:text-accent transition-colors cursor-default">
+                  <h2 className="text-xl font-bold text-foreground hover:text-accent transition-colors cursor-default">
                     {dev.name}
                   </h2>
                   <p className="text-sm font-medium text-accent opacity-80">{dev.role}</p>
-                  <p className="text-sm text-[#8b949e] mt-2 leading-relaxed">
+                  <p className="text-sm text-foreground/40 mt-2 leading-relaxed">
                     {dev.bio}
                   </p>
                 </div>
 
                 {/* GitHub-style links */}
                 <div className="flex items-center flex-wrap gap-4 pt-2">
-                  <a href={dev.github} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-[#8b949e] hover:text-accent transition-colors font-medium">
+                  <a href={dev.github} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-foreground/40 hover:text-accent transition-colors font-medium">
                     <GithubIcon /> {dev.name.split(' ')[0]}
                   </a>
-                  <a href={dev.facebook} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-[#8b949e] hover:text-accent transition-colors font-medium">
+                  <a href={dev.facebook} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-foreground/40 hover:text-accent transition-colors font-medium">
                     <FacebookIcon /> Profile
                   </a>
-                  <a href={dev.website} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-[#8b949e] hover:text-accent transition-colors font-medium">
+                  <a href={dev.website} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-foreground/40 hover:text-accent transition-colors font-medium">
                     <Globe size={14} /> Portfolio
                   </a>
-                  <a href={`mailto:${dev.email}`} className="flex items-center gap-1.5 text-xs text-[#8b949e] hover:text-accent transition-colors font-medium">
+                  <a href={`mailto:${dev.email}`} className="flex items-center gap-1.5 text-xs text-foreground/40 hover:text-accent transition-colors font-medium">
                     <Mail size={14} /> Contact
                   </a>
                 </div>
@@ -175,16 +175,16 @@ export default function AboutPage() {
 
         {/* Portfolio Showcase Section */}
         <section className="space-y-8">
-          <div className="border-b border-[#30363d] pb-4">
-            <h2 className="text-2xl font-bold text-[#f0f6fc]">Portfolio Spotlight</h2>
-            <p className="text-[#8b949e] text-sm mt-1">Live previews of our individual creative spaces and projects.</p>
+          <div className="border-b border-border-default pb-4">
+            <h2 className="text-2xl font-bold text-foreground">Portfolio Spotlight</h2>
+            <p className="text-foreground/40 text-sm mt-1">Live previews of our individual creative spaces and projects.</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {developers.map((dev) => (
               <div key={`${dev.name}-preview`} className="space-y-4">
                 <div className="flex items-center justify-between px-1">
-                  <span className="text-xs font-medium text-[#8b949e] flex items-center gap-2">
+                  <span className="text-xs font-medium text-foreground/40 flex items-center gap-2">
                     <Globe size={12} /> {dev.name.split(' ')[0]}'s Portfolio
                   </span>
                   <a 
@@ -205,24 +205,24 @@ export default function AboutPage() {
         </section>
 
         {/* Vision Details - GitHub README Style */}
-        <div className="space-y-8 p-8 rounded-lg bg-[#0d1117] border border-[#30363d]">
+        <div className="space-y-8 p-8 rounded-lg bg-background border border-border-default">
           <div className="space-y-4">
-            <h3 className="text-xl font-bold text-[#f0f6fc] border-b border-[#30363d] pb-2">Our Vision</h3>
-            <p className="text-[#8b949e] leading-relaxed">
+            <h3 className="text-xl font-bold text-foreground border-b border-border-default pb-2">Our Vision</h3>
+            <p className="text-foreground/40 leading-relaxed">
               ViceKanBan was born from a shared vision to eliminate the visual noise and enterprise bloat that hampers modern development workflows. We believe that professional tools should be as snappy, focused, and well-designed as the codebases they manage.
             </p>
           </div>
           
           <div className="space-y-4">
-            <h3 className="text-xl font-bold text-[#f0f6fc] border-b border-[#30363d] pb-2">Technical Philosophy</h3>
-            <p className="text-[#8b949e] leading-relaxed">
+            <h3 className="text-xl font-bold text-foreground border-b border-border-default pb-2">Technical Philosophy</h3>
+            <p className="text-foreground/40 leading-relaxed">
               Our project draws deep inspiration from the GitHub design language—clean, information-dense, and built for a dark-mode-first world. Every interaction, from dragging a Kanban card to collaborating on task threads, is engineered for zero-latency feedback and maximum developer comfort.
             </p>
             <div className="flex flex-wrap gap-2 pt-2">
-              <span className="px-3 py-1 bg-[#161b22] border border-[#30363d] rounded-full text-xs text-accent">Next.js 16</span>
-              <span className="px-3 py-1 bg-[#161b22] border border-[#30363d] rounded-full text-xs text-accent">NestJS</span>
-              <span className="px-3 py-1 bg-[#161b22] border border-[#30363d] rounded-full text-xs text-accent">Mongoose</span>
-              <span className="px-3 py-1 bg-[#161b22] border border-[#30363d] rounded-full text-xs text-accent">TailwindCSS</span>
+              <span className="px-3 py-1 bg-bg-subtle border border-border-default rounded-full text-xs text-accent">Next.js 16</span>
+              <span className="px-3 py-1 bg-bg-subtle border border-border-default rounded-full text-xs text-accent">NestJS</span>
+              <span className="px-3 py-1 bg-bg-subtle border border-border-default rounded-full text-xs text-accent">Mongoose</span>
+              <span className="px-3 py-1 bg-bg-subtle border border-border-default rounded-full text-xs text-accent">TailwindCSS</span>
             </div>
           </div>
         </div>

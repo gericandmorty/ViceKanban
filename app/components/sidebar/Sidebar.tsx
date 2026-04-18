@@ -149,9 +149,13 @@ export default function Sidebar() {
   }, [fetchOrganizations, fetchInvitationCount, fetchUserData, fetchAssignedTasks]);
 
   const handleLogout = () => {
-    // Clear all cookies and local storage dynamically
+    // Clear all cookies
     Object.keys(Cookies.get()).forEach(cookieName => Cookies.remove(cookieName));
-    localStorage.clear();
+    
+    // Clear all local storage except theme for persistency
+    Object.keys(localStorage).forEach(key => {
+      if (key !== '_vk_pref_node') localStorage.removeItem(key);
+    });
     
     router.push('/auth/login');
   };
@@ -188,14 +192,14 @@ export default function Sidebar() {
           <div className="flex items-center gap-2">
             <button 
               onClick={toggleCollapse}
-              className={`hidden lg:flex p-1.5 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded transition-colors text-zinc-500 hover:text-accent`}
+              className={`hidden lg:flex p-1.5 hover:bg-border-default rounded transition-colors text-foreground/60 hover:text-accent`}
               title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
             >
               <Menu size={18} />
             </button>
             <button 
               onClick={closeSidebar}
-              className="lg:hidden p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded transition-colors text-zinc-500"
+              className="lg:hidden p-1 hover:bg-border-default rounded transition-colors text-foreground/60"
             >
               <CloseIcon size={18} />
             </button>
@@ -205,10 +209,10 @@ export default function Sidebar() {
       <div className={`flex-1 overflow-y-auto ${isCollapsed ? 'p-2' : 'p-4'} space-y-6 custom-scrollbar`}>
         <div className="space-y-4">
           <div className={`flex items-center px-2 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
-            {!isCollapsed && <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Organizations</span>}
+            {!isCollapsed && <span className="text-xs font-bold text-foreground/50 uppercase tracking-wider">Organizations</span>}
             <button 
               onClick={() => setIsModalOpen(true)}
-              className="text-zinc-500 hover:text-accent transition-colors"
+              className="text-foreground/50 hover:text-accent transition-colors"
               title="Create Organization"
             >
               <Plus size={14} />
@@ -218,10 +222,10 @@ export default function Sidebar() {
           <div className="space-y-1 max-h-[250px] overflow-y-auto pr-1">
             {isLoading ? (
               <div className="flex justify-center p-2">
-                <Loader2 size={16} className="animate-spin text-zinc-400" />
+                <Loader2 size={16} className="animate-spin text-foreground/40" />
               </div>
             ) : organizations.length === 0 ? (
-              !isCollapsed && <p className="px-2 text-[11px] text-zinc-500 italic">No organizations found</p>
+              !isCollapsed && <p className="px-2 text-[11px] text-foreground/50 italic">No organizations found</p>
             ) : (
               organizations.map((org) => (
                   <Link 
@@ -236,12 +240,12 @@ export default function Sidebar() {
                   }`}
                 >
                   <div className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 overflow-hidden relative ${
-                    !org.avatarUrl ? (currentOrgId === org._id ? 'bg-accent/10' : 'bg-zinc-800/50') : ''
+                    !org.avatarUrl ? (currentOrgId === org._id ? 'bg-accent/10' : 'bg-bg-subtle/50') : ''
                   }`}>
                     {org.avatarUrl ? (
                       <Image src={org.avatarUrl} alt={org.name} fill sizes="24px" className="object-cover" />
                     ) : (
-                      <Building2 size={14} className={currentOrgId === org._id ? 'text-accent' : 'text-zinc-500'} />
+                      <Building2 size={14} className={currentOrgId === org._id ? 'text-accent' : 'text-foreground/60'} />
                     )}
                   </div>
                   {!isCollapsed && <span className="truncate">{org.name}</span>}
@@ -262,11 +266,11 @@ export default function Sidebar() {
               {!isCollapsed && (
                 <ChevronDown 
                   size={14} 
-                  className={`text-zinc-500 transition-transform duration-200 ${isTasksCollapsed ? '-rotate-90' : ''}`} 
+                  className={`text-foreground/60 transition-transform duration-200 ${isTasksCollapsed ? '-rotate-90' : ''}`} 
                 />
               )}
-              <CheckCircle2 size={isCollapsed ? 16 : 14} className="text-zinc-500" />
-              {!isCollapsed && <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider group-hover/header:text-zinc-400">My Tasks</span>}
+              <CheckCircle2 size={isCollapsed ? 16 : 14} className="text-foreground/60" />
+              {!isCollapsed && <span className="text-xs font-bold text-foreground/60 uppercase tracking-wider group-hover/header:text-foreground/80">My Tasks</span>}
             </div>
             {!isCollapsed && assignedTasks.length > 0 && (
               <span className="bg-accent/10 text-accent text-[10px] px-1.5 py-0.5 rounded-full font-bold">
@@ -287,10 +291,10 @@ export default function Sidebar() {
                 <div className="space-y-3">
                   {isLoading ? (
                     <div className="flex justify-center p-2">
-                      <Loader2 size={16} className="animate-spin text-zinc-400" />
+                      <Loader2 size={16} className="animate-spin text-foreground/40" />
                     </div>
                   ) : assignedTasks.length === 0 ? (
-                    <p className="px-2 text-[11px] text-zinc-500 italic">No pending tasks</p>
+                    <p className="px-2 text-[11px] text-foreground/50 italic">No pending tasks</p>
                   ) : (
                     Object.entries(
                       assignedTasks.reduce((acc: any, task) => {
@@ -303,7 +307,7 @@ export default function Sidebar() {
                       <div key={orgName} className="space-y-1">
                         <div className="px-2 py-1 flex items-center gap-2">
                           <div className="w-1 h-3 bg-accent/30 rounded-full" />
-                          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-tight">{orgName}</span>
+                          <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-tight">{orgName}</span>
                         </div>
                         <div className="space-y-0.5">
                           {tasks.map((task: any) => (
@@ -313,12 +317,12 @@ export default function Sidebar() {
                               onClick={closeSidebar}
                               className="flex items-center gap-3 px-3 py-1.5 rounded-md text-sm hover:bg-border-default/50 transition-all group"
                             >
-                              <div className="flex-shrink-0 text-zinc-400 group-hover:text-accent transition-colors">
+                              <div className="flex-shrink-0 text-foreground/40 group-hover:text-accent transition-colors">
                                 <CheckCircle2 size={14} />
                               </div>
                               <div className="flex flex-col min-w-0">
                                 <span className="truncate group-hover:text-accent transition-colors leading-tight font-medium">{task.title}</span>
-                                <span className="text-[10px] text-zinc-500 truncate">{task.project?.name}</span>
+                                <span className="text-[10px] text-foreground/50 truncate">{task.project?.name}</span>
                               </div>
                             </Link>
                           ))}

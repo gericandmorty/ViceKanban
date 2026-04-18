@@ -9,9 +9,13 @@ export function useAutoLogout() {
   const pathname = usePathname();
 
   const logout = useCallback(() => {
-    // Clear all cookies and local storage dynamically
+    // Clear all cookies
     Object.keys(Cookies.get()).forEach(cookieName => Cookies.remove(cookieName));
-    localStorage.clear();
+    
+    // Clear all local storage except theme for persistency
+    Object.keys(localStorage).forEach(key => {
+      if (key !== '_vk_pref_node') localStorage.removeItem(key);
+    });
     
     // Redirect to login with timeout param
     if (!pathname.startsWith('/auth')) {

@@ -91,45 +91,45 @@ export default function AnnouncementStackModal({ isOpen, onClose, announcements 
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="relative w-full max-w-[680px] bg-[#0d1117] border border-[#30363d] rounded-xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden"
+          className="relative w-full max-w-[680px] bg-background border border-border-default rounded-xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden"
         >
           {/* Top color accent bar */}
           <div className="h-[3px] w-full shrink-0" style={{ backgroundColor: color }} />
 
           {/* Header */}
-          <div className="px-6 py-5 border-b border-[#30363d] bg-[#161b22] flex flex-col gap-1 shrink-0">
-            <h2 className="text-[20px] font-bold text-[#f0f6fc] leading-tight mb-1">
+          <div className="px-6 py-5 border-b border-border-default bg-bg-subtle flex flex-col gap-1 shrink-0">
+            <h2 className="text-[20px] font-bold text-foreground leading-tight mb-1">
               {current.title}
             </h2>
             
-            <div className="flex items-center gap-2 text-[11px] text-[#8b949e]">
+            <div className="flex items-center gap-2 text-[11px] text-foreground/60">
               <Clock size={12} />
               <span>{dateStr}</span>
-              <div className="w-1 h-1 rounded-full bg-[#30363d]" />
+              <div className="w-1 h-1 rounded-full bg-border-default" />
               <span>{current.creator.username}</span>
             </div>
           </div>
 
           {/* Body Content */}
-          <div className="flex-1 overflow-y-auto p-6 bg-[#0d1117] custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-6 bg-background custom-scrollbar">
             {current.imageUrl && (
-              <div className="mb-6 rounded-lg overflow-hidden border border-[#30363d] bg-[#161b22] flex items-center justify-center p-2">
+              <div className="mb-6 rounded-lg overflow-hidden border border-border-default bg-bg-subtle flex items-center justify-center p-2">
                 <img src={current.imageUrl} alt="" className="max-w-full max-h-[240px] object-contain" />
               </div>
             )}
             
-            <div className="text-[15px] text-[#c9d1d9] leading-[1.7] whitespace-pre-wrap font-sans">
+            <div className="text-[15px] text-foreground/80 leading-[1.7] whitespace-pre-wrap font-sans">
               {current.content}
             </div>
           </div>
 
           {/* Paged Footer */}
-          <div className="px-6 py-4 border-t border-[#30363d] bg-[#161b22] flex items-center justify-between shrink-0">
+          <div className="px-6 py-4 border-t border-border-default bg-bg-subtle flex items-center justify-between shrink-0">
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold text-[#484f58] uppercase tracking-[0.1em]">
+              <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-[0.1em]">
                 Organization Announcement
               </span>
-              <span className="text-[13px] font-semibold text-[#8b949e]">
+              <span className="text-[13px] font-semibold text-foreground/60">
                 {currentIndex + 1} of {announcements.length}
               </span>
             </div>
@@ -139,8 +139,8 @@ export default function AnnouncementStackModal({ isOpen, onClose, announcements 
                 onClick={handleNext}
                 className={`flex items-center gap-2 px-5 py-2 rounded-md font-semibold text-sm transition-all shadow-sm ${
                     currentIndex === announcements.length - 1 
-                    ? 'bg-[#238636] hover:bg-[#2ea043] text-white border border-[#2ea043]/50' 
-                    : 'bg-[#21262d] hover:bg-[#30363d] text-[#f0f6fc] border border-[#30363d]'
+                    ? 'btn-primary' 
+                    : 'btn-outline border-border-default'
                 }`}
               >
                 {currentIndex === announcements.length - 1 ? (

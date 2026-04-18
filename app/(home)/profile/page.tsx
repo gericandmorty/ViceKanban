@@ -1,15 +1,17 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { User, Shield, ChevronRight, Loader2 } from 'lucide-react';
+import { User, Shield, ChevronRight, Loader2, Sun, Moon, Palette } from 'lucide-react';
 import Cookies from 'js-cookie';
 import AvatarUpload from '@/app/components/profile/AvatarUpload';
 import ChangePasswordForm from '@/app/components/profile/ChangePasswordForm';
 import { apiFetch } from '@/app/utils/api';
+import { useTheme } from '@/app/context/ThemeContext';
 
 export default function ProfilePage() {
   const [userData, setUserData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -41,21 +43,21 @@ export default function ProfilePage() {
     <div className="flex-1 overflow-y-auto bg-background p-8">
       <div className="max-w-4xl mx-auto space-y-12">
         {/* Header */}
-        <div className="flex items-center gap-2 text-sm text-zinc-500 mb-2">
+        <div className="flex items-center gap-2 text-sm text-foreground/40 mb-2">
           <span>Settings</span>
           <ChevronRight size={14} />
           <span className="text-foreground font-medium">Profile</span>
         </div>
         
         <header className="space-y-1 border-b border-border-default pb-8">
-          <h1 className="text-3xl font-extrabold tracking-tight">Public Profile</h1>
-          <p className="text-zinc-500">Manage your identity and security settings.</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Public Profile</h1>
+          <p className="text-foreground/60">Manage your identity and security settings.</p>
         </header>
 
         <section className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Left Column: Avatar */}
           <div className="space-y-4">
-            <h2 className="text-sm font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+            <h2 className="text-sm font-bold text-foreground/40 uppercase tracking-widest flex items-center gap-2">
               <User size={16} />
               Identity
             </h2>
@@ -69,28 +71,65 @@ export default function ProfilePage() {
           <div className="md:col-span-2 space-y-12">
             <div className="space-y-6">
               <div className="space-y-4">
-                <h2 className="text-sm font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-2 border-b border-border-default pb-2">
+                <h2 className="text-sm font-bold text-foreground/40 uppercase tracking-widest flex items-center gap-2 border-b border-border-default pb-2">
                   <Shield size={16} />
                   Security & Password
                 </h2>
-                <p className="text-sm text-zinc-500">
+                <p className="text-sm text-foreground/60">
                   Update your password to keep your account secure.
                 </p>
                 <ChangePasswordForm />
               </div>
 
+              {/* Theme Settings Section */}
               <div className="space-y-4 pt-8 border-t border-border-default">
-                <h2 className="text-sm font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+                <h2 className="text-sm font-bold text-foreground/40 uppercase tracking-widest flex items-center gap-2">
+                  <Palette size={16} />
+                  Appearance
+                </h2>
+                <div className="space-y-4">
+                  <p className="text-sm text-foreground/60">
+                    Choose how ViceKanBan looks to you. Select a theme to change your viewing experience.
+                  </p>
+                  <div className="flex bg-bg-subtle p-1 rounded-lg border border-border-default w-fit gap-1">
+                    <button 
+                      onClick={() => setTheme('light')}
+                      className={`flex items-center gap-2 px-6 py-2 rounded-md text-sm font-medium transition-all ${
+                        theme === 'light' 
+                          ? 'bg-background text-foreground shadow-sm border border-border-default' 
+                          : 'text-foreground/40 hover:text-foreground'
+                      }`}
+                    >
+                      <Sun size={16} />
+                      Light mode
+                    </button>
+                    <button 
+                      onClick={() => setTheme('dark')}
+                      className={`flex items-center gap-2 px-6 py-2 rounded-md text-sm font-medium transition-all ${
+                        theme === 'dark' 
+                          ? 'bg-background text-foreground shadow-sm border border-border-default' 
+                          : 'text-foreground/40 hover:text-foreground'
+                      }`}
+                    >
+                      <Moon size={16} />
+                      Dark mode
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-8 border-t border-border-default">
+                <h2 className="text-sm font-bold text-foreground/40 uppercase tracking-widest flex items-center gap-2">
                   Account Details
                 </h2>
                 <div className="bg-bg-subtle border border-border-default rounded-lg p-4 space-y-3">
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-zinc-500">Username</span>
-                    <span className="font-bold">{userData?.username}</span>
+                    <span className="text-foreground/60">Username</span>
+                    <span className="font-bold text-foreground">{userData?.username}</span>
                   </div>
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-zinc-500">Email Address</span>
-                    <span className="font-bold">{userData?.email}</span>
+                    <span className="text-foreground/60">Email Address</span>
+                    <span className="font-bold text-foreground">{userData?.email}</span>
                   </div>
                 </div>
               </div>

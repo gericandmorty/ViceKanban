@@ -22,7 +22,7 @@ export default function PrivacyPage() {
       
       <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-12 md:py-20 text-zinc-300 leading-relaxed">
         <h1 className="text-4xl font-extrabold text-foreground mb-8">Privacy Policy</h1>
-        <p className="mb-6 opacity-70">Effective date: {new Date().toLocaleDateString()}</p>
+        <p className="mb-6 opacity-70">Effective date: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
         
         <div className="space-y-8">
           <section>
@@ -37,7 +37,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-xl font-bold text-foreground mb-4">Cookies & Storage</h2>
-            <p>We use standard HTTP cookies to persist your authenticated session ("access_token") securely. By logging into the platform, you understand that your local browser will store tokens for functional authentication continuity.</p>
+            <p>We use standard HTTP cookies and browser LocalStorage to maintain functional session continuity. To maximize your security, ViceKanBan implements a complete data purge protocol: every single authentication token, session variable, and local preference is immediately and completely deleted from your browser environment the moment you log out.</p>
           </section>
 
           <section>

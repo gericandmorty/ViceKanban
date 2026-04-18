@@ -105,18 +105,20 @@ Access the application at `http://localhost:3000`.
 ## Recent Updates
 
 > [!NOTE]
-> **Privacy & Performance Upgrade (v1.0.1)**
-> - Implemented a global data purge on logout that clears both cookies and localStorage.
-> - Fixed "Sticky Breadcrumbs" issue where previous organization names would persist during navigation transitions.
-> - Optimized loading states for large projects.
+> **Developer Showcase & Identity Upgrade (v1.0.2)**
+> - **Portfolio Spotlight**: Integrated a dynamic desktop-scaling engine for developer portfolios in the About page.
+> - **Visual Alignment**: Standardized Privacy, Terms, and About pages with a cohesive GitHub-inspired dark theme.
+> - **Team Expansion**: Added Jherson Aguto as Lead Mobile Developer; updated professional credentials and interactive contact cards.
+> - **Security Audit**: Verified and hardened the Auto-Purge Protocol to ensure 100% session isolation on public machines.
 
 ---
 
 ## Contact
 
-For inquiries or professional collaboration, please reach out:
+For inquiries or professional collaboration, please reach out to the core development team:
 
-**Geric Morit** – [gericmorit.dev@gmail.com](mailto:gericmorit.dev@gmail.com)
+- **Geric Morit** (Full-Stack Engineer) – [gericmorit.dev@gmail.com](mailto:gericmorit.dev@gmail.com) | [Portfolio](https://geric.vercel.app/)
+- **Jherson Aguto** (Mobile Developer) – [agutojherson@gmail.com](mailto:agutojherson@gmail.com) | [Portfolio](https://jherson.onrender.com/)
 
 ---
 

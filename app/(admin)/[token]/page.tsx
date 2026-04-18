@@ -19,6 +19,7 @@ import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import CreateAnnouncementModal from '@/app/components/modals/CreateAnnouncementModal';
 import DeleteAnnouncementModal from '@/app/components/modals/DeleteAnnouncementModal';
+import AnnouncementStackModal from '@/app/components/modals/AnnouncementStackModal';
 
 interface Stats {
   userCount: number;
@@ -48,6 +49,8 @@ export default function AdminPage() {
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
   const [announcementToDelete, setAnnouncementToDelete] = useState<Announcement | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isStackOpen, setIsStackOpen] = useState(false);
+  const [stackIndex, setStackIndex] = useState(0);
 
   const fetchData = async () => {
     try {
@@ -93,6 +96,11 @@ export default function AdminPage() {
   const handleEdit = (ann: Announcement) => {
     setEditingAnnouncement(ann);
     setIsModalOpen(true);
+  };
+
+  const handleViewInStack = (index: number) => {
+    setStackIndex(index);
+    setIsStackOpen(true);
   };
 
   if (loading) {
@@ -192,7 +200,7 @@ export default function AdminPage() {
                     <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-2 text-[var(--foreground)]">
                         <span 
-                          onClick={() => handleEdit(ann)}
+                          onClick={() => handleViewInStack(announcements.indexOf(ann))}
                           className="font-semibold text-[var(--accent-fg)] hover:underline cursor-pointer"
                         >
                           {ann.title}
@@ -256,6 +264,13 @@ export default function AdminPage() {
         onConfirm={handleDeleteAnnouncement}
         title={announcementToDelete?.title || ''}
         isLoading={isDeleting}
+      />
+
+      <AnnouncementStackModal
+        isOpen={isStackOpen}
+        onClose={() => setIsStackOpen(false)}
+        announcements={announcements as any}
+        initialIndex={stackIndex}
       />
     </div>
   );

@@ -10,6 +10,7 @@ import Image from 'next/image';
 interface Task {
   _id: string;
   title: string;
+  description?: string;
   status: string;
   startDate?: string;
   dueDate?: string;
@@ -23,6 +24,8 @@ interface Task {
   assignee?: {
     username: string;
     avatarUrl?: string;
+    firstName?: string;
+    lastName?: string;
   };
 }
 
@@ -36,6 +39,18 @@ export default function GanttChart({ orgId, projectId }: GanttChartProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [expandedProjects, setExpandedProjects] = useState<Record<string, boolean>>({});
   const [statusFilters, setStatusFilters] = useState<string[]>([]); // Empty means "Show All"
+  const [now, setNow] = useState(new Date());
+
+  // Update current time every minute to keep the 'Today' line accurate without refreshes
+  useEffect(() => {
+    // Force a setNow immediately on mount to handle hydration differences
+    setNow(new Date());
+    
+    const timer = setInterval(() => {
+      setNow(new Date());
+    }, 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -104,15 +119,38 @@ export default function GanttChart({ orgId, projectId }: GanttChartProps) {
     return groups;
   }, [filteredTasks]);
 
-  // Calculate time range (30 days from today)
+  // Calculate dynamic time range based on task deadlines
   const timeConfig = useMemo(() => {
-    const now = new Date();
-    const start = new Date(now);
-    start.setDate(now.getDate() - 10); // Show 1.5 weeks back
-    const end = new Date(now);
-    end.setDate(now.getDate() + 20); // Show ~3 weeks forward
+    const mountNow = new Date();
     
-    // Exact dates for the 30-day window
+    // Find absolute boundaries of the project
+    let earliestDate = new Date(mountNow);
+    earliestDate.setDate(mountNow.getDate() - 5); // Default 5 days back
+    
+    let latestDate = new Date(mountNow);
+    latestDate.setDate(mountNow.getDate() + 14); // Default 14 days forward
+    
+    if (filteredTasks.length > 0) {
+      filteredTasks.forEach(task => {
+        const start = new Date(task.startDate || task.createdAt);
+        const end = task.dueDate ? new Date(task.dueDate) : null;
+        
+        if (start < earliestDate) earliestDate = new Date(start);
+        if (end && end > latestDate) latestDate = new Date(end);
+      });
+    }
+    
+    // 1. Normalize start to the BEGINNING of the day (Local Machine Time)
+    const start = new Date(earliestDate);
+    start.setDate(earliestDate.getDate() - 2);
+    start.setHours(0, 0, 0, 0); 
+    
+    // 2. Normalize end to the END of the day (Local Machine Time)
+    const end = new Date(latestDate);
+    end.setDate(latestDate.getDate() + 5);
+    end.setHours(23, 59, 59, 999);
+    
+    // Exact dates for the window
     const days = [];
     const current = new Date(start);
     while (current <= end) {
@@ -132,20 +170,45 @@ export default function GanttChart({ orgId, projectId }: GanttChartProps) {
     });
     
     return { start, end, days, months };
-  }, []);
+  }, [filteredTasks]);
 
-  const getDayPosition = (dateStr: string | undefined, defaultDate: Date) => {
-    const date = dateStr ? new Date(dateStr) : defaultDate;
-    const diffTime = date.getTime() - timeConfig.start.getTime();
-    const diffDays = diffTime / (1000 * 60 * 60 * 24);
-    return diffDays; // Return raw days instead of clamping here
+  // Standardize grid boundary to Local Midnight 00:00:00
+  const toGridStart = (val: any) => {
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return new Date();
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
   };
 
+  const getDayPosition = (dateVal: any) => {
+    const target = new Date(dateVal);
+    if (isNaN(target.getTime())) return 0;
+
+    // Use absolute time difference for position to avoid timezone shifts
+    const diffTime = target.getTime() - timeConfig.start.getTime();
+    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+    return diffDays;
+  };
+
+  const getTodayPosition = () => {
+    const todayStr = now.toDateString();
+    const idx = timeConfig.days.findIndex(d => d.toDateString() === todayStr);
+    if (idx === -1) return -100; // Off screen
+    
+    // Calculate fractional day progress precisely
+    const startOfToday = new Date(now);
+    startOfToday.setHours(0, 0, 0, 0);
+    const progress = (now.getTime() - startOfToday.getTime()) / (1000 * 60 * 60 * 24);
+    
+    return idx + progress;
+  };
+
+  // --- 5. Progress Based on Status ---
   const getStatusProgress = (status: string) => {
     switch (status) {
-      case 'reviewed':
-      case 'done': return 100;
+      case 'todo': return 0;
       case 'in_progress': return 50;
+      case 'done': return 80;
+      case 'reviewed': return 100;
       default: return 0;
     }
   };
@@ -238,7 +301,7 @@ export default function GanttChart({ orgId, projectId }: GanttChartProps) {
           {/* Days Header */}
           <div className="flex flex-1">
             {timeConfig.days.map((day, idx) => {
-              const isToday = day.toDateString() === new Date().toDateString();
+              const isToday = day.toDateString() === now.toDateString();
               const isWeekend = day.getDay() === 0 || day.getDay() === 6;
 
               return (
@@ -300,15 +363,15 @@ export default function GanttChart({ orgId, projectId }: GanttChartProps) {
                             : 0;
 
                           return (
-                            <div key={task._id} className="px-6 py-2.5 h-12 flex items-center justify-between group/row hover:bg-bg-subtle/30 transition-colors">
-                              <div className="flex flex-col min-w-0">
-                                <span className="text-[11px] text-foreground font-bold truncate group-hover/row:text-accent transition-colors leading-tight capitalize">
-                                  {task.title}
-                                </span>
-                                {durationInDays > 0 && (
-                                  <span className="text-[9px] text-foreground/30 font-bold uppercase tracking-tighter">{durationInDays} DAYS</span>
-                                )}
-                              </div>
+                            <div key={task._id} className="px-0 py-0 h-10 flex items-center justify-between group/row hover:bg-bg-subtle/30 transition-colors">
+                                 <div className="h-10 w-full flex items-center justify-between px-6 border-t border-border-default/10 bg-bg-surface/30">
+                                   <span className="text-[10px] font-semibold text-foreground/80 truncate pr-4">
+                                     {task.title}
+                                   </span>
+                                   {durationInDays > 0 && (
+                                     <span className="text-[8px] text-foreground/30 font-bold uppercase tracking-tighter shrink-0">{durationInDays} DAYS</span>
+                                   )}
+                                 </div>
                             </div>
                           );
                         })}
@@ -332,18 +395,8 @@ export default function GanttChart({ orgId, projectId }: GanttChartProps) {
                ))}
             </div>
 
-            {/* Background Today Indicator Line */}
-            <div 
-              className="absolute top-0 bottom-0 w-px bg-accent/40 z-20 pointer-events-none" 
-              style={{ left: `${(getDayPosition(undefined, new Date()) / timeConfig.days.length) * 100}%` }}
-            >
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-accent animate-pulse shadow-[0_0_12px_rgba(var(--accent-rgb),0.6)]" />
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 -mt-6 bg-accent text-white text-[8px] font-bold px-1.5 py-0.5 rounded shadow-lg uppercase tracking-widest">
-                Today
-              </div>
-            </div>
-
-             <div className="divide-y divide-border-default/50">
+            {/* Main Grid Content */}
+            <div className="divide-y divide-border-default/50">
                {Object.entries(groupedTasks).map(([pid, group]) => {
                 const isProjectView = !!projectId;
 
@@ -363,75 +416,55 @@ export default function GanttChart({ orgId, projectId }: GanttChartProps) {
                           exit={{ height: 0 }}
                           className="divide-y divide-border-default/30 overflow-hidden"
                         >
-                        {group.tasks.map(task => {
-                          const startPos = getDayPosition(task.startDate, new Date(task.createdAt));
-                          const endPos = getDayPosition(task.dueDate, task.status === 'reviewed' ? new Date(task.updatedAt) : new Date());
-                          
-                          // Ensure a minimum width of 1 day (or 0.8 to be safe) for visibility
-                          let width = endPos - startPos;
-                          if (width < 0.8) width = 0.8; 
+                        {group.tasks.map((task, taskIdx) => {
+                           // --- 1. Task Duration Formula ---
+                           const startDate = new Date(task.startDate || task.createdAt);
+                           const endDate = new Date(task.dueDate || (task.status === 'reviewed' ? task.updatedAt : now));
+                           
+                           // --- 2. Task Start Position (Offset from Project Start) ---
+                           const startPos = getDayPosition(startDate);
+                           
+                           // --- 3 & 4. Gantt Bar Length & Position ---
+                           let width = getDayPosition(endDate) - startPos;
+                           if (width < 1.0) width = 1.0; // Min visibility
 
-                          const progress = getStatusProgress(task.status);
+                           const progress = getStatusProgress(task.status);
+                           const isAtBottom = taskIdx > group.tasks.length - 3;
 
-                          return (
-                            <div key={task._id} className="h-12 w-full flex items-center px-[0.5%] relative border-t border-border-default/10">
+                           return (
+                             <div key={task._id} className="h-10 w-full flex items-center px-[0.5%] relative border-t border-border-default/10">
                               <motion.div 
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                className={`h-7 rounded-lg shadow-xl border group/bar relative transition-all hover:scale-[1.01] hover:brightness-110 flex items-center pl-1.5 pr-3 overflow-hidden ${
-                                  task.status === 'reviewed' ? 'bg-gradient-to-r from-green-500/20 to-green-500/5 border-green-500/30' :
-                                  task.priority === 'urgent' ? 'bg-gradient-to-r from-red-500/20 to-red-500/5 border-red-500/30' :
-                                  task.priority === 'high' ? 'bg-gradient-to-r from-yellow-500/20 to-yellow-500/5 border-yellow-500/30' :
-                                  task.priority === 'medium' ? 'bg-gradient-to-r from-blue-500/20 to-blue-500/5 border-blue-500/30' :
-                                  'bg-gradient-to-r from-foreground/10 to-foreground/5 border-border-default'
-                                }`}
+                                className={`h-6 rounded shadow-lg border group/bar relative transition-all hover:scale-[1.01] hover:brightness-110 hover:z-[200] flex items-center pr-3 overflow-hidden bg-[#21262d] ${
+                                 task.status === 'reviewed' ? 'border-[#2ea043]' :
+                                 task.status === 'done' ? 'border-[#2ea043]/60' :
+                                 task.priority === 'urgent' ? 'border-[#f85149]' :
+                                 'border-[#30363d]'
+                               }`}
                                 style={{ 
-                                  marginLeft: `${(startPos / timeConfig.days.length) * 100}%`,
-                                  width: `${(width / timeConfig.days.length) * 100}%`
-                                }}
-                              >
-                                {/* Inner Status Strip */}
-                                <div className={`absolute left-0 top-0 bottom-0 w-1 ${
-                                  task.status === 'reviewed' ? 'bg-green-500' :
-                                  task.priority === 'urgent' ? 'bg-red-500' :
-                                  task.priority === 'high' ? 'bg-yellow-500' :
-                                  task.priority === 'medium' ? 'bg-blue-500' : 'bg-foreground/20'
-                                }`} />
-
-                                {/* Progress Fill Background */}
+                                 width: `${(width / timeConfig.days.length) * 100}%`,
+                                 marginLeft: `${(startPos / timeConfig.days.length) * 100}%`,
+                               }}
+                             >
+                                {/* --- 5. Progress Fill Background --- */}
                                 <div 
-                                  className={`absolute inset-0 opacity-[0.15] z-0 transition-all duration-1000 ${
-                                    task.status === 'reviewed' ? 'bg-green-500' :
-                                    task.priority === 'urgent' ? 'bg-red-500' :
-                                    task.priority === 'high' ? 'bg-yellow-500' :
-                                    task.priority === 'medium' ? 'bg-blue-500' : 'bg-accent'
+                                  className={`absolute left-0 top-0 bottom-0 z-0 transition-all duration-1000 ${
+                                    task.status === 'reviewed' || task.status === 'done' ? 'bg-[#238636]' :
+                                    task.priority === 'urgent' ? 'bg-[#da3633]' :
+                                    'bg-[#1f6feb]'
                                   }`}
                                   style={{ width: `${progress}%` }}
                                 />
 
-                                <div className="flex items-center gap-2 min-w-0 z-10">
-                                   {task.assignee && (
-                                      <div className="w-5 h-5 rounded-full overflow-hidden border border-white/10 shrink-0 bg-bg-subtle flex items-center justify-center text-[8px] font-bold">
-                                         {task.assignee.avatarUrl ? (
-                                            <Image src={task.assignee.avatarUrl} alt={task.assignee.username} width={20} height={20} className="object-cover" />
-                                         ) : (
-                                            task.assignee.username.charAt(0).toUpperCase()
-                                         )}
-                                      </div>
-                                   )}
-                                   <span className={`text-[10px] font-bold truncate tracking-tight ${
-                                     task.status === 'reviewed' ? 'text-green-500' :
-                                     task.priority === 'urgent' ? 'text-red-600' :
-                                     task.priority === 'high' ? 'text-yellow-600' :
-                                     task.priority === 'medium' ? 'text-blue-600' : 'text-green-600'
-                                   }`}>
-                                     {task.title}
-                                   </span>
-                                </div>
+                                <span className="text-[10px] font-bold truncate whitespace-nowrap z-10 pl-2 pr-4 relative text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                                  {task.title}
+                                </span>
 
-                                {/* Tooltip on Hover */}
-                                <div className="fixed pointer-events-none opacity-0 group-hover/bar:opacity-100 transition-opacity z-[999] bg-background/95 backdrop-blur-md border border-border-default p-3 rounded-xl shadow-2xl min-w-[200px]"
-                                     style={{ left: '50%', transform: 'translateX(-50%)', bottom: '100%', marginBottom: '12px' }}>
+                                 {/* Tooltip on Hover */}
+                                 <div className={`absolute pointer-events-none opacity-0 group-hover/bar:opacity-100 transition-all duration-150 z-[100] bg-[#0d1117] border border-[#30363d] p-3 rounded-md shadow-[0_8px_24px_rgba(0,0,0,0.5)] min-w-[220px] left-0 ${
+                                   isAtBottom ? 'bottom-full mb-2' : 'top-full mt-2'
+                                 }`}>
                                    <div className="space-y-2">
                                       <div className="flex items-center justify-between gap-4">
                                          <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest">Task Details</span>
@@ -446,34 +479,28 @@ export default function GanttChart({ orgId, projectId }: GanttChartProps) {
                                          <div className="flex items-center justify-between text-[11px]">
                                             <span className="text-foreground/40">Status:</span>
                                             <div className="flex items-center gap-1.5">
-                                               <div className="w-8 h-1.5 bg-bg-subtle rounded-full overflow-hidden">
+                                               <div className="w-12 h-1.5 bg-bg-subtle rounded-full overflow-hidden">
                                                   <div className="h-full bg-accent" style={{ width: `${progress}%` }} />
                                                </div>
-                                               <span className="text-foreground font-bold uppercase text-[9px] tracking-tight">
-                                                  {task.status.replace('_', ' ')} ({progress}%)
+                                               <span className="text-foreground font-bold uppercase text-[9px] tracking-tight text-accent">
+                                                  {task.status.replace('_', ' ')}
                                                </span>
                                             </div>
                                          </div>
                                          <div className="flex items-center justify-between text-[11px]">
                                             <span className="text-foreground/40">Duration:</span>
                                             <span className="text-foreground font-semibold">
-                                               {task.startDate && task.dueDate 
+                                               {task.startDate && task.dueDate
                                                   ? `${Math.ceil((new Date(task.dueDate).getTime() - new Date(task.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1} Days`
                                                   : 'TBD'}
                                             </span>
                                          </div>
-                                         <div className="flex items-center justify-between text-[11px]">
-                                            <span className="text-foreground/40">Timeline:</span>
-                                            <span className="text-foreground/80">
-                                               {task.startDate ? new Date(task.startDate).toLocaleDateString() : '??'} → {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '??'}
-                                            </span>
-                                         </div>
                                       </div>
                                    </div>
-                                </div>
+                                 </div>
                               </motion.div>
-                            </div>
-                          );
+                             </div>
+                           );
                         })}
                       </motion.div>
                     )}

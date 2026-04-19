@@ -6,6 +6,7 @@ import ChangePasswordForm from '@/app/components/profile/ChangePasswordForm';
 import { apiFetch } from '@/app/utils/api';
 import { useTheme } from '@/app/context/ThemeContext';
 import { Trash2, AlertCircle as AlertIcon, Sun, Moon, Loader2 } from 'lucide-react';
+import Loading from '@/app/components/ui/Loading';
 
 export default function ProfilePage() {
   const [userData, setUserData] = useState<any>(null);
@@ -33,7 +34,7 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center bg-background">
-        <Loader2 className="animate-spin text-accent" size={48} />
+        <Loading size="lg" />
       </div>
     );
   }

@@ -1,6 +1,7 @@
 import React from 'react';
 import Sidebar from '../components/sidebar/Sidebar';
 import { SidebarProvider } from '../context/SidebarContext';
+import Loading from '../components/ui/Loading';
 
 export default function DashboardLayout({
   children,
@@ -10,7 +11,7 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
       <div className="flex h-screen overflow-hidden relative">
-        <React.Suspense fallback={<div className="flex-1 flex items-center justify-center bg-background"><div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin" /></div>}>
+        <React.Suspense fallback={<Loading size="lg" fullScreen={true} />}>
           <Sidebar />
           <div className="flex-1 flex flex-col min-w-0 bg-background overflow-hidden relative">
             {children}

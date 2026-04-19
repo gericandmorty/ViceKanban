@@ -23,6 +23,7 @@ import AnnouncementDetailModal from '../modals/AnnouncementDetailModal';
 import AnnouncementStackModal from '../modals/AnnouncementStackModal';
 import DeleteAnnouncementModal from '../modals/DeleteAnnouncementModal';
 import toast from 'react-hot-toast';
+import Loading from '@/app/components/ui/Loading';
 
 interface Announcement {
   _id: string;
@@ -142,9 +143,8 @@ export default function Announcements({ orgId, isAdmin }: AnnouncementsProps) {
 
         <div className="divide-y divide-border-default">
           {isLoading ? (
-            <div className="p-12 flex flex-col items-center justify-center gap-2">
-              <Loader2 className="animate-spin text-accent" size={24} />
-              <p className="text-xs text-foreground/60">Loading announcements...</p>
+            <div className="p-12 flex flex-col items-center justify-center">
+              <Loading size="md" message="Loading announcements..." />
             </div>
           ) : announcements.map((announcement) => {
             const color = getTypeColor(announcement.type);

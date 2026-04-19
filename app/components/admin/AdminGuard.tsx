@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { apiFetch } from '@/app/utils/api';
 import { Loader2, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Loading from '@/app/components/ui/Loading';
 
 interface AdminGuardProps {
   children: React.ReactNode;
@@ -41,7 +42,7 @@ export default function AdminGuard({ children }: AdminGuardProps) {
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center bg-background">
-        <div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin" />
+        <Loading size="lg" fullScreen={true} />
       </div>
     );
   }

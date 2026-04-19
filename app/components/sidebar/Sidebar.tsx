@@ -21,12 +21,13 @@ import {
 } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { useRouter, useSearchParams } from 'next/navigation';
-import CreateOrgModal from '@/app/components/modals/CreateOrgModal';
 import CreateAnnouncementModal from '@/app/components/modals/CreateAnnouncementModal';
+import CreateOrgModal from '@/app/components/modals/CreateOrgModal';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSidebar } from '@/app/context/SidebarContext';
 import { API_URL } from '@/app/utils/api';
+import Loading from '@/app/components/ui/Loading';
 
 export default function Sidebar() {
   const router = useRouter();
@@ -232,7 +233,7 @@ export default function Sidebar() {
           <div className="space-y-1 max-h-[250px] overflow-y-auto pr-1">
             {isLoading ? (
               <div className="flex justify-center p-2">
-                <Loader2 size={16} className="animate-spin text-foreground/40" />
+                <Loading size="sm" inline={true} />
               </div>
             ) : organizations.length === 0 ? (
               !isCollapsed && <p className="px-2 text-[11px] text-foreground/50 italic">No organizations found</p>
@@ -320,7 +321,7 @@ export default function Sidebar() {
                 <div className="space-y-3">
                   {isLoading ? (
                     <div className="flex justify-center p-2">
-                      <Loader2 size={16} className="animate-spin text-foreground/40" />
+                      <Loading size="sm" inline={true} />
                     </div>
                   ) : assignedTasks.length === 0 ? (
                     <p className="px-2 text-[11px] text-foreground/50 italic">No pending tasks</p>

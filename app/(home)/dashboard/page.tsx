@@ -41,6 +41,7 @@ import { useSidebar } from '@/app/context/SidebarContext';
 import { apiFetch } from '@/app/utils/api';
 import { useNotifications } from '@/app/hooks/useNotifications';
 import NotificationPopover from '@/app/components/sidebar/NotificationPopover';
+import Loading from '@/app/components/ui/Loading';
 import Image from 'next/image';
 
 export default function DashboardPage() {
@@ -73,7 +74,7 @@ export default function DashboardPage() {
 
   // Notification state
   const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification, deleteAll } = useNotifications();
 
   // Auth/Permissions
   const [userId, setUserId] = useState<string | null>(null);
@@ -470,6 +471,7 @@ export default function DashboardPage() {
                     notifications={notifications}
                     onMarkRead={markAsRead}
                     onDelete={deleteNotification}
+                    onDeleteAll={deleteAll}
                     onMarkAllAsRead={markAllAsRead}
                     onClose={() => setIsNotifOpen(false)}
                   />
@@ -707,9 +709,7 @@ export default function DashboardPage() {
             {!detailedOrg || (detailedOrg._id !== orgIdFromUrl) ? (
               <div className="flex-1 flex items-center justify-center">
                 <div className="flex flex-col items-center gap-2">
-                  <div className="h-4 w-24 bg-border-default animate-pulse rounded mb-2" />
-                  <Loader2 className="animate-spin text-accent" size={24} />
-                  <p className="text-sm text-zinc-500">Loading organization workspace...</p>
+                  <Loading size="lg" message="Loading organization workspace..." />
                 </div>
               </div>
             ) : activeTab === 'Gantt Chart' ? (

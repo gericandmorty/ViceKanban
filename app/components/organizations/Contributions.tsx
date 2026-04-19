@@ -10,7 +10,10 @@ import {
   ShieldCheck,
   TrendingUp,
   Activity,
-  Search
+  Search,
+  X,
+  ChevronRight,
+  ExternalLink
 } from 'lucide-react';
 import { API_URL } from '@/app/utils/api';
 import Cookies from 'js-cookie';
@@ -41,6 +44,11 @@ export default function Contributions({ orgId }: { orgId: string }) {
   const [hasMore, setHasMore] = useState(false);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // Selected member inspection state
+  const [selectedMember, setSelectedMember] = useState<MemberContribution | null>(null);
+  const [memberTasks, setMemberTasks] = useState<any[]>([]);
+  const [isFetchingTasks, setIsFetchingTasks] = useState(false);
 
   // 500ms Debounce for search
   useEffect(() => {
@@ -89,6 +97,40 @@ export default function Contributions({ orgId }: { orgId: string }) {
   const handleLoadMore = () => {
     if (!isLoadingMore && hasMore) {
       fetchContributions(page + 1, true, debouncedSearch);
+    }
+  };
+
+  const fetchMemberTasks = async (member: MemberContribution) => {
+    setSelectedMember(member);
+    setIsFetchingTasks(true);
+    setMemberTasks([]);
+
+    try {
+      const token = Cookies.get('access_token');
+      const response = await fetch(
+        `${API_URL}/tasks/org/${orgId}/user/${member.user._id}`,
+        {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setMemberTasks(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch member tasks:', error);
+    } finally {
+      setIsFetchingTasks(false);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'TODO': return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+      case 'IN_PROGRESS': return 'bg-amber-500/10 text-amber-500 border-amber-500/20';
+      case 'DONE': return 'bg-green-500/10 text-green-500 border-green-500/20';
+      case 'REVIEWED': return 'bg-purple-500/10 text-purple-500 border-purple-500/20';
+      default: return 'bg-gray-500/10 text-gray-500 border-gray-500/20';
     }
   };
 
@@ -144,7 +186,8 @@ export default function Contributions({ orgId }: { orgId: string }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: (idx % 9) * 0.03 }}
-              className={`bg-background border rounded-md overflow-hidden flex flex-col transition-all ${
+              onClick={() => fetchMemberTasks(member)}
+              className={`bg-background border rounded-md overflow-hidden flex flex-col transition-all cursor-pointer group hover:border-accent/50 ${
                 isMe 
                 ? 'border-accent shadow-[0_0_12px_rgba(var(--accent-rgb),0.15)] ring-1 ring-accent/30' 
                 : 'border-border-default'
@@ -233,6 +276,130 @@ export default function Contributions({ orgId }: { orgId: string }) {
               'Load more contributors'
             )}
           </button>
+        </div>
+      )}
+
+      {/* Task Inspector Modal */}
+      {selectedMember && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-background border border-border-default rounded-xl w-full max-w-7xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden"
+          >
+            {/* Modal Header */}
+            <div className="p-6 border-b border-border-default flex items-center justify-between bg-bg-subtle/30">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  {selectedMember.user.avatarUrl ? (
+                    <img 
+                      src={selectedMember.user.avatarUrl} 
+                      alt={selectedMember.user.username} 
+                      className="w-12 h-12 rounded-lg border border-border-default object-cover"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center text-accent font-bold text-lg">
+                      {selectedMember.user.username.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-foreground">Tasks for {selectedMember.user.username}</h3>
+                  <p className="text-sm text-foreground/40">{selectedMember.user.email}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setSelectedMember(null)}
+                className="p-2 hover:bg-foreground/5 rounded-full transition-colors"
+              >
+                <X size={20} className="text-foreground/40" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="flex-1 overflow-x-auto p-6">
+              {isFetchingTasks ? (
+                <div className="h-64 flex flex-col items-center justify-center gap-3">
+                  <Loader2 className="animate-spin text-accent" size={32} />
+                  <p className="text-sm text-foreground/40 font-medium">Fetching active tasks...</p>
+                </div>
+              ) : memberTasks.length > 0 ? (
+                <div className="flex gap-6 min-w-[1000px] h-full pb-2">
+                  {[
+                    { id: 'todo', label: 'To Do', icon: <Clock size={16} />, tasks: memberTasks.filter(t => t.status === 'todo') },
+                    { id: 'in_progress', label: 'In Progress', icon: <PlayCircle size={16} />, tasks: memberTasks.filter(t => t.status === 'in_progress') },
+                    { id: 'done', label: 'Done', icon: <CheckCircle2 size={16} />, tasks: memberTasks.filter(t => t.status === 'done') },
+                    { id: 'reviewed', label: 'Reviewed', icon: <ShieldCheck size={16} />, tasks: memberTasks.filter(t => t.status === 'reviewed') }
+                  ].map((column) => (
+                    <div key={column.id} className="flex-1 flex flex-col min-w-[240px] bg-bg-subtle/20 rounded-xl border border-border-default overflow-hidden">
+                      {/* Column Header */}
+                      <div className="px-4 py-3 border-b border-border-default bg-bg-subtle/30 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-foreground/60">{column.icon}</span>
+                          <span className="text-[13px] font-bold text-foreground">{column.label}</span>
+                        </div>
+                        <span className="text-[11px] font-bold bg-bg-subtle px-2 py-0.5 rounded-full text-foreground/40 border border-border-default">
+                          {column.tasks.length}
+                        </span>
+                      </div>
+
+                      {/* Task List */}
+                      <div className="flex-1 overflow-y-auto p-3 space-y-3 scrollbar-thin scrollbar-thumb-foreground/10 scrollbar-track-transparent hover:scrollbar-thumb-foreground/20 transition-colors">
+                        {column.tasks.length > 0 ? (
+                          column.tasks.map((task) => (
+                            <div 
+                              key={task._id} 
+                              className="group p-3 bg-background border border-border-default rounded-lg hover:border-accent/40 hover:shadow-sm transition-all flex flex-col gap-2"
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <span className="text-[10px] text-foreground/30 font-bold uppercase tracking-tight truncate">
+                                  {task.project?.name}
+                                </span>
+                                {task.priority === 'urgent' && (
+                                   <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                                )}
+                              </div>
+                              <h4 className="text-[13px] font-semibold text-foreground leading-tight line-clamp-2">
+                                {task.title}
+                              </h4>
+                              {task.dueDate && (
+                                <div className="flex items-center gap-1.5 mt-1">
+                                  <Clock size={10} className="text-foreground/20" />
+                                  <span className="text-[10px] text-foreground/30">
+                                    {new Date(task.dueDate).toLocaleDateString()}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="h-full flex items-center justify-center py-10 opacity-20 filter grayscale">
+                             <Activity size={24} />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-20 flex flex-col items-center justify-center text-center">
+                  <Activity size={48} className="text-foreground/5 mb-4" />
+                  <p className="font-semibold text-foreground/60">No active tasks assigned</p>
+                  <p className="text-sm text-foreground/30 mt-1">This member currently has no tasks in this organization.</p>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 bg-bg-subtle/10 border-t border-border-default flex justify-end">
+              <button 
+                onClick={() => setSelectedMember(null)}
+                className="px-6 py-2 bg-foreground text-background font-bold rounded-md hover:opacity-90 transition-opacity text-sm"
+              >
+                Close
+              </button>
+            </div>
+          </motion.div>
         </div>
       )}
     </div>

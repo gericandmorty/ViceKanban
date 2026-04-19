@@ -30,6 +30,7 @@ import toast from 'react-hot-toast';
 import { API_URL } from '@/app/utils/api';
 import ConfirmationModal from '../ui/ConfirmationModal';
 import Image from 'next/image';
+import Loading from '@/app/components/ui/Loading';
 
 interface Task {
   _id: string;
@@ -551,7 +552,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
   if (isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center h-[400px]">
-        <Loader2 className="animate-spin text-accent" size={32} />
+        <Loading size="lg" />
       </div>
     );
   }
@@ -1149,7 +1150,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                   <div className="space-y-6">
                     {isFetchingComments ? (
                       <div className="flex justify-center py-6">
-                        <Loader2 className="animate-spin text-foreground/40" size={24} />
+                        <Loading size="md" />
                       </div>
                     ) : comments.length === 0 ? (
                       <p className="text-[13px] text-foreground/40 italic px-1">No comments yet. Start a discussion below.</p>

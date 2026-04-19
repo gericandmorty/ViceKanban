@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { API_URL } from '@/app/utils/api';
 import Cookies from 'js-cookie';
+import Loading from '@/app/components/ui/Loading';
 
 interface ContributionStats {
   todo: number;
@@ -139,10 +140,7 @@ export default function Contributions({ orgId }: { orgId: string }) {
   if (isLoading && page === 1 && !debouncedSearch) {
     return (
       <div className="flex-1 flex items-center justify-center p-12">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="animate-spin text-foreground/40" size={32} />
-          <p className="text-sm text-foreground/40 font-medium">Loading activity data...</p>
-        </div>
+        <Loading size="lg" message="Loading activity data..." />
       </div>
     );
   }
@@ -247,8 +245,7 @@ export default function Contributions({ orgId }: { orgId: string }) {
 
         {(isLoading || isLoadingMore) && page === 1 && contributions.length === 0 && (
           <div className="col-span-full py-16 flex flex-col items-center justify-center">
-             <Loader2 className="animate-spin text-foreground/40" size={24} />
-             <p className="text-sm text-foreground/40 mt-2">Searching...</p>
+             <Loading size="md" message="Searching..." />
           </div>
         )}
 
@@ -319,9 +316,8 @@ export default function Contributions({ orgId }: { orgId: string }) {
             {/* Modal Content */}
             <div className="flex-1 overflow-x-auto p-6">
               {isFetchingTasks ? (
-                <div className="h-64 flex flex-col items-center justify-center gap-3">
-                  <Loader2 className="animate-spin text-accent" size={32} />
-                  <p className="text-sm text-foreground/40 font-medium">Fetching active tasks...</p>
+                <div className="h-64 flex flex-col items-center justify-center">
+                  <Loading size="lg" message="Fetching active tasks..." />
                 </div>
               ) : memberTasks.length > 0 ? (
                 <div className="flex gap-6 min-w-[1000px] h-full pb-2">

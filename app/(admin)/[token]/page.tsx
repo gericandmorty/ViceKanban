@@ -20,6 +20,7 @@ import toast from 'react-hot-toast';
 import CreateAnnouncementModal from '@/app/components/modals/CreateAnnouncementModal';
 import DeleteAnnouncementModal from '@/app/components/modals/DeleteAnnouncementModal';
 import AnnouncementStackModal from '@/app/components/modals/AnnouncementStackModal';
+import Loading from '@/app/components/ui/Loading';
 
 interface Stats {
   userCount: number;
@@ -106,7 +107,7 @@ export default function AdminPage() {
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center bg-[var(--background)]">
-        <Loader2 className="w-8 h-8 animate-spin text-[var(--accent-fg)]" />
+        <Loading size="lg" />
       </div>
     );
   }

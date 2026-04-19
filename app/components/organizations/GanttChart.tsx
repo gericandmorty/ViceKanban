@@ -6,6 +6,7 @@ import { Loader2, Kanban, Calendar, Filter, ChevronRight, ChevronDown, CheckCirc
 import Cookies from 'js-cookie';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
+import Loading from '@/app/components/ui/Loading';
 
 interface Task {
   _id: string;
@@ -215,7 +216,7 @@ export default function GanttChart({ orgId, projectId }: GanttChartProps) {
   if (isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center p-20">
-        <Loader2 className="animate-spin text-accent" size={32} />
+        <Loading size="lg" message="Loading Gantt Chart..." />
       </div>
     );
   }

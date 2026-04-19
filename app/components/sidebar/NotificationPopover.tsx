@@ -12,6 +12,7 @@ interface NotificationPopoverProps {
   notifications: Notification[];
   onMarkRead: (id: string) => void;
   onDelete: (id: string) => void;
+  onDeleteAll?: () => void;
   onClose: () => void;
   onMarkAllAsRead?: () => void;
 }
@@ -31,6 +32,7 @@ export default function NotificationPopover({
   notifications, 
   onMarkRead, 
   onDelete, 
+  onDeleteAll,
   onClose,
   onMarkAllAsRead
 }: NotificationPopoverProps) {
@@ -68,6 +70,14 @@ export default function NotificationPopover({
                 className="text-[10px] text-accent hover:underline px-2 py-1 transition-colors"
               >
                 Mark all as read
+              </button>
+            )}
+            {onDeleteAll && notifications.length > 0 && (
+              <button 
+                onClick={onDeleteAll}
+                className="text-[10px] text-red-500 hover:underline px-2 py-1 transition-colors"
+              >
+                Clear all
               </button>
             )}
             <button onClick={onClose} className="p-1 hover:bg-border-default rounded transition-colors text-foreground/40">

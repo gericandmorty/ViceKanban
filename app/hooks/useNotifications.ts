@@ -61,7 +61,11 @@ export function useNotifications() {
       setUnreadCount(prev => prev + 1);
       
       // Show a toast for the new notification
-      toast.success(notification.message, {
+      const toastMessage = notification.sender?.username 
+        ? `${notification.sender.username} ${notification.message}` 
+        : notification.message;
+
+      toast.success(toastMessage, {
         duration: 4000,
         position: 'top-right',
         icon: '🔔',
@@ -133,12 +137,29 @@ export function useNotifications() {
     }
   };
 
+  const deleteAll = async () => {
+    try {
+      const token = Cookies.get('access_token');
+      const response = await fetch(`${API_URL}/notifications/clear-all`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        setNotifications([]);
+        setUnreadCount(0);
+      }
+    } catch (error) {
+      console.error('Failed to delete all notifications:', error);
+    }
+  };
+
   return {
     notifications,
     unreadCount,
     markAsRead,
     markAllAsRead,
     deleteNotification,
+    deleteAll,
     refresh: fetchNotifications
   };
 }

@@ -175,10 +175,7 @@ export default function Announcements({ orgId, isAdmin }: AnnouncementsProps) {
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div className="flex items-center gap-4 min-w-0 flex-1">
                       <h3 
-                        onClick={() => {
-                          setStackIndex(announcements.indexOf(announcement));
-                          setIsStackOpen(true);
-                        }}
+                        onClick={() => setSelectedAnnouncement(announcement)}
                         className="text-[14px] font-semibold text-foreground group-hover:text-accent transition-colors cursor-pointer truncate"
                         title={announcement.title}
                       >
@@ -196,10 +193,7 @@ export default function Announcements({ orgId, isAdmin }: AnnouncementsProps) {
 
                   <div className="shrink-0 flex items-center gap-2">
                     <button 
-                      onClick={() => {
-                        setStackIndex(announcements.indexOf(announcement));
-                        setIsStackOpen(true);
-                      }}
+                        onClick={() => setSelectedAnnouncement(announcement)}
                       className="text-[11px] font-semibold text-foreground/80 bg-border-default/50 hover:bg-border-default px-3 py-1 rounded-md border border-border-default flex items-center gap-1 transition-all"
                     >
                       Detail

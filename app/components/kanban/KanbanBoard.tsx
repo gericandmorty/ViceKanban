@@ -49,6 +49,7 @@ interface Task {
   createdAt: string;
   startDate?: string;
   dueDate?: string;
+  imageUrl?: string;
 }
 
 interface KanbanBoardProps {
@@ -70,6 +71,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
   const [newTaskPriority, setNewTaskPriority] = useState('low');
   const [newTaskStartDate, setNewTaskStartDate] = useState('');
   const [newTaskDueDate, setNewTaskDueDate] = useState('');
+  const [newTaskImage, setNewTaskImage] = useState<File | null>(null);
   const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [inspectingTask, setInspectingTask] = useState<Task | null>(null);
   const [comments, setComments] = useState<any[]>([]);
@@ -301,19 +303,21 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
     try {
       const apiUrl = API_URL;
       const token = Cookies.get('access_token');
+      
+      const formData = new FormData();
+      formData.append('title', editTitle);
+      formData.append('description', editDescription);
+      formData.append('priority', editPriority);
+      if (editStartDate) formData.append('startDate', editStartDate);
+      if (editDueDate) formData.append('dueDate', editDueDate);
+      if (newTaskImage) formData.append('image', newTaskImage);
+
       const response = await fetch(`${apiUrl}/tasks/${inspectingTask._id}`, {
         method: 'PATCH',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          title: editTitle,
-          description: editDescription,
-          priority: editPriority,
-          startDate: editStartDate || null,
-          dueDate: editDueDate || null
-        })
+        body: formData
       });
 
       if (response.ok) {
@@ -321,6 +325,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
         setTasks(prev => prev.map(t => t._id === updatedTask._id ? updatedTask : t));
         setInspectingTask(updatedTask);
         setIsEditingTask(false);
+        setNewTaskImage(null); // Reset image state
         toast.success('Task updated successfully');
       } else {
         const error = await response.json();
@@ -471,21 +476,23 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
     try {
       const apiUrl = API_URL;
       const token = Cookies.get('access_token');
+      
+      const formData = new FormData();
+      formData.append('title', newTaskTitle);
+      formData.append('description', newTaskDesc);
+      formData.append('projectId', projectId);
+      formData.append('priority', newTaskPriority);
+      if (newTaskAssignee) formData.append('assigneeId', newTaskAssignee);
+      if (newTaskStartDate) formData.append('startDate', newTaskStartDate);
+      if (newTaskDueDate) formData.append('dueDate', newTaskDueDate);
+      if (newTaskImage) formData.append('image', newTaskImage);
+
       const response = await fetch(`${apiUrl}/tasks`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          title: newTaskTitle,
-          description: newTaskDesc,
-          projectId: projectId,
-          assigneeId: newTaskAssignee || undefined,
-          priority: newTaskPriority,
-          startDate: newTaskStartDate || undefined,
-          dueDate: newTaskDueDate || undefined
-        })
+        body: formData
       });
 
       if (response.ok) {
@@ -495,6 +502,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
         setNewTaskPriority('low');
         setNewTaskStartDate('');
         setNewTaskDueDate('');
+        setNewTaskImage(null);
         setShowTaskForm(null);
         refreshTasks();
         window.dispatchEvent(new CustomEvent('taskUpdated')); // Sync sidebar
@@ -760,6 +768,72 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                   </div>
                 )}
 
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-foreground/40 uppercase">Task Image (Max 10MB)</label>
+                  <div className="relative group/upload">
+                    <input 
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          if (file.size > 10 * 1024 * 1024) {
+                            toast.error('Image size must be less than 10MB');
+                            e.target.value = '';
+                            setNewTaskImage(null);
+                          } else {
+                            setNewTaskImage(file);
+                          }
+                        }
+                      }}
+                      className="hidden"
+                      id="task-image-upload"
+                    />
+                    <label 
+                      htmlFor="task-image-upload"
+                      className="w-full flex items-center gap-3 px-4 py-3 bg-background border border-border-default border-dashed rounded-lg cursor-pointer hover:border-accent hover:bg-accent/5 transition-all group"
+                    >
+                      {newTaskImage ? (
+                        <div className="flex items-center gap-3 w-full">
+                          <div className="relative w-10 h-10 rounded-md overflow-hidden border border-border-default shrink-0">
+                            <Image 
+                              src={URL.createObjectURL(newTaskImage)} 
+                              alt="Preview" 
+                              fill 
+                              className="object-cover" 
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium text-foreground truncate">{newTaskImage.name}</p>
+                            <p className="text-[10px] text-foreground/40">{(newTaskImage.size / 1024 / 1024).toFixed(2)} MB</p>
+                          </div>
+                          <button 
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setNewTaskImage(null);
+                            }}
+                            className="p-1.5 text-foreground/40 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-all"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="w-10 h-10 rounded-md bg-bg-subtle border border-border-default flex items-center justify-center text-foreground/20 group-hover:text-accent group-hover:border-accent/30 transition-all">
+                            <Plus size={18} />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-xs font-medium text-foreground/60 group-hover:text-foreground transition-all">Click to upload image</span>
+                            <span className="text-[10px] text-foreground/30">PNG, JPG, WEBP or GIF</span>
+                          </div>
+                        </>
+                      )}
+                    </label>
+                  </div>
+                </div>
+
                 <button 
                   type="submit" 
                   disabled={isCreatingTask || !newTaskTitle}
@@ -936,6 +1010,72 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                         <span className="text-[14px] text-foreground/20 italic font-normal">Unassigned</span>
                       )}
                     </div>
+                  </div>
+                </div>
+                
+                {/* Image Section */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between px-1">
+                    <div className="flex items-center gap-2">
+                       <Plus size={16} className="text-foreground/60" />
+                       <label className="text-[14px] font-semibold text-foreground">Task Image</label>
+                    </div>
+                    {isEditingTask && (
+                      <button 
+                        onClick={() => document.getElementById('edit-task-image')?.click()}
+                        className="text-[12px] font-bold text-accent hover:underline flex items-center gap-1"
+                      >
+                         <Plus size={12} />
+                         {inspectingTask.imageUrl || newTaskImage ? 'Change Image' : 'Add Image'}
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div className="relative w-full rounded-xl overflow-hidden bg-bg-subtle border border-border-default shadow-inner group">
+                    {newTaskImage ? (
+                      <Image 
+                        src={URL.createObjectURL(newTaskImage)} 
+                        alt="Preview" 
+                        width={0}
+                        height={0}
+                        sizes="100vw"
+                        className="w-full h-auto block" 
+                      />
+                    ) : inspectingTask.imageUrl ? (
+                      <Image 
+                        src={inspectingTask.imageUrl} 
+                        alt={inspectingTask.title} 
+                        width={0}
+                        height={0}
+                        sizes="100vw"
+                        className="w-full h-auto block" 
+                      />
+                    ) : (
+                      <div className="aspect-video flex flex-col items-center justify-center text-foreground/20">
+                        <Plus size={48} className="opacity-10 mb-2" />
+                        <span className="text-xs font-medium opacity-40">No image attached</span>
+                      </div>
+                    )}
+                    
+                    {isEditingTask && (
+                      <input 
+                        type="file"
+                        id="edit-task-image"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            if (file.size > 10 * 1024 * 1024) {
+                              toast.error('Image size must be less than 10MB');
+                              e.target.value = '';
+                            } else {
+                              setNewTaskImage(file);
+                            }
+                          }
+                        }}
+                      />
+                    )}
                   </div>
                 </div>
 

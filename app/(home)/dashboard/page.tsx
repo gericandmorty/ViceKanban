@@ -161,56 +161,51 @@ export default function DashboardPage() {
     return () => window.removeEventListener('orgMembershipChanged', handleOrgChange);
   }, [fetchOrganizations, fetchInvitations, fetchUserProfile]);
 
-  useEffect(() => {
-    // Synchronously clear state if Org ID changed to prevent stale breadcrumbs/content
-    // This addresses the "sticky breadcrumb" bug where old names persist during loading
-    if (orgIdFromUrl && detailedOrg && detailedOrg._id !== orgIdFromUrl) {
-      setDetailedOrg(null);
-      setProjects([]);
-    } else if (!orgIdFromUrl && (detailedOrg || projects.length > 0)) {
-      setDetailedOrg(null);
-      setProjects([]);
+  // RESYNC STATE WITH URL PARAMS (Prevents "Sticky" stale data during navigation transitions)
+  // This resets state DURING render when a mismatch is detected, rather than waiting for useEffect.
+  const [prevOrgId, setPrevOrgId] = useState(orgIdFromUrl);
+  if (orgIdFromUrl !== prevOrgId) {
+    setPrevOrgId(orgIdFromUrl);
+    setDetailedOrg(null);
+    setProjects([]);
+    if (!orgIdFromUrl) {
       setActiveTab('Board');
     }
+  }
 
+  useEffect(() => {
     let isCurrent = true;
 
     const loadData = async () => {
-      // If we're going home (no orgId), reset everything
+      // If we're going home (no orgId), we've already handled the state reset above
       if (!orgIdFromUrl) {
-        setDetailedOrg(null);
-        setProjects([]);
-        setActiveTab('Board');
         setIsDetailLoading(false);
         setIsLoading(false);
         return;
       }
 
-      // If we are in an organization but the detailedOrg object is stale or missing
       setIsDetailLoading(true);
 
       try {
-        // 1. Fetch Organization Details if needed
+        // 1. Fetch Organization Details
+        // We always fetch if we don't have it, or if it's the wrong one
         if (!detailedOrg || detailedOrg._id !== orgIdFromUrl) {
           const orgRes = await apiFetch(`/organizations/${orgIdFromUrl}`);
           if (orgRes.ok && isCurrent) {
             const orgData = await orgRes.json();
             setDetailedOrg(orgData);
           } else if (!orgRes.ok) {
-            // If org not found or error, go home
             handleGoHome();
             return;
           }
         }
 
-        // 2. Fetch Projects for the org if needed
-        // We re-fetch if project list is empty OR if we've switched organizations
-        if (projects.length === 0 || (detailedOrg?._id !== orgIdFromUrl)) {
-          const projRes = await apiFetch(`/projects/org/${orgIdFromUrl}`);
-          if (projRes.ok && isCurrent) {
-            const projData = await projRes.json();
-            setProjects(projData);
-          }
+        // 2. Fetch Projects for the org
+        // We re-fetch if project list is empty OR if we're in a new organization context
+        const projRes = await apiFetch(`/projects/org/${orgIdFromUrl}`);
+        if (projRes.ok && isCurrent) {
+          const projData = await projRes.json();
+          setProjects(projData);
         }
       } catch (error) {
         console.error('Failed to load dashboard data:', error);
@@ -227,7 +222,7 @@ export default function DashboardPage() {
     return () => {
       isCurrent = false;
     };
-  }, [orgIdFromUrl, projectIdFromUrl, detailedOrg?._id]);
+  }, [orgIdFromUrl, projectIdFromUrl]);
 
   // Auto-popup the latest announcement when entering an org OR global updates
   const refreshPopups = useCallback(async (isManualRefresh = false) => {

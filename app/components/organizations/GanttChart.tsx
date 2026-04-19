@@ -132,8 +132,12 @@ export default function GanttChart({ orgId, projectId }: GanttChartProps) {
     
     if (filteredTasks.length > 0) {
       filteredTasks.forEach(task => {
-        const start = new Date(task.startDate || task.createdAt);
+        // Normalize to the start of the day to avoid time-of-day offsets
+        const taskRawStart = new Date(task.startDate || task.createdAt);
+        const start = new Date(taskRawStart.getFullYear(), taskRawStart.getMonth(), taskRawStart.getDate(), 0, 0, 0, 0);
+        
         const end = task.dueDate ? new Date(task.dueDate) : null;
+        if (end) end.setHours(0, 0, 0, 0);
         
         if (start < earliestDate) earliestDate = new Date(start);
         if (end && end > latestDate) latestDate = new Date(end);
@@ -172,18 +176,13 @@ export default function GanttChart({ orgId, projectId }: GanttChartProps) {
     return { start, end, days, months };
   }, [filteredTasks]);
 
-  // Standardize grid boundary to Local Midnight 00:00:00
-  const toGridStart = (val: any) => {
-    const d = new Date(val);
-    if (isNaN(d.getTime())) return new Date();
-    return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
-  };
-
   const getDayPosition = (dateVal: any) => {
-    const target = new Date(dateVal);
-    if (isNaN(target.getTime())) return 0;
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return 0;
+    
+    // Normalize to midnight for consistent "column-start" alignment
+    const target = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
 
-    // Use absolute time difference for position to avoid timezone shifts
     const diffTime = target.getTime() - timeConfig.start.getTime();
     const diffDays = diffTime / (1000 * 60 * 60 * 24);
     return diffDays;
@@ -357,10 +356,15 @@ export default function GanttChart({ orgId, projectId }: GanttChartProps) {
                         exit={{ height: 0, opacity: 0 }}
                         className="bg-background/20 divide-y divide-border-default/30 overflow-hidden"
                       >
-                        {group.tasks.map(task => {
-                          const durationInDays = task.startDate && task.dueDate 
-                            ? Math.ceil((new Date(task.dueDate).getTime() - new Date(task.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
-                            : 0;
+                         {group.tasks.map(task => {
+                           const start = new Date(task.startDate || task.createdAt);
+                           start.setHours(0, 0, 0, 0);
+                           const end = task.dueDate ? new Date(task.dueDate) : null;
+                           if (end) end.setHours(0, 0, 0, 0);
+
+                           const durationInDays = start && end 
+                             ? Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
+                             : 0;
 
                           return (
                             <div key={task._id} className="px-0 py-0 h-10 flex items-center justify-between group/row hover:bg-bg-subtle/30 transition-colors">
@@ -417,16 +421,21 @@ export default function GanttChart({ orgId, projectId }: GanttChartProps) {
                           className="divide-y divide-border-default/30 overflow-hidden"
                         >
                         {group.tasks.map((task, taskIdx) => {
-                           // --- 1. Task Duration Formula ---
-                           const startDate = new Date(task.startDate || task.createdAt);
-                           const endDate = new Date(task.dueDate || (task.status === 'reviewed' ? task.updatedAt : now));
+                           // --- 1. Task Duration Formula (Normalized to Midnights) ---
+                           const rawStart = new Date(task.startDate || task.createdAt);
+                           const startDate = new Date(rawStart.getFullYear(), rawStart.getMonth(), rawStart.getDate(), 0, 0, 0, 0);
                            
-                           // --- 2. Task Start Position (Offset from Project Start) ---
+                           const rawEnd = task.dueDate ? new Date(task.dueDate) : null;
+                           const endDate = rawEnd 
+                             ? new Date(rawEnd.getFullYear(), rawEnd.getMonth(), rawEnd.getDate(), 0, 0, 0, 0)
+                             : new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+                           
+                           // --- 2. Task Start Position ---
                            const startPos = getDayPosition(startDate);
                            
-                           // --- 3 & 4. Gantt Bar Length & Position ---
-                           let width = getDayPosition(endDate) - startPos;
-                           if (width < 1.0) width = 1.0; // Min visibility
+                           // --- 3 & 4. Gantt Bar Length ---
+                           let width = getDayPosition(endDate) - startPos + 1; // +1 to include the last day fully
+                           if (width < 1.0) width = 1.0;
 
                            const progress = getStatusProgress(task.status);
                            const isAtBottom = taskIdx > group.tasks.length - 3;

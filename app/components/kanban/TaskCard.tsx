@@ -34,6 +34,7 @@ interface Task {
   startDate?: string;
   dueDate?: string;
   priority?: string;
+  imageUrl?: string;
 }
 
 interface TaskCardProps {
@@ -125,6 +126,18 @@ export default function TaskCard({ task, onDelete, onClick, isOwnerOrCreator, is
             </button>
           )}
         </div>
+
+        {task.imageUrl && (
+          <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-border-default/50">
+            <Image 
+              src={task.imageUrl} 
+              alt={task.title} 
+              fill 
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+          </div>
+        )}
         
         {task.description && (
           <p className="text-[11px] text-foreground/50 line-clamp-2">

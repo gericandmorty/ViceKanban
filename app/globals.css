@@ -3,18 +3,18 @@
 :root, 
 .light,
 [data-theme='light'] {
-  /* GitHub Light Theme Tokens */
+  /* GitHub Light Theme Tokens - Refined */
   --background: #ffffff;
-  --foreground: #1f2328;
+  --foreground: #24292f;
   --bg-subtle: #f6f8fa;
   --border-default: #d0d7de;
   --accent-fg: #0969da;
   --tab-accent: #f78166;
   --success-fg: #1f883d;
   --header-bg: #f6f8fa;
-  --header-text: #1f2328;
+  --header-text: #24292f;
   
-  --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-stack: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
   color-scheme: light;
 }
 
@@ -51,6 +51,18 @@ body {
   color: var(--foreground);
   font-family: var(--font-stack);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.tracking-tight {
+  letter-spacing: -0.02em;
 }
 
 /* GitHub Style Button Base */

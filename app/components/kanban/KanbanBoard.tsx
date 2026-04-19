@@ -12,7 +12,8 @@ import {
   DragStartEvent,
   DragOverEvent,
   DragEndEvent,
-  defaultDropAnimationSideEffects
+  defaultDropAnimationSideEffects,
+  rectIntersection
 } from '@dnd-kit/core';
 import { 
   arrayMove, 
@@ -85,6 +86,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
   const [currentUserAvatar, setCurrentUserAvatar] = useState<string | null>(null);
   const [filterOnlyMe, setFilterOnlyMe] = useState(false);
   const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
+  const [collapsedCols, setCollapsedCols] = useState<string[]>([]);
   
   // Edit Task State
   const [isEditingTask, setIsEditingTask] = useState(false);
@@ -147,7 +149,30 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
   useEffect(() => {
     fetchData();
     fetchMyProfile();
+    
+    // Load collapsed columns from localStorage
+    const saved = localStorage.getItem('vk_collapsed_cols');
+    if (saved) {
+      try {
+        setCollapsedCols(JSON.parse(saved));
+      } catch (e) {
+        console.error('Failed to parse collapsed columns:', e);
+      }
+    }
   }, [fetchData, fetchMyProfile]);
+
+  // Save collapsed columns to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('vk_collapsed_cols', JSON.stringify(collapsedCols));
+  }, [collapsedCols]);
+
+  const toggleColumnCollapse = (columnId: string) => {
+    setCollapsedCols(prev => 
+      prev.includes(columnId) 
+        ? prev.filter(id => id !== columnId) 
+        : [...prev, columnId]
+    );
+  };
 
   const fetchComments = useCallback(async (taskId: string) => {
     setIsFetchingComments(true);
@@ -370,19 +395,24 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
     const isActiveATask = active.data.current?.type === 'Task';
     const isOverAColumn = over.data.current?.type === 'Column';
 
-    // Basic sorting within same column or moving between columns
+    // Performance Optimization: Only trigger state update if task crosses column boundary
     if (isActiveATask && isOverAColumn) {
       const overStatus = over.data.current?.status;
       
-      // Permission check for Reviewed column
       if (overStatus === 'reviewed' && !isOwnerOrCreator) {
         return;
       }
 
-      setTasks((tasks) => {
-        const activeIndex = tasks.findIndex((t) => t._id === activeId);
-        tasks[activeIndex].status = overStatus;
-        return arrayMove(tasks, activeIndex, activeIndex);
+      setTasks((prevTasks) => {
+        const activeIndex = prevTasks.findIndex((t) => t._id === activeId);
+        if (activeIndex === -1) return prevTasks;
+        
+        // Only update if the status actually changed to avoid "spamming" state
+        if (prevTasks[activeIndex].status === overStatus) return prevTasks;
+
+        const newTasks = [...prevTasks];
+        newTasks[activeIndex] = { ...newTasks[activeIndex], status: overStatus };
+        return arrayMove(newTasks, activeIndex, activeIndex);
       });
     }
   };
@@ -557,7 +587,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
 
       <DndContext 
         sensors={sensors}
-        collisionDetection={closestCorners}
+        collisionDetection={rectIntersection}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
@@ -580,15 +610,18 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                 onTaskClick={setInspectingTask}
                 isOwnerOrCreator={isOwnerOrCreator}
                 isLocked={col.id === 'reviewed' && !isOwnerOrCreator}
+                isCollapsed={collapsedCols.includes(col.id)}
+                onToggleCollapse={() => toggleColumnCollapse(col.id)}
+                isCompact={col.id === 'reviewed'}
               />
             );
           })}
         </div>
 
-        <DragOverlay>
+        <DragOverlay dropAnimation={null}>
           {activeTask ? (
-            <div className="w-72">
-              <TaskCard task={activeTask} />
+            <div className="w-72 touch-none pointer-events-none opacity-80 cursor-grabbing shadow-2xl skew-y-1">
+              <TaskCard task={activeTask} isSortingActive={true} />
             </div>
           ) : null}
         </DragOverlay>

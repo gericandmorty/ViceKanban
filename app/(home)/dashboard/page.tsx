@@ -164,12 +164,29 @@ export default function DashboardPage() {
   // RESYNC STATE WITH URL PARAMS (Prevents "Sticky" stale data during navigation transitions)
   // This resets state DURING render when a mismatch is detected, rather than waiting for useEffect.
   const [prevOrgId, setPrevOrgId] = useState(orgIdFromUrl);
-  if (orgIdFromUrl !== prevOrgId) {
+  const [prevProjectId, setPrevProjectId] = useState(projectIdFromUrl);
+
+  if (orgIdFromUrl !== prevOrgId || projectIdFromUrl !== prevProjectId) {
     setPrevOrgId(orgIdFromUrl);
-    setDetailedOrg(null);
-    setProjects([]);
-    if (!orgIdFromUrl) {
-      setActiveTab('Board');
+    setPrevProjectId(projectIdFromUrl);
+    
+    // Always clear project-specific data if moving between projects or exiting a project
+    if (projectIdFromUrl !== prevProjectId) {
+       setActiveTab('Board');
+    }
+
+    // Significant context change: Switching Organizations or going Home
+    if (orgIdFromUrl !== prevOrgId) {
+      setDetailedOrg(null);
+      setProjects([]);
+      setActiveTab('Board'); // Reset to Board when entering a new organization context
+      
+      if (orgIdFromUrl) {
+        setIsDetailLoading(true); // Show loader immediately while fetching new data
+      } else {
+        setIsDetailLoading(false);
+        setIsLoading(false);
+      }
     }
   }
 
@@ -324,13 +341,14 @@ export default function DashboardPage() {
   };
 
   const handleGoHome = () => {
+    // Universal Reset - Purge all local memory
     setDetailedOrg(null);
     setProjects([]);
-    setActiveTab('Board');
     setIsDetailLoading(false);
     setIsLoading(false);
+    setActiveTab('Board');
     router.push('/dashboard');
-    refreshPopups(true); // Re-fetch system updates on home entry
+    setTimeout(() => refreshPopups(true), 100); // Re-fetch updates on clean landing
   };
 
   const handleOpenSystemViewer = (index: number) => {
@@ -500,7 +518,7 @@ export default function DashboardPage() {
           )}
         </AnimatePresence>
 
-        {!detailedOrg && !isLoading && !isDetailLoading ? (
+        {!detailedOrg && !isLoading && !isDetailLoading && !orgIdFromUrl ? (
           /* "Home" View with Organizations and Invitations */
           <div className="w-full py-8 px-6 space-y-10 overflow-y-auto h-full max-w-5xl mx-auto custom-scrollbar">
             
@@ -686,9 +704,10 @@ export default function DashboardPage() {
         ) : (
           /* Organization Workspace View */
           <div className="w-full flex-1 min-h-0 max-w-full mx-auto py-2 md:py-4 px-2 md:pr-4 md:pl-6 overflow-y-auto flex flex-col custom-scrollbar">
-            {!detailedOrg ? (
+            {!detailedOrg || (detailedOrg._id !== orgIdFromUrl) ? (
               <div className="flex-1 flex items-center justify-center">
                 <div className="flex flex-col items-center gap-2">
+                  <div className="h-4 w-24 bg-border-default animate-pulse rounded mb-2" />
                   <Loader2 className="animate-spin text-accent" size={24} />
                   <p className="text-sm text-zinc-500">Loading organization workspace...</p>
                 </div>

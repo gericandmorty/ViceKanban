@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { memo } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { motion } from 'framer-motion';
@@ -43,9 +43,10 @@ interface TaskCardProps {
   onClick?: () => void;
   isOwnerOrCreator?: boolean;
   isSortingActive?: boolean;
+  isCompact?: boolean;
 }
 
-export default function TaskCard({ task, onDelete, onClick, isOwnerOrCreator, isSortingActive }: TaskCardProps) {
+const TaskCard = memo(({ task, onDelete, onClick, isOwnerOrCreator, isSortingActive, isCompact }: TaskCardProps) => {
   const currentUserId = Cookies.get('user_id');
   const isOwner = currentUserId === task.creator._id;
   const canDrag = isOwnerOrCreator || isOwner || (task.assignee && task.assignee._id === currentUserId);
@@ -68,6 +69,7 @@ export default function TaskCard({ task, onDelete, onClick, isOwnerOrCreator, is
   const style = {
     transform: CSS.Translate.toString(transform),
     transition,
+    willChange: isDragging ? 'transform' : 'auto',
   };
 
   if (isDragging) {
@@ -89,7 +91,9 @@ export default function TaskCard({ task, onDelete, onClick, isOwnerOrCreator, is
       {...attributes}
       {...listeners}
       onClick={onClick}
-      className={`bg-background border rounded-lg p-3 shadow-sm hover:border-accent group mb-3 transition-all hover:shadow-md ${
+      className={`bg-background border rounded-lg shadow-sm hover:border-accent group mb-3 transition-all hover:shadow-md ${
+        isCompact ? 'p-2' : 'p-3'
+      } ${
         isAssignedToMe 
           ? 'border-accent shadow-[0_0_12px_rgba(var(--accent-rgb),0.15)] ring-1 ring-accent/30' 
           : 'border-border-default'
@@ -97,7 +101,7 @@ export default function TaskCard({ task, onDelete, onClick, isOwnerOrCreator, is
         (canDrag && !isSortingActive) ? 'cursor-pointer active:cursor-grabbing' : 'cursor-default'
       }`}
     >
-      <div className="flex flex-col gap-2 relative">
+      <div className={`flex flex-col relative ${isCompact ? 'gap-1' : 'gap-2'}`}>
         <div className="flex justify-between items-start gap-2">
           <div className="flex flex-col gap-1.5 flex-1">
             {task.priority && (
@@ -127,7 +131,7 @@ export default function TaskCard({ task, onDelete, onClick, isOwnerOrCreator, is
           )}
         </div>
 
-        {task.imageUrl && (
+        {task.imageUrl && !isCompact && (
           <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-border-default/50">
             <Image 
               src={task.imageUrl} 
@@ -139,13 +143,13 @@ export default function TaskCard({ task, onDelete, onClick, isOwnerOrCreator, is
           </div>
         )}
         
-        {task.description && (
+        {task.description && !isCompact && (
           <p className="text-[11px] text-foreground/50 line-clamp-2">
             {task.description}
           </p>
         )}
 
-        <div className="flex items-center justify-between mt-2 pt-2 border-t border-border-default/50">
+        <div className={`flex items-center justify-between border-t border-border-default/50 ${isCompact ? 'mt-1 pt-1' : 'mt-2 pt-2'}`}>
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-1.5 text-[9px] text-foreground/40">
               <span className="opacity-70 font-medium">By:</span>
@@ -183,4 +187,8 @@ export default function TaskCard({ task, onDelete, onClick, isOwnerOrCreator, is
       </div>
     </div>
   );
-}
+});
+
+TaskCard.displayName = 'TaskCard';
+
+export default TaskCard;

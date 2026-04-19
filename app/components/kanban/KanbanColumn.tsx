@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, memo } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { 
   SortableContext, 
   verticalListSortingStrategy 
 } from '@dnd-kit/sortable';
 import TaskCard from './TaskCard';
-import { MoreHorizontal, Plus, Lock, ArrowUpAz, ArrowDownAz, ListOrdered, Calendar } from 'lucide-react';
+import { MoreHorizontal, Plus, Lock, ArrowUpAz, ArrowDownAz, ListOrdered, Calendar, Minimize2, Maximize2 } from 'lucide-react';
 
 interface Task {
   _id: string;
@@ -35,9 +35,12 @@ interface KanbanColumnProps {
   onTaskClick?: (task: Task) => void;
   isOwnerOrCreator: boolean;
   isLocked?: boolean;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
+  isCompact?: boolean;
 }
 
-export default function KanbanColumn({ 
+const KanbanColumn = memo(({ 
   id, 
   title, 
   tasks, 
@@ -45,8 +48,11 @@ export default function KanbanColumn({
   onDeleteTask,
   onTaskClick,
   isOwnerOrCreator,
-  isLocked 
-}: KanbanColumnProps) {
+  isLocked,
+  isCollapsed,
+  onToggleCollapse,
+  isCompact
+}: KanbanColumnProps) => {
   const { setNodeRef, isOver } = useDroppable({
     id: id,
     disabled: isLocked, // Prevent dropping if locked (permissions)
@@ -69,6 +75,32 @@ export default function KanbanColumn({
     return tasks;
   }, [tasks, sortOrder]);
 
+  if (isCollapsed) {
+    return (
+      <div 
+        id={`column-collapsed-${id}`}
+        onClick={onToggleCollapse}
+        className="flex flex-col w-12 h-full bg-bg-subtle/50 rounded-xl py-4 items-center flex-shrink-0 border border-border-default/20 cursor-pointer hover:bg-bg-subtle/80 transition-all group"
+        title={`Expand ${title} column`}
+      >
+        <div className="flex flex-col items-center gap-6 h-full">
+          <div className="flex flex-col items-center gap-2">
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-border-default text-foreground/60">
+              {tasks.length}
+            </span>
+            {isLocked && <Lock size={10} className="text-foreground/40" />}
+          </div>
+          <h3 className="text-xs font-bold text-foreground/40 uppercase tracking-[0.2em] whitespace-nowrap [writing-mode:vertical-lr] rotate-180 group-hover:text-accent transition-colors">
+            {title.replace('_', ' ')}
+          </h3>
+          <div className="mt-auto">
+            <Maximize2 size={14} className="text-foreground/20 group-hover:text-accent transition-colors" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div 
       id={`column-${id}`}
@@ -83,6 +115,14 @@ export default function KanbanColumn({
           {isLocked && <Lock size={12} className="text-foreground/40 ml-1" />}
         </div>
         <div className="flex items-center gap-1 relative">
+          <button 
+            onClick={onToggleCollapse}
+            className="p-1 rounded text-foreground/20 hover:text-accent hover:bg-border-default transition-all"
+            title="Collapse column"
+          >
+            <Minimize2 size={14} />
+          </button>
+          
           <button 
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className={`p-1 rounded transition-colors ${isMenuOpen ? 'bg-border-default text-accent' : 'text-foreground/40 hover:bg-border-default'}`}
@@ -157,6 +197,7 @@ export default function KanbanColumn({
                 onClick={() => onTaskClick?.(task)}
                 isOwnerOrCreator={isOwnerOrCreator}
                 isSortingActive={sortOrder !== 'manual'}
+                isCompact={isCompact}
               />
             ))}
           </SortableContext>
@@ -174,4 +215,8 @@ export default function KanbanColumn({
       </div>
     </div>
   );
-}
+});
+
+KanbanColumn.displayName = 'KanbanColumn';
+
+export default KanbanColumn;

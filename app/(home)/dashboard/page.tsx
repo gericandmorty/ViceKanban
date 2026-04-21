@@ -9,6 +9,7 @@ import {
   Search,
   Clock,
   Loader2,
+  ChevronDown,
   ChevronRight,
   Shield,
   Users,
@@ -370,8 +371,8 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header */}
-      <header className="bg-background sticky top-0 z-40 w-full">
-        <div className="px-4 md:px-6 h-16 border-b border-border-default flex items-center justify-between gap-4">
+      <header className="bg-background sticky top-0 z-50 w-full">
+        <div className="px-4 md:px-6 h-16 border-b border-border-default flex items-center justify-between gap-4 relative">
           <div className="flex items-center gap-3 overflow-hidden">
             <button
               onClick={toggleSidebar}
@@ -420,15 +421,14 @@ export default function DashboardPage() {
                         <Link
                           href={`/dashboard?orgId=${orgIdFromUrl}`}
                           onClick={(e) => {
-                            // If just clearing project, prevent full Link nav and do it manually/cleanly
-                            if (projectIdFromUrl) {
+                            if (projectIdFromUrl || activeTab !== 'Board') {
                               e.preventDefault();
                               router.push(`/dashboard?orgId=${orgIdFromUrl}`);
                             }
                             setActiveTab('Board');
                             closeSidebar();
                           }}
-                          className={`hover:underline truncate ${!currentProject ? 'font-semibold text-foreground' : 'text-foreground/60'}`}
+                          className={`hover:underline truncate ${(!currentProject && activeTab === 'Board') ? 'font-semibold text-foreground' : 'text-foreground/60'}`}
                           title={detailedOrg.name}
                         >
                           {detailedOrg.name}
@@ -436,7 +436,26 @@ export default function DashboardPage() {
                         {currentProject && (
                           <>
                             <span className="shrink-0 mx-2 text-foreground/30">/</span>
-                            <span className="font-semibold text-foreground truncate" title={currentProject.name}>{currentProject.name}</span>
+                            <Link
+                              href={`/dashboard?orgId=${orgIdFromUrl}&projectId=${projectIdFromUrl}`}
+                              onClick={(e) => {
+                                if (activeTab !== 'Board') {
+                                  e.preventDefault();
+                                  router.push(`/dashboard?orgId=${orgIdFromUrl}&projectId=${projectIdFromUrl}`);
+                                }
+                                setActiveTab('Board');
+                              }}
+                              className={`hover:underline truncate ${activeTab === 'Board' ? 'font-semibold text-foreground' : 'text-foreground/60'}`}
+                              title={currentProject.name}
+                            >
+                              {currentProject.name}
+                            </Link>
+                          </>
+                        )}
+                        {activeTab !== 'Board' && (
+                          <>
+                            <span className="shrink-0 mx-2 text-foreground/30">/</span>
+                            <span className="font-semibold text-foreground truncate">{activeTab}</span>
                           </>
                         )}
                       </>
@@ -479,46 +498,51 @@ export default function DashboardPage() {
               </AnimatePresence>
             </div>
           </div>
+
+          {/* Top Progress Loader (The "Lines" loader) - Positioned at the bottom of breadcrumb bar */}
+          <AnimatePresence>
+            {(isLoading || isDetailLoading) && (
+              <motion.div
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: '100%', opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.8, ease: "easeInOut" }}
+                className="absolute bottom-[-1px] left-0 h-[2px] bg-accent z-50 shadow-[0_0_8px_rgba(47,129,247,0.5)]"
+              />
+            )}
+          </AnimatePresence>
         </div>
 
         {detailedOrg && (
-          <div className="px-4 md:px-6 flex gap-4 md:gap-8 items-end overflow-x-auto no-scrollbar border-b border-border-default">
-            {['Board', 'Gantt Chart', 'Announcements', 'Members', 'Contributions', 'Settings'].map((tab: any) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`flex items-center gap-2 py-2.5 text-sm font-medium border-b-2 transition-all relative ${activeTab === tab
-                    ? 'border-tab-accent text-foreground'
-                    : 'border-transparent text-foreground/60 hover:text-foreground hover:border-border-default'
-                  }`}
-              >
-                {tab === 'Board' && <Kanban size={16} className="opacity-70" />}
-                {tab === 'Gantt Chart' && <GanttChartSquare size={16} className="opacity-70" />}
-                {tab === 'Announcements' && <Megaphone size={16} className="opacity-70" />}
-                {tab === 'Members' && <Users size={16} className="opacity-70" />}
-                {tab === 'Contributions' && <Activity size={16} className="opacity-70" />}
-                {tab === 'Settings' && <Layout size={16} className="opacity-70" />}
-                {tab}
-              </button>
+          <div className="px-4 md:px-6 flex items-end gap-1 border-b border-border-default min-h-[48px] bg-background/50 backdrop-blur-sm sticky top-16 z-30 overflow-visible">
+            {['Board', 'Gantt Chart', 'Announcements', 'Members', 'Contributions', 'Settings'].map((tab: any, idx) => (
+              <div key={tab} className="flex items-end group/tab-item h-[48px] flex-shrink-0">
+                <button
+                  onClick={() => setActiveTab(tab)}
+                  className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium transition-all relative border-t border-x rounded-t-md whitespace-nowrap ${activeTab === tab
+                      ? 'bg-background border-border-default text-foreground z-20 after:absolute after:bottom-[-1.5px] after:left-0 after:right-0 after:h-[2px] after:bg-background shadow-sm'
+                      : 'border-transparent text-foreground/40 hover:text-foreground hover:bg-bg-subtle/30'
+                    }`}
+                >
+                  {tab === 'Board' && <Kanban size={13} className={activeTab === tab ? 'text-foreground' : 'opacity-70'} />}
+                  {tab === 'Gantt Chart' && <GanttChartSquare size={13} className={activeTab === tab ? 'text-foreground' : 'opacity-70'} />}
+                  {tab === 'Announcements' && <Megaphone size={13} className={activeTab === tab ? 'text-foreground' : 'opacity-70'} />}
+                  {tab === 'Members' && <Users size={13} className={activeTab === tab ? 'text-foreground' : 'opacity-70'} />}
+                  {tab === 'Contributions' && <Activity size={13} className={activeTab === tab ? 'text-foreground' : 'opacity-70'} />}
+                  {tab === 'Settings' && <Layout size={13} className={activeTab === tab ? 'text-foreground' : 'opacity-70'} />}
+                  
+                  <span className={activeTab === tab ? 'font-bold' : 'font-medium'}>{tab}</span>
+                </button>
+                {idx < 5 && activeTab !== tab && activeTab !== ['Board', 'Gantt Chart', 'Announcements', 'Members', 'Contributions', 'Settings'][idx+1] && (
+                   <div className="h-4 w-[1px] bg-border-default/30 mx-0.5 group-hover/tab-item:opacity-0 transition-opacity" />
+                )}
+              </div>
             ))}
           </div>
         )}
       </header>
 
-      {/* Content Area */}
       <div className="flex-1 min-h-0 flex flex-col bg-background relative">
-        {/* Top Progress Loader (The "Lines" loader) */}
-        <AnimatePresence>
-          {(isLoading || isDetailLoading) && (
-            <motion.div
-              initial={{ width: 0, opacity: 0 }}
-              animate={{ width: '100%', opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.8, ease: "easeInOut" }}
-              className="absolute top-0 left-0 h-[2px] bg-accent z-50 shadow-[0_0_8px_rgba(47,129,247,0.5)]"
-            />
-          )}
-        </AnimatePresence>
 
         {!detailedOrg && !isLoading && !isDetailLoading && !orgIdFromUrl ? (
           /* "Home" View with Organizations and Invitations */

@@ -48,6 +48,11 @@ interface Task {
     _id: string;
     avatarUrl?: string;
   };
+  assignees?: {
+    username: string;
+    _id: string;
+    avatarUrl?: string;
+  }[];
   createdAt: string;
   startDate?: string;
   dueDate?: string;
@@ -69,7 +74,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
   const [showTaskForm, setShowTaskForm] = useState<{status: string} | null>(null);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDesc, setNewTaskDesc] = useState('');
-  const [newTaskAssignee, setNewTaskAssignee] = useState('');
+  const [newTaskAssignees, setNewTaskAssignees] = useState<string[]>([]);
   const [newTaskPriority, setNewTaskPriority] = useState('low');
   const [newTaskStartDate, setNewTaskStartDate] = useState('');
   const [newTaskDueDate, setNewTaskDueDate] = useState('');
@@ -96,12 +101,22 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
   const [editPriority, setEditPriority] = useState('low');
   const [editStartDate, setEditStartDate] = useState('');
   const [editDueDate, setEditDueDate] = useState('');
+  const [editAssigneeIds, setEditAssigneeIds] = useState<string[]>([]);
+  const [isEditAssigneeDropdownOpen, setIsEditAssigneeDropdownOpen] = useState(false);
   const [isUpdatingTask, setIsUpdatingTask] = useState(false);
 
   const currentUserId = Cookies.get('user_id');
   const isOrgOwner = currentUserId === orgOwnerId;
   const isCoOwner = members?.find(m => (m.user?._id || m.user) === currentUserId)?.role === 'co-owner';
   const canEditDates = isOrgOwner || isCoOwner;
+
+  const getTaskAssignees = useCallback((task: Task | null) => {
+    if (!task) return [] as NonNullable<Task['assignees']>;
+    if (Array.isArray(task.assignees) && task.assignees.length > 0) {
+      return task.assignees;
+    }
+    return task.assignee ? [task.assignee] : [];
+  }, []);
 
   const fetchMyProfile = useCallback(async () => {
     try {
@@ -202,14 +217,18 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
       setEditPriority((inspectingTask as any).priority || 'low');
       setEditStartDate(inspectingTask.startDate ? new Date(inspectingTask.startDate).toISOString().split('T')[0] : '');
       setEditDueDate(inspectingTask.dueDate ? new Date(inspectingTask.dueDate).toISOString().split('T')[0] : '');
+      setEditAssigneeIds(getTaskAssignees(inspectingTask).map((a) => a._id));
+      setIsEditAssigneeDropdownOpen(false);
       setIsEditingTask(false);
     } else {
       setComments([]);
       setNewCommentContent('');
       setReplyingTo(null);
+      setEditAssigneeIds([]);
+      setIsEditAssigneeDropdownOpen(false);
       setIsEditingTask(false);
     }
-  }, [inspectingTask, fetchComments]);
+  }, [inspectingTask, fetchComments, getTaskAssignees]);
 
   const handleCreateComment = async (parentId?: string) => {
     if (!newCommentContent.trim() || !inspectingTask || isSendingComment) return;
@@ -334,6 +353,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
       formData.append('title', editTitle);
       formData.append('description', editDescription);
       formData.append('priority', editPriority);
+      formData.append('assigneeIds', JSON.stringify(editAssigneeIds));
       if (editStartDate) formData.append('startDate', editStartDate);
       if (editDueDate) formData.append('dueDate', editDueDate);
       if (newTaskImage) formData.append('image', newTaskImage);
@@ -513,7 +533,9 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
       formData.append('description', newTaskDesc);
       formData.append('projectId', projectId);
       formData.append('priority', newTaskPriority);
-      if (newTaskAssignee) formData.append('assigneeId', newTaskAssignee);
+      if (newTaskAssignees.length > 0) {
+        formData.append('assigneeIds', JSON.stringify(newTaskAssignees));
+      }
       if (newTaskStartDate) formData.append('startDate', newTaskStartDate);
       if (newTaskDueDate) formData.append('dueDate', newTaskDueDate);
       if (newTaskImage) formData.append('image', newTaskImage);
@@ -529,7 +551,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
       if (response.ok) {
         setNewTaskTitle('');
         setNewTaskDesc('');
-        setNewTaskAssignee('');
+        setNewTaskAssignees([]);
         setNewTaskPriority('low');
         setNewTaskStartDate('');
         setNewTaskDueDate('');
@@ -597,7 +619,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
           {board?.columns.map((col) => {
             const columnTasks = tasks.filter(t => t.status === col.id);
             const displayTasks = filterOnlyMe 
-              ? columnTasks.filter(t => t.assignee?._id === currentUserId)
+              ? columnTasks.filter(t => getTaskAssignees(t).some((a) => a._id === currentUserId))
               : columnTasks;
 
             return (
@@ -735,11 +757,11 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                         className="w-full pl-9 pr-4 py-2 bg-background border border-border-default rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-accent transition-all cursor-pointer flex items-center justify-between group"
                       >
                         <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/20 group-hover:text-accent transition-colors" size={14} />
-                        <span className="truncate text-foreground">
-                          {newTaskAssignee ? (
-                            members.find(m => m.user._id === newTaskAssignee)?.user?.username || 'Selected User'
+                        <span className="text-foreground text-xs md:text-sm min-w-0">
+                          {newTaskAssignees.length > 0 ? (
+                            <span className="whitespace-nowrap">{newTaskAssignees.length} selected</span>
                           ) : (
-                            <span className="text-foreground/40">Unassigned</span>
+                            <span className="text-foreground/50 whitespace-nowrap">No assignee</span>
                           )}
                         </span>
                         <div className={`transition-transform duration-200 ${isAssigneeDropdownOpen ? 'rotate-180' : ''}`}>
@@ -764,10 +786,10 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                               <div className="max-h-[160px] overflow-y-auto custom-scrollbar py-1">
                                 <div 
                                   onClick={() => {
-                                    setNewTaskAssignee('');
+                                    setNewTaskAssignees([]);
                                     setIsAssigneeDropdownOpen(false);
                                   }}
-                                  className={`px-4 py-2 text-sm cursor-pointer hover:bg-accent hover:text-white transition-colors flex items-center gap-2 ${!newTaskAssignee ? 'bg-accent/10 text-accent font-semibold' : 'text-foreground/60'}`}
+                                  className={`px-4 py-2 text-sm cursor-pointer hover:bg-accent hover:text-white transition-colors flex items-center gap-2 ${newTaskAssignees.length === 0 ? 'bg-accent/10 text-accent font-semibold' : 'text-foreground/60'}`}
                                 >
                                   <div className="w-5 h-5 rounded-full border border-dashed border-border-default flex items-center justify-center text-[10px]">
                                     <X size={10} />
@@ -778,10 +800,13 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                                   <div 
                                     key={member.user._id}
                                     onClick={() => {
-                                      setNewTaskAssignee(member.user._id);
-                                      setIsAssigneeDropdownOpen(false);
+                                      setNewTaskAssignees((prev) =>
+                                        prev.includes(member.user._id)
+                                          ? prev.filter((id) => id !== member.user._id)
+                                          : [...prev, member.user._id]
+                                      );
                                     }}
-                                    className={`px-4 py-2 text-sm cursor-pointer hover:bg-accent hover:text-white transition-colors flex items-center gap-2 ${newTaskAssignee === member.user._id ? 'bg-accent/10 text-accent font-semibold' : 'text-foreground'}`}
+                                    className={`px-4 py-2 text-sm cursor-pointer hover:bg-accent hover:text-white transition-colors flex items-center gap-2 ${newTaskAssignees.includes(member.user._id) ? 'bg-accent/10 text-accent font-semibold' : 'text-foreground'}`}
                                   >
                                     <div className="w-5 h-5 rounded-full bg-bg-subtle flex items-center justify-center text-[10px] font-bold overflow-hidden relative border border-border-default">
                                       {member?.user?.avatarUrl ? (
@@ -791,6 +816,9 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                                       )}
                                     </div>
                                     <span className="truncate">{member.user.username}</span>
+                                    {newTaskAssignees.includes(member.user._id) && (
+                                      <span className="ml-auto text-[10px] font-bold">Selected</span>
+                                    )}
                                   </div>
                                 ))}
                               </div>
@@ -799,6 +827,26 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                         )}
                       </AnimatePresence>
                     </div>
+                    {newTaskAssignees.length > 0 && (
+                      <div className="flex flex-nowrap items-center gap-1.5 pt-1 overflow-x-auto overflow-y-hidden pb-2">
+                        {newTaskAssignees.map((id) => {
+                          const selected = members.find((m: any) => m.user._id === id)?.user;
+                          if (!selected) return null;
+                          return (
+                            <span key={id} className="inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded-md bg-accent/10 text-accent border border-accent/20 shrink-0 whitespace-nowrap">
+                              {selected.username}
+                              <button
+                                type="button"
+                                onClick={() => setNewTaskAssignees((prev) => prev.filter((item) => item !== id))}
+                                className="hover:text-red-500"
+                              >
+                                <X size={10} />
+                              </button>
+                            </span>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -1026,25 +1074,123 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                       <span className="text-[14px] font-medium text-foreground">{inspectingTask.creator.username}</span>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[12px] font-semibold text-foreground/40 uppercase tracking-tight">Assignee</label>
-                    <div className="flex items-center gap-2">
-                      {(inspectingTask as any).assignee ? (
-                        <>
-                          <div className="w-6 h-6 rounded-full bg-accent/10 flex items-center justify-center text-[10px] font-bold text-accent overflow-hidden relative border border-accent/20 shadow-sm">
-                            {(inspectingTask as any).assignee?.avatarUrl ? (
-                              <Image src={(inspectingTask as any).assignee.avatarUrl} alt={(inspectingTask as any).assignee.username || 'Assignee'} fill sizes="24px" className="object-cover" />
-                            ) : (
-                              (inspectingTask as any).assignee?.username?.charAt(0).toUpperCase() || '?'
-                            )}
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-[12px] font-semibold text-foreground/40 uppercase tracking-tight">Assignees</label>
+                  {isEditingTask ? (
+                    <div className="space-y-2">
+                      <div className="relative max-w-md">
+                        <div
+                          onClick={() => setIsEditAssigneeDropdownOpen(!isEditAssigneeDropdownOpen)}
+                          className="w-full pl-10 pr-4 py-3 bg-background border border-border-default rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-accent transition-all cursor-pointer flex items-center justify-between group"
+                        >
+                          <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/25 group-hover:text-accent transition-colors" size={16} />
+                          <span className="text-foreground text-sm font-semibold">
+                            {editAssigneeIds.length > 0 ? `${editAssigneeIds.length} selected` : 'No assignee'}
+                          </span>
+                          <div className={`transition-transform duration-200 ${isEditAssigneeDropdownOpen ? 'rotate-180' : ''}`}>
+                            <Send size={10} className="rotate-90 text-foreground/40" />
                           </div>
-                          <span className="text-[14px] font-medium text-foreground">{(inspectingTask as any).assignee.username}</span>
-                        </>
-                      ) : (
-                        <span className="text-[14px] text-foreground/20 italic font-normal">Unassigned</span>
+                        </div>
+
+                        <AnimatePresence>
+                          {isEditAssigneeDropdownOpen && (
+                            <>
+                              <div
+                                className="fixed inset-0 z-[120]"
+                                onClick={() => setIsEditAssigneeDropdownOpen(false)}
+                              />
+                              <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                className="absolute left-0 right-0 mt-2 bg-background border border-border-default rounded-xl shadow-xl z-[130] overflow-hidden"
+                              >
+                                <div className="max-h-[220px] overflow-y-auto custom-scrollbar py-1.5">
+                                  <div
+                                    onClick={() => {
+                                      setEditAssigneeIds([]);
+                                      setIsEditAssigneeDropdownOpen(false);
+                                    }}
+                                    className={`px-4 py-2.5 text-sm cursor-pointer hover:bg-accent hover:text-white transition-colors flex items-center gap-2 ${editAssigneeIds.length === 0 ? 'bg-accent/10 text-accent font-semibold' : 'text-foreground/70'}`}
+                                  >
+                                    <div className="w-5 h-5 rounded-full border border-dashed border-border-default flex items-center justify-center text-[10px]">
+                                      <X size={10} />
+                                    </div>
+                                    No assignee
+                                  </div>
+                                  {members.map((member: any) => (
+                                    <div
+                                      key={member.user._id}
+                                      onClick={() => {
+                                        setEditAssigneeIds((prev) =>
+                                          prev.includes(member.user._id)
+                                            ? prev.filter((id) => id !== member.user._id)
+                                            : [...prev, member.user._id]
+                                        );
+                                      }}
+                                      className={`px-4 py-2.5 text-sm cursor-pointer hover:bg-accent hover:text-white transition-colors flex items-center gap-2 ${editAssigneeIds.includes(member.user._id) ? 'bg-accent/10 text-accent font-semibold' : 'text-foreground'}`}
+                                    >
+                                      <div className="w-6 h-6 rounded-full bg-bg-subtle flex items-center justify-center text-[10px] font-bold overflow-hidden relative border border-border-default">
+                                        {member?.user?.avatarUrl ? (
+                                          <Image src={member.user.avatarUrl} alt={member.user.username || 'User'} fill sizes="24px" className="object-cover" />
+                                        ) : (
+                                          member?.user?.username?.charAt(0).toUpperCase() || '?'
+                                        )}
+                                      </div>
+                                      <span className="text-sm">{member.user.username}</span>
+                                      {editAssigneeIds.includes(member.user._id) && (
+                                        <span className="ml-auto text-[10px] font-bold">Selected</span>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </motion.div>
+                            </>
+                          )}
+                        </AnimatePresence>
+                      </div>
+
+                      {editAssigneeIds.length > 0 && (
+                        <div className="flex flex-nowrap items-center gap-2 pt-1 overflow-x-auto overflow-y-hidden pb-2">
+                          {editAssigneeIds.map((id) => {
+                            const selected = members.find((m: any) => m.user._id === id)?.user;
+                            if (!selected) return null;
+                            return (
+                              <span key={id} className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-accent/10 text-accent border border-accent/20 shrink-0 whitespace-nowrap">
+                                {selected.username}
+                                <button
+                                  type="button"
+                                  onClick={() => setEditAssigneeIds((prev) => prev.filter((item) => item !== id))}
+                                  className="hover:text-red-500"
+                                >
+                                  <X size={12} />
+                                </button>
+                              </span>
+                            );
+                          })}
+                        </div>
                       )}
                     </div>
-                  </div>
+                  ) : getTaskAssignees(inspectingTask).length > 0 ? (
+                    <div className="flex flex-nowrap items-center gap-2.5 overflow-x-auto overflow-y-hidden pb-2">
+                      {getTaskAssignees(inspectingTask).map((assignee) => (
+                        <div key={assignee._id} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-accent/20 bg-accent/10 shrink-0 whitespace-nowrap">
+                          <div className="w-6 h-6 rounded-full bg-accent/10 flex items-center justify-center text-[10px] font-bold text-accent overflow-hidden relative border border-accent/20 shadow-sm">
+                            {assignee.avatarUrl ? (
+                              <Image src={assignee.avatarUrl} alt={assignee.username || 'Assignee'} fill sizes="24px" className="object-cover" />
+                            ) : (
+                              assignee.username?.charAt(0).toUpperCase() || '?'
+                            )}
+                          </div>
+                          <span className="text-[14px] font-medium text-foreground">{assignee.username}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-[14px] text-foreground/30 italic font-normal">No assignee</span>
+                  )}
                 </div>
                 
                 {/* Image Section */}

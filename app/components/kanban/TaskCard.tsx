@@ -30,6 +30,11 @@ interface Task {
     username: string;
     avatarUrl?: string;
   };
+  assignees?: {
+    _id: string;
+    username: string;
+    avatarUrl?: string;
+  }[];
   createdAt: string;
   startDate?: string;
   dueDate?: string;
@@ -49,7 +54,8 @@ interface TaskCardProps {
 const TaskCard = memo(({ task, onDelete, onClick, isOwnerOrCreator, isSortingActive, isCompact }: TaskCardProps) => {
   const currentUserId = Cookies.get('user_id');
   const isOwner = currentUserId === task.creator._id;
-  const canDrag = isOwnerOrCreator || isOwner || (task.assignee && task.assignee._id === currentUserId);
+  const assignees = task.assignees && task.assignees.length > 0 ? task.assignees : task.assignee ? [task.assignee] : [];
+  const canDrag = isOwnerOrCreator || isOwner || assignees.some((assignee) => assignee._id === currentUserId);
   const {
     attributes,
     listeners,
@@ -82,7 +88,9 @@ const TaskCard = memo(({ task, onDelete, onClick, isOwnerOrCreator, isSortingAct
     );
   }
 
-  const isAssignedToMe = currentUserId === task.assignee?._id;
+  const isAssignedToMe = assignees.some((assignee) => assignee._id === currentUserId);
+  const assigneePreview = assignees.slice(0, 2).map((assignee) => assignee.username).join(', ');
+  const assigneeOverflow = assignees.length > 2 ? assignees.length - 2 : 0;
 
   return (
     <div 
@@ -149,34 +157,48 @@ const TaskCard = memo(({ task, onDelete, onClick, isOwnerOrCreator, isSortingAct
           </p>
         )}
 
-        <div className={`flex items-center justify-between border-t border-border-default/50 ${isCompact ? 'mt-1 pt-1' : 'mt-2 pt-2'}`}>
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-1.5 text-[9px] text-foreground/40">
-              <span className="opacity-70 font-medium">By:</span>
-              <span>{task.creator.username}</span>
+        <div className={`flex items-start justify-between gap-3 border-t border-border-default/50 ${isCompact ? 'mt-1 pt-1' : 'mt-2 pt-2'}`}>
+          <div className="flex flex-col gap-1 min-w-0 flex-1">
+            <div className="flex items-center gap-1.5 text-[9px] text-foreground/40 truncate">
+              <span className="opacity-70 font-medium shrink-0">By:</span>
+              <span className="truncate">{task.creator.username}</span>
             </div>
-            {task.assignee && (
-              <div className="flex items-center gap-1.5 text-[9px] text-accent font-semibold">
-                <span className="opacity-70">For:</span>
-                <span>{task.assignee.username}</span>
+            {assignees.length > 0 ? (
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-[9px] text-accent font-semibold opacity-80 shrink-0">For:</span>
+                <div className="flex items-center min-w-0 gap-1">
+                  <span className="text-[9px] text-accent/90 truncate max-w-[140px]">
+                    {assigneePreview}
+                    {assigneeOverflow > 0 ? `, +${assigneeOverflow}` : ''}
+                  </span>
+                </div>
               </div>
-            )}
+            ) : null}
           </div>
-          <div className="flex items-center gap-2">
-            {task.assignee ? (
-              <div className="w-6 h-6 rounded-full bg-accent border border-accent/20 flex items-center justify-center text-[9px] font-bold text-white shadow-sm overflow-hidden relative" title={`Assigned to ${task.assignee.username}`}>
-                {task.assignee.avatarUrl ? (
-                  <Image 
-                    src={task.assignee.avatarUrl} 
-                    alt={task.assignee.username} 
-                    fill 
-                    sizes="24px"
-                    className="object-cover"
-                  />
-                ) : (
-                  task.assignee.username.charAt(0).toUpperCase()
+          <div className="flex items-center -space-x-1 shrink-0 pt-0.5">
+            {assignees.length > 0 ? (
+              <>
+                {assignees.slice(0, 3).map((assignee) => (
+                  <div key={assignee._id} className="w-6 h-6 rounded-full bg-accent border-2 border-background flex items-center justify-center text-[9px] font-bold text-white shadow-sm overflow-hidden relative" title={`Assigned to ${assignee.username}`}>
+                    {assignee.avatarUrl ? (
+                      <Image 
+                        src={assignee.avatarUrl} 
+                        alt={assignee.username} 
+                        fill 
+                        sizes="24px"
+                        className="object-cover"
+                      />
+                    ) : (
+                      assignee.username.charAt(0).toUpperCase()
+                    )}
+                  </div>
+                ))}
+                {assignees.length > 3 && (
+                  <div className="w-6 h-6 rounded-full bg-bg-subtle border-2 border-background flex items-center justify-center text-[9px] font-bold text-foreground/70" title={`${assignees.length - 3} more assignees`}>
+                    +{assignees.length - 3}
+                  </div>
                 )}
-              </div>
+              </>
             ) : (
               <div className="w-6 h-6 rounded-full bg-bg-subtle border border-border-default flex items-center justify-center text-[9px] font-bold text-foreground/40 italic" title="Unassigned">
                 ?

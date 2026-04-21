@@ -23,6 +23,10 @@ interface Task {
     _id: string;
     username: string;
   };
+  assignees?: {
+    _id: string;
+    username: string;
+  }[];
   createdAt: string;
 }
 

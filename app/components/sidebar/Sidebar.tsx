@@ -26,7 +26,7 @@ import CreateOrgModal from '@/app/components/modals/CreateOrgModal';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSidebar } from '@/app/context/SidebarContext';
-import { API_URL } from '@/app/utils/api';
+import { apiFetch } from '@/app/utils/api';
 import Loading from '@/app/components/ui/Loading';
 
 export default function Sidebar() {
@@ -49,11 +49,7 @@ export default function Sidebar() {
 
   const fetchUserData = useCallback(async () => {
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      const response = await fetch(`${apiUrl}/user/me`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await apiFetch('/user/me');
       if (response.ok) {
         const data = await response.json();
         setUsername(data.username);
@@ -73,11 +69,7 @@ export default function Sidebar() {
 
   const fetchOrganizations = useCallback(async () => {
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      const response = await fetch(`${apiUrl}/organizations`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await apiFetch('/organizations');
       if (response.ok) {
         const data = await response.json();
         const sortedData = [...data].sort((a, b) => a.name.localeCompare(b.name));
@@ -92,11 +84,7 @@ export default function Sidebar() {
 
   const fetchInvitationCount = useCallback(async () => {
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      const response = await fetch(`${apiUrl}/organizations/invitations`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await apiFetch('/organizations/invitations');
       if (response.ok) {
         const data = await response.json();
         setInvitationCount(data.length);
@@ -108,11 +96,7 @@ export default function Sidebar() {
 
   const fetchAssignedTasks = useCallback(async () => {
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      const response = await fetch(`${apiUrl}/tasks/assigned`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await apiFetch('/tasks/assigned');
       if (response.ok) {
         const data = await response.json();
         const sortedData = [...data].sort((a, b) => {
@@ -245,18 +229,18 @@ export default function Sidebar() {
                     onClick={closeSidebar}
                     title={org.name}
                     className={`flex items-center rounded-md text-sm cursor-pointer transition-colors ${isCollapsed ? 'justify-center p-2' : 'gap-3 px-2 py-1.5'} ${
-                    currentOrgId === org._id 
+                    currentOrgId?.toString() === org._id?.toString() 
                       ? 'bg-border-default border border-border-default font-semibold' 
                       : 'hover:bg-border-default/50'
                   }`}
                 >
                   <div className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 overflow-hidden relative ${
-                    !org.avatarUrl ? (currentOrgId === org._id ? 'bg-accent/10' : 'bg-bg-subtle/50') : ''
+                    !org.avatarUrl ? (currentOrgId?.toString() === org._id?.toString() ? 'bg-accent/10' : 'bg-bg-subtle/50') : ''
                   }`}>
                     {org.avatarUrl ? (
                       <Image src={org.avatarUrl} alt={org.name} fill sizes="24px" className="object-cover" />
                     ) : (
-                      <Building2 size={14} className={currentOrgId === org._id ? 'text-accent' : 'text-foreground/60'} />
+                      <Building2 size={14} className={currentOrgId?.toString() === org._id?.toString() ? 'text-accent' : 'text-foreground/60'} />
                     )}
                   </div>
                   {!isCollapsed && <span className="truncate">{org.name}</span>}

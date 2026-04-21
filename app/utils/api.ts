@@ -1,12 +1,21 @@
 import Cookies from 'js-cookie';
 
+const isProd = process.env.NODE_ENV === 'production';
+
 // Define the failover chain from environment variables
-const BACKEND_URLS: string[] = [
+const ALL_URLS: string[] = [
   process.env.NEXT_PUBLIC_API_URL_PRIMARY,
   process.env.NEXT_PUBLIC_API_URL_SECONDARY,
   process.env.NEXT_PUBLIC_API_URL_TERTIARY,
   process.env.NEXT_PUBLIC_API_URL, // Fallback to the legacy variable
 ].filter((url): url is string => Boolean(url && url.trim()));
+
+// Filter out localhost if we are in a production environment to prevent "connecting to visitor's computer"
+const BACKEND_URLS = ALL_URLS.filter(url => {
+  const isLocal = url.includes('localhost') || url.includes('127.0.0.1');
+  if (isProd && isLocal) return false;
+  return true;
+});
 
 // Internal state to track the currently active host for "stickiness"
 export let API_URL = BACKEND_URLS[0] || '';
@@ -42,8 +51,8 @@ export async function apiFetch(path: string, options: RequestInit = {}) {
       }
     }
 
-    // Failover if we get a Gateway Error (common on cold starts)
-    if (response.status >= 502 && response.status <= 504) {
+    // Failover if we get a Server Error (500+) or Gateway Error (common on cold starts)
+    if (response.status >= 500) {
       throw new Error(`Server Error: ${response.status}`);
     }
 

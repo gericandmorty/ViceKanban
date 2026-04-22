@@ -24,31 +24,31 @@ interface Task {
 // Design System
 // ─────────────────────────────────────────────────────────────────────────────
 const D = {
-  // Colours
+  // GitHub Primer Palette
   white:      '#ffffff',
   bg:         '#f6f8fa',
-  bgMuted:    '#edf0f3',
+  bgMuted:    '#f1f1f1',
   border:     '#d0d7de',
   borderSub:  '#e8ebed',
-  fg:         '#1a1f23',
-  fgMid:      '#3f444e',
-  fgDim:      '#57606a',
-  accent:     '#0969da',
+  fg:         '#1f2328', // Primary text
+  fgMid:      '#636c76', // Secondary text
+  fgDim:      '#8c959f', // Muted text
+  accent:     '#0969da', // GitHub Blue
   accentBg:   '#ddf4ff',
-  accentMid:  '#cce5ff',
-  success:    '#1f883d',
+  success:    '#1f883d', // GitHub Green
   successBg:  '#dafbe1',
-  warning:    '#9a6700',
+  warning:    '#9a6700', // GitHub Orange
   warningBg:  '#fff8c5',
-  danger:     '#cf222e',
+  danger:     '#cf222e', // GitHub Red
   dangerBg:   '#ffebe9',
-  purple:     '#8250df',
+  purple:     '#8250df', // GitHub Purple
   purpleBg:   '#fbefff',
   // Layout
   M:   12,   // page margin
   HH:  20,   // header height
   FH:  12,   // footer height
-  ROW_H: 10, // increased height for readability
+  ROW_H: 10,
+  R:   1.5,  // standard radius
 };
 
 const TASKS_PER_PAGE = 18;
@@ -63,7 +63,7 @@ const STATUS: Record<string, { label: string; color: string; bg: string }> = {
 const PRIORITY: Record<string, { label: string; color: string; bg: string }> = {
   urgent: { label: 'Urgent', color: D.danger,  bg: D.dangerBg  },
   high:   { label: 'High',   color: D.warning, bg: D.warningBg },
-  medium: { label: 'Medium', color: D.accent,  bg: D.accentMid },
+  medium: { label: 'Medium', color: D.accent,  bg: D.bgMuted   },
   low:    { label: 'Low',    color: D.fgDim,   bg: D.bgMuted   },
 };
 
@@ -431,10 +431,10 @@ async function drawCover(
   ).length;
 
   const stats = [
-    { n: tasks.length,                                             label: 'Total Tasks',  color: D.accent,  bg: D.accentBg  },
-    { n: tasks.filter(t => t.status === 'in_progress').length,    label: 'In Progress',  color: '#0550ae',  bg: D.accentMid },
-    { n: completed,                                                label: 'Completed',    color: D.success, bg: D.successBg },
-    { n: overdue,                                                  label: 'Overdue',      color: overdue > 0 ? D.danger : D.fgDim, bg: overdue > 0 ? D.dangerBg : D.bgMuted },
+    { n: tasks.length,                                          label: 'Total Tasks',  color: D.accent,  bg: D.accentBg  },
+    { n: tasks.filter(t => t.status === 'in_progress').length, label: 'In Progress',  color: D.accent,  bg: D.bgMuted   },
+    { n: completed,                                             label: 'Completed',    color: D.success, bg: D.successBg },
+    { n: overdue,                                               label: 'Overdue',      color: overdue > 0 ? D.danger : D.fgDim, bg: overdue > 0 ? D.dangerBg : D.bgMuted },
   ];
 
   const sW = (lw - 12 - 9) / 4;
@@ -643,15 +643,34 @@ async function drawGantt(
 
   // TODAY marker removed per user request
 
-  // ── Task rows ────────────────────────────────────────────────────────
+  // ── Task rows with Project Grouping ──────────────────────────────────
   const avH   = ganttH - BH;
   const ROW_H = D.ROW_H;
   const s0    = startDate.getTime();
+  
+  let currentY = ganttY + BH;
+  let lastProject = '';
 
   tasks.forEach((task, ri) => {
-    const ry = ganttY + BH + ri * ROW_H;
+    // Check for project change
+    const isNewProject = task.project.name !== lastProject;
+    
+    if (isNewProject) {
+      // Draw Project Group Header Row
+      doc.setFillColor(D.accent);
+      doc.rect(D.M, currentY, 2, ROW_H, 'F'); // left accent bar
+      doc.setFillColor(D.accentBg);
+      doc.rect(D.M + 2, currentY, ganttW - 2, ROW_H, 'F'); // background
+      txt(doc, `PROJECT: ${task.project.name.toUpperCase()}`, D.M + 6, currentY + ROW_H / 2 + 1.5, 7.5, 'bold', D.accent);
+      hr(doc, D.M, currentY + ROW_H, ganttW, D.accent, 0.2);
+      
+      currentY += ROW_H;
+      lastProject = task.project.name;
+    }
 
-    // zebra
+    const ry = currentY;
+
+    // zebra (using local index for shading)
     if (ri % 2 === 1) {
       doc.setFillColor('#f9fafc');
       doc.rect(D.M, ry, ganttW, ROW_H, 'F');
@@ -664,8 +683,8 @@ async function drawGantt(
     doc.setFillColor(sc.color);
     doc.circle(D.M + 4, ry + ROW_H / 2, 2, 'F');
 
-    // task name
-    const nameClip = task.title.length > 25 ? task.title.slice(0, 23) + '…' : task.title;
+    // task name (no longer need project prefix here)
+    const nameClip = task.title.length > 28 ? task.title.slice(0, 26) + '…' : task.title;
     txt(doc, nameClip, D.M + 10, ry + ROW_H / 2 + 2, 8.5, 'normal', D.fg);
 
     // status abbreviation
@@ -680,23 +699,24 @@ async function drawGantt(
     const eOff = (te.getTime() - s0) / 86400000;
     const bx  = D.M + SIDE + sOff * dayW;
     const bw  = Math.max((eOff - sOff) * dayW, 4);
-    const bh  = ROW_H * 0.45; // thinner bars for cleaner look
+    const bh  = 4.5; // Thinner, high-fidelity bars
     const by  = ry + (ROW_H - bh) / 2;
 
     const isDone   = task.status === 'done' || task.status === 'reviewed';
     const isUrgent = task.priority === 'urgent';
-    const col = isDone ? D.success : isUrgent ? D.danger : D.accent;
-    const prog = { todo: 0, in_progress: 0.5, done: 0.85, reviewed: 1 }[task.status] ?? 0;
+    const col      = isDone ? D.success : isUrgent ? D.danger : D.accent;
+    const prog     = { todo: 0, in_progress: 0.5, done: 0.85, reviewed: 1 }[task.status] ?? 0;
 
-    // ghost bar — use pre-defined bg tint colors (RGBA hex not supported in jsPDF)
-    const ghostBg = isDone ? D.successBg : isUrgent ? D.dangerBg : D.accentBg;
+    // GitHub subtle bar styling
+    const ghostBg = isDone ? D.successBg : (isUrgent ? D.dangerBg : D.accentBg);
     doc.setFillColor(ghostBg);
-    doc.roundedRect(bx, by, bw, bh, 1.5, 1.5, 'F');
-    // progress fill
+    doc.roundedRect(bx, by, bw, bh, bh/2, bh/2, 'F');
     if (prog > 0) {
       doc.setFillColor(col);
-      doc.roundedRect(bx, by, Math.max(bw * prog, 3), bh, 1.5, 1.5, 'F');
+      doc.roundedRect(bx, by, Math.max(bw * prog, 3), bh, bh/2, bh/2, 'F');
     }
+
+    currentY += ROW_H;
   });
 
   // outer border over everything
@@ -822,7 +842,7 @@ async function drawAnalytics(
     { label: 'Completion Rate',    value: `${Math.round(pct * 100)}%`,      sub: `${completed} of ${tasks.length} tasks done`, color: D.success, bg: D.successBg },
     { label: 'Overdue Tasks',      value: String(overdue),                   sub: overdue > 0 ? 'Needs attention' : 'All on track', color: overdue > 0 ? D.danger : D.success, bg: overdue > 0 ? D.dangerBg : D.successBg },
     { label: 'Avg. Task Duration', value: avgDays > 0 ? `${avgDays}d` : '—', sub: 'From start to due date',            color: D.accent,  bg: D.accentBg  },
-    { label: 'In Progress',        value: String(tasks.filter(t => t.status === 'in_progress').length), sub: 'Currently being worked on', color: '#0550ae', bg: D.accentMid },
+    { label: 'In Progress',        value: String(tasks.filter(t => t.status === 'in_progress').length), sub: 'Currently being worked on', color: D.accent, bg: D.bgMuted },
   ];
 
   const kpiW = (CW - 9) / 4;
@@ -923,11 +943,11 @@ async function drawTeamPage(
     const uy = y + rowIdx * rowH;
 
     const email = userMap.get(username) || '—';
-    rr(doc, ux, uy - 4, colW - 6, rowH - 2, 2, D.bg, D.borderSub);
+    // GitHub Member Card style
+    rr(doc, ux, uy - 4, colW - 6, rowH - 2, 1.5, D.white, D.border);
     
-    // Clean text-only list: Bold Username & Muted Email
     txt(doc, username, ux + 6, uy + 2, 8.5, 'bold', D.fg);
-    txt(doc, email, ux + 6, uy + 6.5, 7, 'normal', D.fgDim);
+    txt(doc, email, ux + 6, uy + 6.5, 7, 'normal', D.fgMid);
   });
 }
 
@@ -941,8 +961,9 @@ async function drawDetailedLedger(
 ) {
   const CW = pw - D.M * 2;
   const ftrBound = ph - D.FH - 14;
-  const TH = 12;
-  const TR = 10;
+  const TH = 12; // Table Header height
+  const TR = 10; // Table Row height
+  const PH = 14; // Project Header height
 
   const rawCols = [
     { label: '#',          w: 10 },
@@ -958,19 +979,21 @@ async function drawDetailedLedger(
   const scale    = CW / rawTotal;
   const cols     = rawCols.map(c => ({ ...c, w: c.w * scale }));
 
-  let y = 0;
   let currentPg = startPageIdx;
+  let y = 0;
 
-  const renderHeader = (pg: number) => {
+  const renderPageChrome = (pg: number) => {
     drawHeader(doc, logo, pw, pg, totalPages, project);
     drawFooter(doc, pw, ph);
     let ty = D.HH + 10;
     doc.setFillColor(D.accent);
     doc.rect(D.M, ty, 3, 10, 'F');
-    txt(doc, 'DETAILED TASK LEDGER', D.M + 8, ty + 8, 11, 'bold', D.fg);
+    txt(doc, 'DETAILED PROJECT LEDGER', D.M + 8, ty + 8, 11, 'bold', D.fg);
     hr(doc, D.M + 8, ty + 12, CW - 8, D.border, 0.4);
-    ty += 22;
+    return ty + 22;
+  };
 
+  const renderTableHeader = (ty: number) => {
     rr(doc, D.M, ty, CW, TH, 1.5, D.bg, D.border);
     let hx = D.M + 3;
     cols.forEach(c => {
@@ -980,44 +1003,95 @@ async function drawDetailedLedger(
     return ty + TH;
   };
 
-  y = renderHeader(currentPg);
+  // Group tasks
+  const groups = new Map<string, Task[]>();
+  tasks.forEach(t => {
+    const pn = t.project?.name || 'Unknown Project';
+    if (!groups.has(pn)) groups.set(pn, []);
+    groups.get(pn)!.push(t);
+  });
 
-  tasks.forEach((t, i) => {
-    if (y + TR > ftrBound) {
-      doc.addPage();
-      currentPg++;
-      y = renderHeader(currentPg);
+  y = renderPageChrome(currentPg);
+
+  for (const [projectName, pTasks] of groups.entries()) {
+    // 1. Draw Project Header (GitHub Box Header Style)
+    if (y + PH + TH + TR > ftrBound) {
+      doc.addPage(); currentPg++;
+      y = renderPageChrome(currentPg);
     }
 
-    doc.setFillColor(i % 2 === 0 ? D.white : D.bg);
-    doc.rect(D.M, y, CW, TR, 'F');
-    hr(doc, D.M, y + TR, CW, D.borderSub, 0.15);
+    rr(doc, D.M, y, CW, PH, 2, D.bg, D.border);
+    // Draw an "Issue Group" style heading
+    doc.setFillColor(D.accent);
+    doc.rect(D.M + 4, y + 4, 3, 6, 'F');
+    txt(doc, projectName.toUpperCase(), D.M + 9, y + PH/2 + 1.5, 9, 'bold', D.fg);
+    y += PH;
 
-    let tx = D.M + 3;
-    const ty = y + TR / 2 + 2.2;
-    const sc = STATUS[t.status] || STATUS.todo;
-    const pc = PRIORITY[t.priority || 'low'];
+    // 2. Draw Table Header (GitHub Box Row)
+    rr(doc, D.M, y, CW, TH, 0, D.white, D.border);
+    let hx = D.M + 3;
+    cols.forEach(c => {
+      txt(doc, c.label, hx, y + 7.5, 8, 'bold', D.fgMid);
+      hx += c.w;
+    });
+    y += TH;
 
-    txt(doc, String(i+1), tx, ty, 7.5, 'normal', D.fgMid); tx += cols[0].w;
-    const clip = t.title.length > 45 ? t.title.slice(0, 43) + '…' : t.title;
-    txt(doc, clip, tx, ty, 8.5, 'normal', D.fg); tx += cols[1].w;
-    pill(doc, sc.label.toUpperCase(), tx, y + 2, 6, sc.bg, sc.color); tx += cols[2].w;
-    pill(doc, pc.label.toUpperCase(), tx, y + 2, 6, pc.bg, pc.color); tx += cols[3].w;
-    const u = t.assignee?.username || '—';
-    txt(doc, u.length > 20 ? u.slice(0, 18) + '…' : u, tx, ty, 8.5, 'normal', D.fgMid); tx += cols[4].w;
+    // 3. Draw Tasks
+    pTasks.forEach((t, i) => {
+      if (y + TR > ftrBound) {
+        doc.addPage(); currentPg++;
+        y = renderPageChrome(currentPg);
+        // Continuation label - move it slightly lower and align with the box
+        txt(doc, `${projectName.toUpperCase()} (CONTINUED)`, D.M, y - 5, 7.5, 'bold', D.accent);
+        // Repeat headers
+        rr(doc, D.M, y, CW, TH, 0, D.white, D.border);
+        let hhx = D.M + 3;
+        cols.forEach(c => {
+          txt(doc, c.label, hhx, y + 7.5, 8, 'bold', D.fgMid);
+          hhx += c.w;
+        });
+        y += TH;
+      }
 
-    const fmt = (d: string | undefined) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' }) : '—';
-    txt(doc, fmt(t.startDate), tx, ty, 7, 'normal', D.fgDim); tx += cols[5].w;
-    const isOverdue = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done' && t.status !== 'reviewed';
-    txt(doc, fmt(t.dueDate), tx, ty, 7, isOverdue ? 'bold' : 'normal', isOverdue ? D.danger : D.fgDim); tx += cols[6].w;
+      doc.setFillColor(D.white);
+      doc.rect(D.M, y, CW, TR, 'F');
+      hr(doc, D.M, y, CW, D.border, 0.12);
+      vl(doc, D.M, y, TR, D.border, 0.12);
+      vl(doc, D.M + CW, y, TR, D.border, 0.12);
 
-    const dStart = new Date(t.startDate || t.createdAt);
-    const dEnd   = t.dueDate ? new Date(t.dueDate) : new Date();
-    const durD   = Math.max(0, Math.floor((dEnd.getTime() - dStart.getTime()) / 86400000));
-    txt(doc, `${durD}d`, tx, ty, 7, 'normal', D.fgDim);
+      let tx = D.M + 3;
+      const ty = y + TR / 2 + 2.2;
+      const sc = STATUS[t.status] || STATUS.todo;
+      const pc = PRIORITY[t.priority || 'low'];
 
-    y += TR;
-  });
+      txt(doc, String(i+1), tx, ty, 7, 'normal', D.fgDim); tx += cols[0].w;
+      const clip = t.title.length > 45 ? t.title.slice(0, 43) + '…' : t.title;
+      txt(doc, clip, tx, ty, 8.5, 'normal', D.fg); tx += cols[1].w;
+      
+      // Label pills
+      pill(doc, sc.label.toUpperCase(), tx, y + 2, 6, sc.bg, sc.color); tx += cols[2].w;
+      pill(doc, pc.label.toUpperCase(), tx, y + 2, 6, pc.bg, pc.color); tx += cols[3].w;
+      
+      const u = t.assignee?.username || '—';
+      txt(doc, u.length > 20 ? u.slice(0, 18) + '…' : u, tx, ty, 8, 'normal', D.fgMid); tx += cols[4].w;
+
+      const fmt = (d: string | undefined) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' }) : '—';
+      txt(doc, fmt(t.startDate), tx, ty, 7, 'normal', D.fgMid); tx += cols[5].w;
+      const isOverdue = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done' && t.status !== 'reviewed';
+      txt(doc, fmt(t.dueDate), tx, ty, 7, isOverdue ? 'bold' : 'normal', isOverdue ? D.danger : D.fgMid); tx += cols[6].w;
+
+      const dStart = new Date(t.startDate || t.createdAt);
+      const dEnd   = t.dueDate ? new Date(t.dueDate) : new Date();
+      const durD   = Math.max(0, Math.floor((dEnd.getTime() - dStart.getTime()) / 86400000));
+      txt(doc, `${durD}d`, tx, ty, 7, 'normal', D.fgMid);
+
+      y += TR;
+    });
+
+    // Close the box
+    hr(doc, D.M, y, CW, D.border, 0.4);
+    y += 14; 
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1051,14 +1125,24 @@ export async function exportGanttToPDF(tasks: Task[], projectName: string) {
   let logo: string | null = null;
   try { logo = await loadLogo('/icons/icon_vice.png'); } catch { /* logo optional */ }
 
+  // 0. Sort Tasks by Project then date
+  const sortedTasks = [...tasks].sort((a, b) => {
+    const pA = a.project?.name || '';
+    const pB = b.project?.name || '';
+    if (pA !== pB) return pA.localeCompare(pB);
+    return new Date(a.startDate || a.createdAt).getTime() - new Date(b.startDate || b.createdAt).getTime();
+  });
+
+  const activeTasks = sortedTasks;
+
   // Calculation for total pages
-  const ganttPgCount = Math.ceil(tasks.length / TASKS_PER_PAGE) || 1;
+  const ganttPgCount = Math.ceil(activeTasks.length / TASKS_PER_PAGE) || 1;
   const analyticsPgCount = 1;
   const teamPgCount = 1;
   
-  // Ledger calculation: ~20 tasks per page plus header/title spacing
-  const LEDGER_PER_PAGE = 22;
-  const ledgerPgCount = Math.ceil(tasks.length / LEDGER_PER_PAGE) || 1;
+  // Ledger calculation (headers add variance, so we use a safe estimate)
+  const LEDGER_PER_PAGE = 20;
+  const ledgerPgCount = Math.ceil(activeTasks.length / LEDGER_PER_PAGE) || 1;
 
   const totalPages = ganttPgCount + analyticsPgCount + teamPgCount + ledgerPgCount;
   let cursor = 1;
@@ -1066,24 +1150,24 @@ export async function exportGanttToPDF(tasks: Task[], projectName: string) {
   // 1. Gantt Pages
   for (let i = 0; i < ganttPgCount; i++) {
     if (i > 0) doc.addPage();
-    const chunk = tasks.slice(i * TASKS_PER_PAGE, (i + 1) * TASKS_PER_PAGE);
-    await drawGantt(doc, logo, chunk, projectName, pw, ph, cursor, totalPages, tasks);
+    const chunk = activeTasks.slice(i * TASKS_PER_PAGE, (i + 1) * TASKS_PER_PAGE);
+    await drawGantt(doc, logo, chunk, projectName, pw, ph, cursor, totalPages, activeTasks);
     cursor++;
   }
 
   // 2. Analytics Page
   doc.addPage();
-  await drawAnalytics(doc, logo, tasks, projectName, pw, ph, cursor, totalPages);
+  await drawAnalytics(doc, logo, activeTasks, projectName, pw, ph, cursor, totalPages);
   cursor++;
 
   // 3. Team Page
   doc.addPage();
-  await drawTeamPage(doc, logo, tasks, projectName, pw, ph, cursor, totalPages);
+  await drawTeamPage(doc, logo, activeTasks, projectName, pw, ph, cursor, totalPages);
   cursor++;
 
   // 4. Detailed Ledger Pages
   doc.addPage();
-  await drawDetailedLedger(doc, logo, tasks, projectName, pw, ph, cursor, totalPages);
+  await drawDetailedLedger(doc, logo, activeTasks, projectName, pw, ph, cursor, totalPages);
 
   const safe = (projectName || 'Report').replace(/\s+/g, '_');
   const date = new Date().toISOString().split('T')[0];

@@ -739,7 +739,9 @@ export default function DashboardPage() {
             ) : activeTab === 'Gantt Chart' ? (
               <GanttChart 
                 orgId={orgIdFromUrl as string} 
-                projectId={projectIdFromUrl} 
+                projectId={projectIdFromUrl}
+                projectName={currentProject?.name ?? null}
+                orgName={detailedOrg?.name ?? null}
               />
             ) : activeTab === 'Members' ? (
               <MembersTable org={detailedOrg} onRefresh={() => fetchOrgDetails(orgIdFromUrl as string)} />

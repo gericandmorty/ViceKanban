@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import Image from 'next/image';
 import CropImageModal from '../modals/CropImageModal';
 import { API_URL } from '@/app/utils/api';
+import { compressImage } from '@/app/utils/imageUtils';
 
 interface AvatarUploadProps {
   currentAvatar?: string;
@@ -42,7 +43,9 @@ export default function AvatarUpload({ currentAvatar, onSuccess }: AvatarUploadP
     // Upload
     setIsUploading(true);
     const formData = new FormData();
-    formData.append('file', croppedFile);
+    
+    const compressed = await compressImage(croppedFile);
+    formData.append('file', compressed);
 
     try {
       const apiUrl = API_URL;

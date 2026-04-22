@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader2, ImagePlus, Trash2 } from 'lucide-react';
 import { apiFetch } from '@/app/utils/api';
+import { compressImage } from '@/app/utils/imageUtils';
 import toast from 'react-hot-toast';
 
 interface CreateAnnouncementModalProps {
@@ -110,7 +111,8 @@ export default function CreateAnnouncementModal({
       formData.append('type', type);
       
       if (imageFile) {
-        formData.append('image', imageFile);
+        const compressed = await compressImage(imageFile);
+        formData.append('image', compressed);
       } else if (removeExistingImage) {
         formData.append('removeImage', 'true');
       }

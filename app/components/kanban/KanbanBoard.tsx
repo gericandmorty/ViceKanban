@@ -23,11 +23,12 @@ import {
 } from '@dnd-kit/sortable';
 import KanbanColumn from './KanbanColumn';
 import TaskCard from './TaskCard';
-import { Loader2, Plus, X, Type, FileText, User as UserIcon, Trash2, MessageSquare, Send, CornerDownRight } from 'lucide-react';
+import { Loader2, Plus, X, Type, FileText, User as UserIcon, Trash2, MessageSquare, Send, CornerDownRight, Maximize2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Cookies from 'js-cookie';
 import toast from 'react-hot-toast';
 import { API_URL } from '@/app/utils/api';
+import { compressImage } from '@/app/utils/imageUtils';
 import ConfirmationModal from '../ui/ConfirmationModal';
 import Image from 'next/image';
 import Loading from '@/app/components/ui/Loading';
@@ -104,6 +105,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
   const [editAssigneeIds, setEditAssigneeIds] = useState<string[]>([]);
   const [isEditAssigneeDropdownOpen, setIsEditAssigneeDropdownOpen] = useState(false);
   const [isUpdatingTask, setIsUpdatingTask] = useState(false);
+  const [isImageExpanded, setIsImageExpanded] = useState(false);
 
   const currentUserId = Cookies.get('user_id');
   const isOrgOwner = currentUserId === orgOwnerId;
@@ -356,7 +358,11 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
       formData.append('assigneeIds', JSON.stringify(editAssigneeIds));
       if (editStartDate) formData.append('startDate', editStartDate);
       if (editDueDate) formData.append('dueDate', editDueDate);
-      if (newTaskImage) formData.append('image', newTaskImage);
+      
+      if (newTaskImage) {
+        const compressed = await compressImage(newTaskImage);
+        formData.append('image', compressed);
+      }
 
       const response = await fetch(`${apiUrl}/tasks/${inspectingTask._id}`, {
         method: 'PATCH',
@@ -538,7 +544,11 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
       }
       if (newTaskStartDate) formData.append('startDate', newTaskStartDate);
       if (newTaskDueDate) formData.append('dueDate', newTaskDueDate);
-      if (newTaskImage) formData.append('image', newTaskImage);
+      
+      if (newTaskImage) {
+        const compressed = await compressImage(newTaskImage);
+        formData.append('image', compressed);
+      }
 
       const response = await fetch(`${apiUrl}/tasks`, {
         method: 'POST',
@@ -1211,29 +1221,54 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                     )}
                   </div>
                   
-                  <div className="relative w-full rounded-xl overflow-hidden bg-bg-subtle border border-border-default shadow-inner group">
-                    {newTaskImage ? (
-                      <Image 
-                        src={URL.createObjectURL(newTaskImage)} 
-                        alt="Preview" 
-                        width={0}
-                        height={0}
-                        sizes="100vw"
-                        className="w-full h-auto block" 
-                      />
-                    ) : inspectingTask.imageUrl ? (
-                      <Image 
-                        src={inspectingTask.imageUrl} 
-                        alt={inspectingTask.title} 
-                        width={0}
-                        height={0}
-                        sizes="100vw"
-                        className="w-full h-auto block" 
-                      />
-                    ) : (
-                      <div className="aspect-video flex flex-col items-center justify-center text-foreground/20">
-                        <Plus size={48} className="opacity-10 mb-2" />
-                        <span className="text-xs font-medium opacity-40">No image attached</span>
+                  <div 
+                    onClick={() => (inspectingTask.imageUrl || newTaskImage) && setIsImageExpanded(true)}
+                    className={`relative w-full rounded-xl overflow-hidden bg-bg-subtle border border-border-default shadow-inner group/img transition-all ${
+                      (inspectingTask.imageUrl || newTaskImage) ? 'cursor-zoom-in' : ''
+                    }`}
+                  >
+                    <motion.div
+                      whileHover={ (inspectingTask.imageUrl || newTaskImage) ? { scale: 1.05 } : {} }
+                      transition={{ duration: 0.4, ease: "easeOut" }}
+                      className="w-full h-full"
+                    >
+                      {newTaskImage ? (
+                        <Image 
+                          src={URL.createObjectURL(newTaskImage)} 
+                          alt="Preview" 
+                          width={0}
+                          height={0}
+                          sizes="100vw"
+                          className="w-full h-auto block" 
+                        />
+                      ) : inspectingTask.imageUrl ? (
+                        <Image 
+                          src={inspectingTask.imageUrl} 
+                          alt={inspectingTask.title} 
+                          width={0}
+                          height={0}
+                          sizes="100vw"
+                          className="w-full h-auto block" 
+                        />
+                      ) : (
+                        <div className="aspect-video flex flex-col items-center justify-center text-foreground/20">
+                          <Plus size={48} className="opacity-10 mb-2" />
+                          <span className="text-xs font-medium opacity-40">No image attached</span>
+                        </div>
+                      )}
+                    </motion.div>
+
+                    {/* Hover Overlay */}
+                    {(inspectingTask.imageUrl || newTaskImage) && (
+                      <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/20 transition-all flex items-center justify-center opacity-0 group-hover/img:opacity-100 pointer-events-none">
+                        <div className="flex flex-col items-center gap-2 transform scale-50 group-hover/img:scale-100 transition-all duration-300">
+                          <div className="bg-background/80 backdrop-blur-md p-2.5 rounded-full shadow-xl border border-white/20">
+                            <Maximize2 size={20} className="text-foreground" />
+                          </div>
+                          <span className="text-[10px] font-bold text-white uppercase tracking-widest drop-shadow-md bg-black/40 px-2 py-1 rounded-md backdrop-blur-sm">
+                            Click to expand
+                          </span>
+                        </div>
                       </div>
                     )}
                     
@@ -1592,6 +1627,39 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
         confirmText="Delete Task"
         type="danger"
       />
+
+      {/* Image Lightbox Modal */}
+      <AnimatePresence>
+        {isImageExpanded && (
+          <div 
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 md:p-10 cursor-zoom-out"
+            onClick={() => setIsImageExpanded(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative max-w-7xl max-h-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Image 
+                src={newTaskImage ? URL.createObjectURL(newTaskImage) : (inspectingTask?.imageUrl || '')} 
+                alt="Full View"
+                width={2000}
+                height={2000}
+                className="w-auto h-auto max-w-full max-h-[85vh] rounded-lg shadow-2xl object-contain border border-white/5"
+              />
+              <button
+                onClick={() => setIsImageExpanded(false)}
+                className="absolute -top-12 right-0 p-2 text-white/60 hover:text-white transition-colors flex items-center gap-2 text-sm font-medium"
+              >
+                <span>Close Full View</span>
+                <X size={20} />
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

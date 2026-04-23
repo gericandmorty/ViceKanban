@@ -5,6 +5,7 @@ import type { NextRequest } from 'next/server';
 const publicRoutes = [
   '/', '/auth/login', '/auth/register', 
   '/auth/forgot-password', '/auth/reset-password',
+  '/auth/confirm-email',
   '/terms', '/privacy', '/about'
 ];
 

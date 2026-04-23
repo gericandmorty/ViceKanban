@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -18,18 +18,84 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+  const [usernameExists, setUsernameExists] = useState(false);
+
+  // Debounced username check
+  useEffect(() => {
+    const trimmed = username.trim();
+    const usernameRegex = /^[a-zA-Z0-9._]+$/;
+    const startEndRegex = /^(?![._])(?!.*[._]$)/;
+    const isBasicValid = trimmed.length >= 3 && !trimmed.includes(' ') && usernameRegex.test(trimmed) && startEndRegex.test(trimmed);
+
+    if (!isBasicValid) {
+      setUsernameExists(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsCheckingUsername(true);
+      try {
+        const response = await fetch(`${API_URL}/auth/check-username?username=${username.trim()}`);
+        if (response.ok) {
+          const data = await response.json();
+          setUsernameExists(data.exists);
+        }
+      } catch (err) {
+        console.error('Failed to check username availability');
+      } finally {
+        setIsCheckingUsername(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [username]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
+    // Sanitize inputs
+    const trimmedUsername = username.trim();
+    const trimmedEmail = email.trim();
+    
+    // Safety checks
+    const usernameRegex = /^[a-zA-Z0-9._]+$/;
+    const startEndRegex = /^(?![._])(?!.*[._]$)/;
+
+    if (trimmedUsername.length < 3) {
+      setError('Username must be at least 3 characters.');
+      setIsLoading(false);
+      return;
+    }
+    if (trimmedUsername.includes(' ')) {
+      setError('Username cannot contain spaces.');
+      setIsLoading(false);
+      return;
+    }
+    if (!usernameRegex.test(trimmedUsername)) {
+      setError('Username can only contain letters, numbers, dots, and underscores.');
+      setIsLoading(false);
+      return;
+    }
+    if (!startEndRegex.test(trimmedUsername)) {
+      setError('Username cannot start or end with a dot or underscore.');
+      setIsLoading(false);
+      return;
+    }
+    if (usernameExists) {
+      setError('Username is already taken.');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const apiUrl = API_URL;
       const response = await fetch(`${apiUrl}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password }),
+        body: JSON.stringify({ username: trimmedUsername, email: trimmedEmail, password }),
       });
 
       const data = await response.json();
@@ -121,14 +187,32 @@ export default function RegisterPage() {
 
                   <div className="space-y-1.5">
                     <label className="text-sm font-normal">Username</label>
-                    <input
-                      type="text"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      required
-                      maxLength={20}
-                      className="w-full bg-background border border-border-default rounded-md py-[5px] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition-all placeholder:text-foreground/40"
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        required
+                        maxLength={16}
+                        className={`w-full bg-background border rounded-md py-[5px] px-3 pr-10 text-sm focus:outline-none focus:ring-2 transition-all placeholder:text-foreground/40 ${
+                          usernameExists 
+                            ? 'border-red-500/50 focus:ring-red-500/20' 
+                            : 'border-border-default focus:ring-accent/40 focus:border-accent'
+                        }`}
+                      />
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        {isCheckingUsername ? (
+                          <Loader2 size={14} className="animate-spin text-foreground/40" />
+                        ) : (username.trim().length >= 3 && !username.includes(' ') && /^[a-zA-Z0-9._]+$/.test(username)) && (
+                          usernameExists ? (
+                            <AlertCircle size={14} className="text-red-500" />
+                          ) : (
+                            <CheckCircle2 size={14} className="text-green-500" />
+                          )
+                        )}
+                      </div>
+                    </div>
+                    {usernameExists && <p className="text-[10px] text-red-500">Username is already taken.</p>}
                   </div>
 
                   <div className="space-y-1.5">

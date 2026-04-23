@@ -34,12 +34,15 @@ function LoginContent() {
     setIsLoading(true);
     setError('');
 
+    // Sanitize inputs
+    const trimmedEmail = email.trim();
+
     try {
       const apiUrl = API_URL;
       const response = await fetch(`${apiUrl}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: trimmedEmail, password }),
       });
 
       const data = await response.json();

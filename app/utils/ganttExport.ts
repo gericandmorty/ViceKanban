@@ -10,7 +10,7 @@ interface Task {
   priority?: string;
   createdAt: string;
   updatedAt: string;
-  project: { _id: string; name: string };
+  project?: { _id: string; name: string };
   assignee?: {
     username: string;
     email?: string;
@@ -51,7 +51,7 @@ const D = {
   R:   1.5,  // standard radius
 };
 
-const TASKS_PER_PAGE = 18;
+const TASKS_PER_PAGE = 14;
 
 const STATUS: Record<string, { label: string; color: string; bg: string }> = {
   todo:        { label: 'Todo',        color: D.fgDim,   bg: D.bgMuted    },
@@ -571,6 +571,21 @@ async function drawGantt(
   txt(doc, 'Gantt Chart  -  Timeline View', D.M, CY + 7, 11, 'bold', D.fg);
   txt(doc, getDateRange(tasks), D.M, CY + 14, 7, 'normal', D.fgMid);
 
+  // Status Legend
+  const lxOffset = pw - D.M;
+  const lyOffset = CY + 14;
+  const legendItems = [
+    { label: 'RV: Reviewed',    color: D.purple },
+    { label: 'DN: Done',        color: D.success },
+    { label: 'IP: In Progress', color: D.accent },
+    { label: 'TD: Todo',        color: D.fgDim },
+  ];
+  let curLx = lxOffset;
+  legendItems.forEach(item => {
+    txt(doc, item.label, curLx, lyOffset, 6.5, 'bold', item.color, 'right');
+    curLx -= (doc.getTextWidth(item.label) + 6);
+  });
+
   const ganttY = CY + 19;
   const ganttH = ph - D.HH - D.FH - 10 - ganttY; // extra 5mm bottom margin for safety
   const ganttW = CW;
@@ -653,19 +668,21 @@ async function drawGantt(
 
   tasks.forEach((task, ri) => {
     // Check for project change
-    const isNewProject = task.project.name !== lastProject;
+    const currentProjectName = task.project?.name || project || 'Unknown Project';
+    const isNewProject = currentProjectName !== lastProject;
     
     if (isNewProject) {
-      // Draw Project Group Header Row
+      // Draw Project Group Header Row (contained)
       doc.setFillColor(D.accent);
-      doc.rect(D.M, currentY, 2, ROW_H, 'F'); // left accent bar
+      doc.rect(D.M, currentY, 2, ROW_H, 'F'); // left accent
+      doc.rect(D.M + ganttW - 2, currentY, 2, ROW_H, 'F'); // right accent (prevents overshoot feeling)
       doc.setFillColor(D.accentBg);
-      doc.rect(D.M + 2, currentY, ganttW - 2, ROW_H, 'F'); // background
-      txt(doc, `PROJECT: ${task.project.name.toUpperCase()}`, D.M + 6, currentY + ROW_H / 2 + 1.5, 7.5, 'bold', D.accent);
+      doc.rect(D.M + 2, currentY, ganttW - 4, ROW_H, 'F'); // background (slightly narrower)
+      txt(doc, `PROJECT: ${currentProjectName.toUpperCase()}`, D.M + 6, currentY + ROW_H / 2 + 1.5, 7.5, 'bold', D.accent);
       hr(doc, D.M, currentY + ROW_H, ganttW, D.accent, 0.2);
       
       currentY += ROW_H;
-      lastProject = task.project.name;
+      lastProject = currentProjectName;
     }
 
     const ry = currentY;
@@ -1006,7 +1023,7 @@ async function drawDetailedLedger(
   // Group tasks
   const groups = new Map<string, Task[]>();
   tasks.forEach(t => {
-    const pn = t.project?.name || 'Unknown Project';
+    const pn = t.project?.name || project || 'Unknown Project';
     if (!groups.has(pn)) groups.set(pn, []);
     groups.get(pn)!.push(t);
   });

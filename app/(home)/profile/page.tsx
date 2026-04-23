@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import AvatarUpload from '@/app/components/profile/AvatarUpload';
 import ChangePasswordForm from '@/app/components/profile/ChangePasswordForm';
+import ChangeUsernameForm from '@/app/components/profile/ChangeUsernameForm';
 import { apiFetch } from '@/app/utils/api';
 import { useTheme } from '@/app/context/ThemeContext';
 import { Trash2, AlertCircle as AlertIcon, Sun, Moon, Loader2 } from 'lucide-react';
@@ -61,6 +62,22 @@ export default function ProfilePage() {
               </div>
               <div className="pt-2">
                 <ChangePasswordForm />
+              </div>
+            </section>
+
+            {/* Username Section */}
+            <section className="space-y-6">
+              <div className="space-y-2">
+                <h2 className="text-xl font-medium text-foreground">Change username</h2>
+                <p className="text-[13px] text-foreground/60 pb-4 border-b border-border-default">
+                  Change how you appear across ViceKanBan.
+                </p>
+              </div>
+              <div className="pt-2">
+                <ChangeUsernameForm 
+                  currentUsername={userData?.username} 
+                  onSuccess={(newName) => setUserData({ ...userData, username: newName })} 
+                />
               </div>
             </section>
 

@@ -21,6 +21,7 @@ function LoginContent() {
   const [resendStatus, setResendStatus] = useState<{ loading: boolean; message: string }>({ loading: false, message: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+  const [banCooldown, setBanCooldown] = useState(0);
 
   useEffect(() => {
     if (cooldown > 0) {
@@ -28,6 +29,13 @@ function LoginContent() {
       return () => clearTimeout(timer);
     }
   }, [cooldown]);
+
+  useEffect(() => {
+    if (banCooldown > 0) {
+      const timer = setTimeout(() => setBanCooldown(banCooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [banCooldown]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +59,16 @@ function LoginContent() {
         if (data.isEmailUnconfirmed) {
           setIsUnconfirmed(true);
         }
-        throw new Error(data.message || 'Login failed');
+        if (data.isIpBanned) {
+          setBanCooldown(data.banTtl);
+          const msg = `Too many failed attempts. Please try again in ${data.banTtl} seconds.`;
+          throw new Error(msg);
+        }
+        
+        // Handle string or array messages from NestJS
+        const rawMessage = data.message;
+        const errorMessage = Array.isArray(rawMessage) ? rawMessage[0] : rawMessage;
+        throw new Error(errorMessage || 'Login failed');
       }
 
       // Store auth info
@@ -113,7 +130,11 @@ function LoginContent() {
                 <div className="space-y-2 mb-4">
                   <div className="p-3 bg-red-500/5 border border-red-500/20 rounded-md flex items-center gap-2 text-red-500 text-xs text-center justify-center">
                     <AlertCircle size={14} className="shrink-0" />
-                    <span>{error}</span>
+                    <span>
+                      {banCooldown > 0 
+                        ? `Too many failed attempts. Please try again in ${banCooldown} seconds.`
+                        : error}
+                    </span>
                   </div>
 
                   {isUnconfirmed && (

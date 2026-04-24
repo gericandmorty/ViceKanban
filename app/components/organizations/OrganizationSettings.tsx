@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import ConfirmationModal from '../ui/ConfirmationModal';
 import DangerZoneModal from '../ui/DangerZoneModal';
-import { API_URL } from '@/app/utils/api';
+import { API_URL, apiFetch } from '@/app/utils/api';
 import Image from 'next/image';
 
 interface OrganizationSettingsProps {
@@ -57,13 +57,10 @@ export default function OrganizationSettings({ org, isOwner, isAdmin, onRefresh 
 
     setIsUpdatingDetails(true);
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      const response = await fetch(`${apiUrl}/organizations/${org._id}`, {
+      const response = await apiFetch(`/organizations/${org._id}`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ name, description })
       });
@@ -92,13 +89,8 @@ export default function OrganizationSettings({ org, isOwner, isAdmin, onRefresh 
     }
 
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      const response = await fetch(`${apiUrl}/organizations/${org._id}`, {
+      const response = await apiFetch(`/organizations/${org._id}`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
         body: formData
       });
 
@@ -120,13 +112,8 @@ export default function OrganizationSettings({ org, isOwner, isAdmin, onRefresh 
   const handleDeleteOrg = async () => {
     setIsDeleting(true);
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      const response = await fetch(`${apiUrl}/organizations/${org._id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const response = await apiFetch(`/organizations/${org._id}`, {
+        method: 'DELETE'
       });
 
       if (response.ok) {
@@ -179,14 +166,18 @@ export default function OrganizationSettings({ org, isOwner, isAdmin, onRefresh 
             <label className="text-[14px] font-semibold text-foreground w-full sm:w-1/3 mt-1">
               Description
             </label>
-            <div className="w-full sm:w-2/3">
+            <div className="w-full sm:w-2/3 space-y-1">
               <textarea 
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={!isAdmin || isUpdatingDetails}
+                maxLength={255}
                 placeholder="Add a description for your organization..."
                 className="w-full px-3 py-[7px] bg-background border border-border-default rounded-md text-[14px] text-foreground focus:outline-none focus:ring-1 focus:ring-accent transition-all min-h-[120px] resize-none disabled:opacity-50"
               />
+              <div className={`text-[10px] text-right font-medium transition-colors ${description.length >= 240 ? 'text-red-500' : 'text-foreground/30'}`}>
+                {description.length}/255 characters
+              </div>
             </div>
           </div>
 
@@ -345,11 +336,8 @@ function LeaveOrgSection({ org, onRefresh }: { org: any, onRefresh: () => void }
   const handleLeave = async () => {
     setIsLeaving(true);
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      const response = await fetch(`${apiUrl}/organizations/${org._id}/leave`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
+      const response = await apiFetch(`/organizations/${org._id}/leave`, {
+        method: 'POST'
       });
 
       if (response.ok) {

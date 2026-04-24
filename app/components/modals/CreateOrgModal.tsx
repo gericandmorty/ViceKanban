@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader2, Layout, Upload, Trash2, Image as ImageIcon } from 'lucide-react';
 import Cookies from 'js-cookie';
-import { API_URL } from '@/app/utils/api';
+import { API_URL, apiFetch } from '@/app/utils/api';
 import Image from 'next/image';
 
 interface CreateOrgModalProps {
@@ -15,6 +15,7 @@ interface CreateOrgModalProps {
 
 export default function CreateOrgModal({ isOpen, onClose, onSuccess }: CreateOrgModalProps) {
   const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
@@ -56,20 +57,15 @@ export default function CreateOrgModal({ isOpen, onClose, onSuccess }: CreateOrg
     setError('');
 
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-
       const formData = new FormData();
       formData.append('name', name);
+      formData.append('description', description);
       if (logoFile) {
         formData.append('logo', logoFile);
       }
 
-      const response = await fetch(`${apiUrl}/organizations`, {
+      const response = await apiFetch('/organizations', {
         method: 'POST',
-        headers: { 
-          'Authorization': `Bearer ${token}`
-        },
         body: formData,
       });
 
@@ -80,6 +76,7 @@ export default function CreateOrgModal({ isOpen, onClose, onSuccess }: CreateOrg
       }
 
       setName('');
+      setDescription('');
       setLogoFile(null);
       setLogoPreview('');
       onSuccess();
@@ -145,6 +142,20 @@ export default function CreateOrgModal({ isOpen, onClose, onSuccess }: CreateOrg
                 <p className="text-xs text-foreground/60 leading-relaxed">
                   This will be the main workspace for your projects and team members.
                 </p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[14px] font-medium text-foreground">Description <span className="text-foreground/50 font-normal">(Optional)</span></label>
+                <textarea 
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  maxLength={255}
+                  placeholder="What is this organization about?"
+                  className="w-full bg-background border border-border-default rounded-md py-1.5 px-3 text-[14px] focus:outline-none focus:ring-1 focus:ring-accent/40 focus:border-accent transition-all min-h-[80px] resize-none placeholder:text-foreground/30"
+                />
+                <div className={`text-[10px] text-right font-medium transition-colors ${description.length >= 240 ? 'text-red-500' : 'text-foreground/30'}`}>
+                  {description.length}/255
+                </div>
               </div>
 
               <div className="space-y-2">

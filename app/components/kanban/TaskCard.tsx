@@ -49,13 +49,15 @@ interface TaskCardProps {
   isOwnerOrCreator?: boolean;
   isSortingActive?: boolean;
   isCompact?: boolean;
+  isHighlighted?: boolean;
+  isProjectLocked?: boolean;
 }
 
-const TaskCard = memo(({ task, onDelete, onClick, isOwnerOrCreator, isSortingActive, isCompact }: TaskCardProps) => {
+const TaskCard = memo(({ task, onDelete, onClick, isOwnerOrCreator, isSortingActive, isCompact, isHighlighted, isProjectLocked }: TaskCardProps) => {
   const currentUserId = Cookies.get('user_id');
   const isOwner = currentUserId === task.creator._id;
   const assignees = task.assignees && task.assignees.length > 0 ? task.assignees : task.assignee ? [task.assignee] : [];
-  const canDrag = isOwnerOrCreator || isOwner || assignees.some((assignee) => assignee._id === currentUserId);
+  const canDrag = !isProjectLocked && (isOwnerOrCreator || isOwner || assignees.some((assignee) => assignee._id === currentUserId));
   const {
     attributes,
     listeners,
@@ -94,6 +96,7 @@ const TaskCard = memo(({ task, onDelete, onClick, isOwnerOrCreator, isSortingAct
 
   return (
     <div 
+      id={`task-${task._id}`}
       ref={setNodeRef}
       style={style}
       {...attributes}
@@ -102,7 +105,9 @@ const TaskCard = memo(({ task, onDelete, onClick, isOwnerOrCreator, isSortingAct
       className={`bg-background border rounded-lg shadow-sm hover:border-accent group mb-3 transition-all hover:shadow-md ${
         isCompact ? 'p-2' : 'p-3'
       } ${
-        isAssignedToMe 
+        isHighlighted 
+          ? 'border-accent border-2 z-10 shadow-[0_0_20px_rgba(47,129,247,0.3)] duration-500' 
+          : isAssignedToMe 
           ? 'border-accent shadow-[0_0_12px_rgba(var(--accent-rgb),0.15)] ring-1 ring-accent/30' 
           : 'border-border-default'
       } ${

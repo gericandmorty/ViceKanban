@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Cookies from 'js-cookie';
-import { API_URL } from '@/app/utils/api';
+import { API_URL, apiFetch } from '@/app/utils/api';
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -37,14 +37,10 @@ export default function CreateProjectModal({
     setError('');
 
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      
-      const response = await fetch(`${apiUrl}/projects/org/${orgId}`, {
+      const response = await apiFetch(`/projects/org/${orgId}`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ name, description }),
       });
@@ -123,9 +119,13 @@ export default function CreateProjectModal({
                   <textarea 
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
+                    maxLength={255}
                     placeholder="Briefly describe the project goals..."
                     className="w-full pl-10 pr-4 py-2 bg-background border border-border-default rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-accent transition-all min-h-[100px] resize-none"
                   />
+                  <div className={`text-[10px] text-right font-medium mt-1 transition-colors ${description.length >= 240 ? 'text-red-500' : 'text-zinc-500/40'}`}>
+                    {description.length}/255
+                  </div>
                 </div>
               </div>
 

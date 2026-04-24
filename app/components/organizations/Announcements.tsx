@@ -42,6 +42,7 @@ interface Announcement {
 interface AnnouncementsProps {
   orgId: string;
   isAdmin: boolean;
+  isOwner?: boolean;
 }
 
 const getTypeColor = (type: string) => {
@@ -57,7 +58,7 @@ const getTypeColor = (type: string) => {
   }
 };
 
-export default function Announcements({ orgId, isAdmin }: AnnouncementsProps) {
+export default function Announcements({ orgId, isAdmin, isOwner }: AnnouncementsProps) {
   const currentUserId = Cookies.get('user_id');
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -200,7 +201,7 @@ export default function Announcements({ orgId, isAdmin }: AnnouncementsProps) {
                       <ChevronRight size={12} />
                     </button>
                     {isAdmin && (
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 min-w-[70px] justify-end">
                         {announcement.creator._id === currentUserId && (
                           <button 
                             onClick={() => {
@@ -213,11 +214,11 @@ export default function Announcements({ orgId, isAdmin }: AnnouncementsProps) {
                             <Pencil size={14} />
                           </button>
                         )}
-                        {announcement.creator._id === currentUserId && (
+                        {(announcement.creator._id === currentUserId || isOwner) && (
                           <button 
                             onClick={() => setAnnouncementToDelete(announcement)}
                             className="p-1.5 text-foreground/60 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-all border border-transparent hover:border-red-500/20"
-                            title="Delete announcement"
+                            title={isOwner && announcement.creator._id !== currentUserId ? "Delete announcement (as Owner)" : "Delete announcement"}
                           >
                             <Trash2 size={14} />
                           </button>

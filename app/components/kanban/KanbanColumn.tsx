@@ -42,6 +42,7 @@ interface KanbanColumnProps {
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
   isCompact?: boolean;
+  highlightedTaskId?: string | null;
 }
 
 const KanbanColumn = memo(({ 
@@ -55,7 +56,8 @@ const KanbanColumn = memo(({
   isLocked,
   isCollapsed,
   onToggleCollapse,
-  isCompact
+  isCompact,
+  highlightedTaskId
 }: KanbanColumnProps) => {
   const { setNodeRef, isOver } = useDroppable({
     id: id,
@@ -108,7 +110,7 @@ const KanbanColumn = memo(({
   return (
     <div 
       id={`column-${id}`}
-      className="flex flex-col w-[85vw] sm:w-[300px] md:w-[calc(25%-18px)] h-full bg-bg-subtle/50 rounded-xl p-2.5 flex-shrink-0 border border-border-default/50 snap-center shadow-sm"
+      className="flex flex-col w-[calc(100vw-32px)] sm:w-72 md:w-80 h-full bg-bg-subtle/50 rounded-xl p-2 flex-shrink-0 border border-border-default/50 snap-center shadow-sm"
     >
       <div className="flex items-center justify-between mb-3 px-2">
         <div className="flex items-center gap-2">
@@ -121,7 +123,7 @@ const KanbanColumn = memo(({
         <div className="flex items-center gap-1 relative">
           <button 
             onClick={onToggleCollapse}
-            className="p-1 rounded text-foreground/20 hover:text-accent hover:bg-border-default transition-all"
+            className="hidden sm:flex p-1 rounded text-foreground/20 hover:text-accent hover:bg-border-default transition-all"
             title="Collapse column"
           >
             <Minimize2 size={14} />
@@ -188,7 +190,7 @@ const KanbanColumn = memo(({
           isOver ? (isLocked ? 'bg-red-500/5' : 'bg-accent/5') : ''
         }`}
       >
-        <div className="p-1 pb-4 min-h-[100px]">
+        <div className="px-2 pt-2 pb-4 min-h-[100px]">
           <SortableContext 
             items={displayTasks.map(t => t._id)} 
             strategy={verticalListSortingStrategy}
@@ -202,6 +204,8 @@ const KanbanColumn = memo(({
                 isOwnerOrCreator={isOwnerOrCreator}
                 isSortingActive={sortOrder !== 'manual'}
                 isCompact={isCompact}
+                isProjectLocked={isLocked}
+                isHighlighted={highlightedTaskId === task._id}
               />
             ))}
           </SortableContext>

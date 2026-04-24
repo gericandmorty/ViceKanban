@@ -5,7 +5,7 @@ import { Save, Loader2, Type, FileText, AlertTriangle, Trash2 } from 'lucide-rea
 import Cookies from 'js-cookie';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
-import { API_URL } from '@/app/utils/api';
+import { API_URL, apiFetch } from '@/app/utils/api';
 import DangerZoneModal from '../ui/DangerZoneModal';
 
 interface ProjectSettingsProps {
@@ -33,13 +33,10 @@ export default function ProjectSettings({ project, orgId, isAdmin, isOrgOwner, i
 
     setIsUpdating(true);
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      const response = await fetch(`${apiUrl}/projects/${project._id}`, {
+      const response = await apiFetch(`/projects/${project._id}`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ name, description })
       });
@@ -61,13 +58,8 @@ export default function ProjectSettings({ project, orgId, isAdmin, isOrgOwner, i
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      const response = await fetch(`${apiUrl}/projects/${project._id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const response = await apiFetch(`/projects/${project._id}`, {
+        method: 'DELETE'
       });
 
       if (response.ok) {
@@ -121,14 +113,18 @@ export default function ProjectSettings({ project, orgId, isAdmin, isOrgOwner, i
             <label className="text-[14px] font-semibold text-foreground w-full sm:w-1/3 mt-1">
               Description
             </label>
-            <div className="w-full sm:w-2/3">
+            <div className="w-full sm:w-2/3 space-y-1">
               <textarea 
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={!canEdit || isUpdating}
+                maxLength={255}
                 placeholder="Add a description for your project..."
                 className="w-full px-3 py-[7px] bg-background border border-border-default rounded-md text-[14px] text-foreground focus:outline-none focus:ring-1 focus:ring-accent transition-all min-h-[120px] resize-none disabled:opacity-50"
               />
+              <div className={`text-[10px] text-right font-medium transition-colors ${description.length >= 240 ? 'text-red-500' : 'text-foreground/30'}`}>
+                {description.length}/255 characters
+              </div>
             </div>
           </div>
 

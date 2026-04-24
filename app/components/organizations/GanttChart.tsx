@@ -272,11 +272,11 @@ export default function GanttChart({ orgId, projectId, projectName: projectNameP
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-background border border-border-default rounded-xl overflow-hidden shadow-sm m-1">
+    <div className="flex-1 flex flex-col h-full bg-background border border-border-default rounded-xl overflow-hidden shadow-sm m-1 [--gantt-sidebar-width:140px] sm:[--gantt-sidebar-width:240px]">
       {/* ── Toolbar ──────────────────────────────────────────────────────────── */}
-      <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 border-b border-border-default bg-bg-subtle">
+      <div className="flex-shrink-0 flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 py-2 gap-3 border-b border-border-default bg-bg-subtle">
         {/* Status filter chips */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar w-full sm:w-auto">
           <Filter size={12} className="text-foreground/30" />
           {['todo', 'in_progress', 'reviewed'].map(s => (
             <button
@@ -286,7 +286,7 @@ export default function GanttChart({ orgId, projectId, projectName: projectNameP
                 statusFilters.includes(s)
                   ? s === 'reviewed' ? 'bg-purple-500/20 border-purple-500/40 text-purple-500'
                   : s === 'in_progress' ? 'bg-accent/20 border-accent/40 text-accent'
-                  : 'bg-foreground/10 border-foreground/20 text-foreground'
+                  : 'bg-zinc-700 border-zinc-500 text-white shadow-sm'
                   : 'bg-transparent border-border-default text-foreground/40 hover:text-foreground hover:border-foreground/30'
               }`}
             >
@@ -325,7 +325,7 @@ export default function GanttChart({ orgId, projectId, projectName: projectNameP
         {/* Sticky Header */}
         <div
           className="flex-shrink-0 bg-bg-subtle border-b border-border-default overflow-hidden z-30"
-          style={{ paddingLeft: '240px' }}
+          style={{ paddingLeft: 'var(--gantt-sidebar-width, 240px)' }}
         >
           <div ref={headerRef} className="overflow-x-auto no-scrollbar">
             <div
@@ -371,7 +371,7 @@ export default function GanttChart({ orgId, projectId, projectName: projectNameP
 
         <div className="flex flex-1 min-h-0 overflow-hidden relative">
           {/* Sidebar */}
-          <div className="w-[240px] flex-shrink-0 border-r border-border-default bg-background z-20 flex flex-col pt-[10px] shadow-[4px_0_12px_rgba(0,0,0,0.02)]">
+          <div className="w-[var(--gantt-sidebar-width,240px)] flex-shrink-0 border-r border-border-default bg-background z-20 flex flex-col pt-[10px] shadow-[4px_0_12px_rgba(0,0,0,0.02)]">
             <div className="px-5 py-3 flex items-center gap-2 mb-4">
               <Filter size={14} className="text-foreground/40" />
               <h2 className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest">Projects & Tasks</h2>

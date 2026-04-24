@@ -20,7 +20,7 @@ import Cookies from 'js-cookie';
 import toast from 'react-hot-toast';
 import ConfirmationModal from '../ui/ConfirmationModal';
 import Image from 'next/image';
-import { API_URL } from '@/app/utils/api';
+import { API_URL, apiFetch } from '@/app/utils/api';
 
 interface User {
   _id: string;
@@ -69,14 +69,10 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
 
     setIsInviting(true);
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-
-      const response = await fetch(`${apiUrl}/organizations/${org._id}/invite`, {
+      const response = await apiFetch(`/organizations/${org._id}/invite`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ email: inviteEmail })
       });
@@ -103,14 +99,10 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
   const handleRoleUpdate = async (userId: string, newRole: string) => {
     setIsUpdatingRole(userId);
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-
-      const response = await fetch(`${apiUrl}/organizations/${org._id}/members/${userId}/role`, {
+      const response = await apiFetch(`/organizations/${org._id}/members/${userId}/role`, {
         method: 'POST', // Changed to POST to match the controller update
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ role: newRole })
       });
@@ -132,12 +124,8 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
 
   const handleCancelInvite = async (email: string) => {
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-
-      const response = await fetch(`${apiUrl}/organizations/${org._id}/invitations/${encodeURIComponent(email)}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+      const response = await apiFetch(`/organizations/${org._id}/invitations/${encodeURIComponent(email)}`, {
+        method: 'DELETE'
       });
 
       if (response.ok) {
@@ -158,12 +146,8 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
     const { id: userId, username } = removalTarget;
 
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-
-      const response = await fetch(`${apiUrl}/organizations/${org._id}/members/${userId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+      const response = await apiFetch(`/organizations/${org._id}/members/${userId}`, {
+        method: 'DELETE'
       });
 
       if (response.ok) {
@@ -283,8 +267,8 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
           </div>
         </div>
 
-        <div className="overflow-visible">
-          <table className="w-full text-left">
+        <div className="overflow-x-auto no-scrollbar">
+          <table className="w-full text-left min-w-[600px] sm:min-w-0">
             <thead>
               <tr className="border-b border-border-default text-[12px] font-semibold text-foreground/60 bg-background">
                 <th className="px-4 py-3 w-3/4 font-semibold">Member</th>

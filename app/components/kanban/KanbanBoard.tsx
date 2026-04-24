@@ -23,15 +23,16 @@ import {
 } from '@dnd-kit/sortable';
 import KanbanColumn from './KanbanColumn';
 import TaskCard from './TaskCard';
-import { Loader2, Plus, X, Type, FileText, User as UserIcon, Trash2, MessageSquare, Send, CornerDownRight, Maximize2 } from 'lucide-react';
+import { Loader2, Plus, X, Type, FileText, User as UserIcon, Trash2, MessageSquare, Send, CornerDownRight, Maximize2, Kanban, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Cookies from 'js-cookie';
 import toast from 'react-hot-toast';
-import { API_URL } from '@/app/utils/api';
+import { API_URL, apiFetch } from '@/app/utils/api';
 import { compressImage } from '@/app/utils/imageUtils';
 import ConfirmationModal from '../ui/ConfirmationModal';
 import Image from 'next/image';
 import Loading from '@/app/components/ui/Loading';
+import { useSearchParams } from 'next/navigation';
 
 interface Task {
   _id: string;
@@ -94,6 +95,10 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
   const [filterOnlyMe, setFilterOnlyMe] = useState(false);
   const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
   const [collapsedCols, setCollapsedCols] = useState<string[]>([]);
+  const [highlightedTaskId, setHighlightedTaskId] = useState<string | null>(null);
+  
+  const searchParams = useSearchParams();
+  const urlTaskId = searchParams.get('taskId');
   
   // Edit Task State
   const [isEditingTask, setIsEditingTask] = useState(false);
@@ -122,11 +127,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
 
   const fetchMyProfile = useCallback(async () => {
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      const response = await fetch(`${apiUrl}/user/me`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await apiFetch('/user/me');
       if (response.ok) {
         const data = await response.json();
         setCurrentUserAvatar(data.avatarUrl);
@@ -138,17 +139,10 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
 
   const fetchData = useCallback(async () => {
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      
-      // Fetch Board and Tasks in parallel
+      // Fetch Board and Tasks in parallel using apiFetch
       const [boardRes, tasksRes] = await Promise.all([
-        fetch(`${apiUrl}/kanban/project/${projectId}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }),
-        fetch(`${apiUrl}/tasks/project/${projectId}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
+        apiFetch(`/kanban/project/${projectId}`),
+        apiFetch(`/tasks/project/${projectId}`)
       ]);
 
       if (boardRes.ok && tasksRes.ok) {
@@ -178,6 +172,28 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
       }
     }
   }, [fetchData, fetchMyProfile]);
+  
+  // Handle taskId highlight from URL
+  useEffect(() => {
+    if (urlTaskId && tasks.length > 0) {
+      const taskExists = tasks.some(t => t._id === urlTaskId);
+      if (taskExists) {
+        setHighlightedTaskId(urlTaskId);
+        
+        // Scroll to the task
+        setTimeout(() => {
+           const element = document.getElementById(`task-${urlTaskId}`);
+           if (element) {
+              element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+           }
+        }, 300);
+
+        // Remove highlight after animation
+        const timer = setTimeout(() => setHighlightedTaskId(null), 3000);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [urlTaskId, tasks]);
 
   // Save collapsed columns to localStorage whenever they change
   useEffect(() => {
@@ -195,11 +211,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
   const fetchComments = useCallback(async (taskId: string) => {
     setIsFetchingComments(true);
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      const response = await fetch(`${apiUrl}/comments/task/${taskId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await apiFetch(`/comments/task/${taskId}`);
       if (response.ok) {
         const data = await response.json();
         setComments(data);
@@ -237,13 +249,10 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
 
     setIsSendingComment(true);
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      const response = await fetch(`${apiUrl}/comments`, {
+      const response = await apiFetch('/comments', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           taskId: inspectingTask._id,
@@ -270,13 +279,10 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
     if (!editingContent.trim() || !inspectingTask) return;
 
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      const response = await fetch(`${apiUrl}/comments/${commentId}`, {
+      const response = await apiFetch(`/comments/${commentId}`, {
         method: 'PATCH',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ content: editingContent })
       });
@@ -321,11 +327,8 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
     const taskId = taskToConfirmDelete._id;
 
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      const response = await fetch(`${apiUrl}/tasks/${taskId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+      const response = await apiFetch(`/tasks/${taskId}`, {
+        method: 'DELETE'
       });
 
       if (response.ok) {
@@ -348,9 +351,6 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
 
     setIsUpdatingTask(true);
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      
       const formData = new FormData();
       formData.append('title', editTitle);
       formData.append('description', editDescription);
@@ -364,11 +364,8 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
         formData.append('image', compressed);
       }
 
-      const response = await fetch(`${apiUrl}/tasks/${inspectingTask._id}`, {
+      const response = await apiFetch(`/tasks/${inspectingTask._id}`, {
         method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
         body: formData
       });
 
@@ -500,13 +497,10 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
 
     // Update backend
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      const response = await fetch(`${apiUrl}/tasks/${activeId}/status`, {
+      const response = await apiFetch(`/tasks/${activeId}/status`, {
         method: 'PATCH',
         headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` 
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ status: newStatus, order: newOrder })
       });
@@ -525,15 +519,41 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
     }
   };
 
+  const handleUpdateStatus = async (taskId: string, newStatus: string) => {
+    try {
+      const tasksInCol = tasks.filter(t => t.status === newStatus);
+      const newOrder = tasksInCol.length > 0 ? Math.max(...tasksInCol.map(t => t.order)) + 1000 : 1000;
+
+      const response = await apiFetch(`/tasks/${taskId}/status`, {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: newStatus, order: newOrder })
+      });
+
+      if (response.ok) {
+        refreshTasks();
+        window.dispatchEvent(new CustomEvent('taskUpdated'));
+        if (inspectingTask?._id === taskId) {
+           setInspectingTask(prev => prev ? { ...prev, status: newStatus } : null);
+        }
+        toast.success(`Task moved to ${newStatus.replace('_', ' ')}`);
+      } else {
+        const data = await response.json();
+        toast.error(data.message || 'Failed to move task');
+      }
+    } catch (error) {
+      toast.error('Connection error');
+    }
+  };
+
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTaskTitle || !showTaskForm) return;
 
     setIsCreatingTask(true);
     try {
-      const apiUrl = API_URL;
-      const token = Cookies.get('access_token');
-      
       const formData = new FormData();
       formData.append('title', newTaskTitle);
       formData.append('description', newTaskDesc);
@@ -550,11 +570,8 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
         formData.append('image', compressed);
       }
 
-      const response = await fetch(`${apiUrl}/tasks`, {
+      const response = await apiFetch('/tasks', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
         body: formData
       });
 
@@ -646,6 +663,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                 isCollapsed={collapsedCols.includes(col.id)}
                 onToggleCollapse={() => toggleColumnCollapse(col.id)}
                 isCompact={col.id === 'reviewed'}
+                highlightedTaskId={highlightedTaskId}
               />
             );
           })}
@@ -1084,6 +1102,31 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                       <span className="text-[14px] font-medium text-foreground">{inspectingTask.creator.username}</span>
                     </div>
                   </div>
+                </div>
+                
+                {/* Mobile Quick Actions: Move to Status */}
+                <div className="sm:hidden space-y-3 pt-6 border-t border-border-default">
+                   <div className="flex items-center gap-2 px-1">
+                      <Kanban size={16} className="text-foreground/60" />
+                      <label className="text-[14px] font-semibold text-foreground uppercase tracking-tight">Quick Move</label>
+                   </div>
+                   <div className="grid grid-cols-2 gap-2">
+                      {board?.columns.map(col => (
+                         <button
+                            key={col.id}
+                            disabled={inspectingTask.status === col.id}
+                            onClick={() => handleUpdateStatus(inspectingTask._id, col.id)}
+                            className={`px-3 py-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-between gap-2 ${
+                               inspectingTask.status === col.id
+                                  ? 'bg-bg-subtle/50 border-border-default/50 text-foreground/20 grayscale'
+                                  : 'bg-accent/5 border-accent/10 text-accent hover:bg-accent/10 active:scale-[0.98]'
+                            }`}
+                         >
+                            <span className="truncate">To {col.title.replace('_', ' ')}</span>
+                            {inspectingTask.status !== col.id && <ArrowRight size={14} className="shrink-0" />}
+                         </button>
+                      ))}
+                   </div>
                 </div>
 
                 <div className="space-y-3">

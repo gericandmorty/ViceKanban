@@ -52,7 +52,7 @@ export default function NotificationPopover({
         initial={{ opacity: 0, scale: 0.95, y: -20, x: -10 }}
         animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: -20, x: -10 }}
-        className="absolute top-12 right-0 w-[340px] bg-background border border-border-default rounded-xl shadow-xl z-[200] overflow-hidden flex flex-col max-h-[500px]"
+        className="absolute top-12 right-0 w-[calc(100vw-32px)] sm:w-[340px] bg-background border border-border-default rounded-xl shadow-xl z-[200] overflow-hidden flex flex-col max-h-[500px]"
       >
         <div className="flex items-center justify-between p-3 border-b border-border-default bg-bg-subtle">
           <h3 className="font-semibold text-xs text-foreground flex items-center gap-2">

@@ -15,7 +15,7 @@ import {
   ChevronRight,
   ExternalLink
 } from 'lucide-react';
-import { API_URL } from '@/app/utils/api';
+import { API_URL, apiFetch } from '@/app/utils/api';
 import Cookies from 'js-cookie';
 import Loading from '@/app/components/ui/Loading';
 
@@ -65,12 +65,8 @@ export default function Contributions({ orgId }: { orgId: string }) {
     else setIsLoading(true);
 
     try {
-      const token = Cookies.get('access_token');
-      const response = await fetch(
-        `${API_URL}/organizations/${orgId}/contributions?page=${targetPage}&limit=9&search=${searchTerm}`, 
-        {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }
+      const response = await apiFetch(
+        `/organizations/${orgId}/contributions?page=${targetPage}&limit=9&search=${searchTerm}`
       );
       if (response.ok) {
         const data = await response.json();
@@ -107,12 +103,8 @@ export default function Contributions({ orgId }: { orgId: string }) {
     setMemberTasks([]);
 
     try {
-      const token = Cookies.get('access_token');
-      const response = await fetch(
-        `${API_URL}/tasks/org/${orgId}/user/${member.user._id}`,
-        {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }
+      const response = await apiFetch(
+        `/tasks/org/${orgId}/user/${member.user._id}`
       );
       if (response.ok) {
         const data = await response.json();

@@ -327,7 +327,7 @@ export default function Sidebar() {
                           {tasks.map((task: any) => (
                             <Link 
                               key={task._id} 
-                              href={`/dashboard?orgId=${task.project?.organization?._id}&projectId=${task.project?._id}`} 
+                              href={`/dashboard?orgId=${task.project?.organization?._id}&projectId=${task.project?._id}&taskId=${task._id}`} 
                               onClick={closeSidebar}
                               className="flex items-center gap-3 px-3 py-1.5 rounded-md text-sm hover:bg-border-default/50 transition-all group"
                             >

@@ -411,11 +411,11 @@ export default function DashboardPage() {
                         e.preventDefault();
                         handleGoHome();
                       }}
-                      className="text-foreground/60 hover:text-foreground transition-colors"
+                      className="hidden sm:inline text-foreground/60 hover:text-foreground transition-colors"
                     >
                       Organizations
                     </Link>
-                    <span className="shrink-0 mx-2 text-foreground/30">/</span>
+                    <span className="hidden sm:inline shrink-0 mx-2 text-foreground/30">/</span>
                     {detailedOrg && detailedOrg._id === orgIdFromUrl ? (
                       <>
                         <Link
@@ -514,30 +514,32 @@ export default function DashboardPage() {
         </div>
 
         {detailedOrg && (
-          <div className="px-4 md:px-6 flex items-end gap-1 border-b border-border-default min-h-[48px] bg-background/50 backdrop-blur-sm sticky top-16 z-30 overflow-visible">
-            {['Board', 'Gantt Chart', 'Announcements', 'Members', 'Contributions', 'Settings'].map((tab: any, idx) => (
-              <div key={tab} className="flex items-end group/tab-item h-[48px] flex-shrink-0">
-                <button
-                  onClick={() => setActiveTab(tab)}
-                  className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium transition-all relative border-t border-x rounded-t-md whitespace-nowrap ${activeTab === tab
-                      ? 'bg-background border-border-default text-foreground z-20 after:absolute after:bottom-[-1.5px] after:left-0 after:right-0 after:h-[2px] after:bg-background shadow-sm'
-                      : 'border-transparent text-foreground/40 hover:text-foreground hover:bg-bg-subtle/30'
-                    }`}
-                >
-                  {tab === 'Board' && <Kanban size={13} className={activeTab === tab ? 'text-foreground' : 'opacity-70'} />}
-                  {tab === 'Gantt Chart' && <GanttChartSquare size={13} className={activeTab === tab ? 'text-foreground' : 'opacity-70'} />}
-                  {tab === 'Announcements' && <Megaphone size={13} className={activeTab === tab ? 'text-foreground' : 'opacity-70'} />}
-                  {tab === 'Members' && <Users size={13} className={activeTab === tab ? 'text-foreground' : 'opacity-70'} />}
-                  {tab === 'Contributions' && <Activity size={13} className={activeTab === tab ? 'text-foreground' : 'opacity-70'} />}
-                  {tab === 'Settings' && <Layout size={13} className={activeTab === tab ? 'text-foreground' : 'opacity-70'} />}
-                  
-                  <span className={activeTab === tab ? 'font-bold' : 'font-medium'}>{tab}</span>
-                </button>
-                {idx < 5 && activeTab !== tab && activeTab !== ['Board', 'Gantt Chart', 'Announcements', 'Members', 'Contributions', 'Settings'][idx+1] && (
-                   <div className="h-4 w-[1px] bg-border-default/30 mx-0.5 group-hover/tab-item:opacity-0 transition-opacity" />
-                )}
-              </div>
-            ))}
+          <div className="sticky top-16 z-30 bg-background/50 backdrop-blur-sm border-b border-border-default">
+            <div className="px-4 md:px-6 flex items-end gap-1 min-h-[48px] overflow-x-auto no-scrollbar flex-nowrap mb-[-1px]">
+              {['Board', 'Gantt Chart', 'Announcements', 'Members', 'Contributions', 'Settings'].map((tab: any, idx) => (
+                <div key={tab} className="flex items-end group/tab-item h-[48px] flex-shrink-0">
+                  <button
+                    onClick={() => setActiveTab(tab)}
+                    className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium transition-all relative border-t border-x rounded-t-md whitespace-nowrap ${activeTab === tab
+                        ? 'bg-background border-border-default text-foreground z-20 after:absolute after:bottom-[-1px] after:left-0 after:right-0 after:h-[2px] after:bg-background shadow-sm'
+                        : 'border-transparent text-foreground/40 hover:text-foreground hover:bg-bg-subtle/30'
+                      }`}
+                  >
+                    {tab === 'Board' && <Kanban size={13} className={activeTab === tab ? 'text-foreground' : 'opacity-70'} />}
+                    {tab === 'Gantt Chart' && <GanttChartSquare size={13} className={activeTab === tab ? 'text-foreground' : 'opacity-70'} />}
+                    {tab === 'Announcements' && <Megaphone size={13} className={activeTab === tab ? 'text-foreground' : 'opacity-70'} />}
+                    {tab === 'Members' && <Users size={13} className={activeTab === tab ? 'text-foreground' : 'opacity-70'} />}
+                    {tab === 'Contributions' && <Activity size={13} className={activeTab === tab ? 'text-foreground' : 'opacity-70'} />}
+                    {tab === 'Settings' && <Layout size={13} className={activeTab === tab ? 'text-foreground' : 'opacity-70'} />}
+                    
+                    <span className={activeTab === tab ? 'font-bold' : 'font-medium'}>{tab}</span>
+                  </button>
+                  {idx < 5 && activeTab !== tab && activeTab !== ['Board', 'Gantt Chart', 'Announcements', 'Members', 'Contributions', 'Settings'][idx+1] && (
+                     <div className="h-4 w-[1px] bg-border-default/30 mx-0.5 group-hover/tab-item:opacity-0 transition-opacity" />
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </header>
@@ -746,7 +748,7 @@ export default function DashboardPage() {
             ) : activeTab === 'Members' ? (
               <MembersTable org={detailedOrg} onRefresh={() => fetchOrgDetails(orgIdFromUrl as string)} />
             ) : activeTab === 'Announcements' ? (
-              <Announcements orgId={orgIdFromUrl as string} isAdmin={isAdmin} />
+              <Announcements orgId={orgIdFromUrl as string} isAdmin={isAdmin} isOwner={isOrgOwner} />
             ) : activeTab === 'Contributions' ? (
               <Contributions orgId={orgIdFromUrl as string} />
             ) : activeTab === 'Board' ? (

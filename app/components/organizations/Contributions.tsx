@@ -16,6 +16,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { API_URL, apiFetch } from '@/app/utils/api';
+import Cookies from 'js-cookie';
 import Loading from '@/app/components/ui/Loading';
 
 interface ContributionStats {

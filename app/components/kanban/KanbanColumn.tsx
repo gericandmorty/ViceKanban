@@ -110,7 +110,7 @@ const KanbanColumn = memo(({
   return (
     <div 
       id={`column-${id}`}
-      className="flex flex-col w-[calc(100vw-32px)] sm:w-72 md:w-80 h-full bg-bg-subtle/50 rounded-xl p-2 flex-shrink-0 border border-border-default/50 snap-center shadow-sm"
+      className="flex flex-col w-[calc(100vw-32px)] sm:w-64 md:w-72 h-full bg-bg-subtle/50 rounded-xl p-2 flex-shrink-0 border border-border-default/50 shadow-sm snap-center"
     >
       <div className="flex items-center justify-between mb-3 px-2">
         <div className="flex items-center gap-2">

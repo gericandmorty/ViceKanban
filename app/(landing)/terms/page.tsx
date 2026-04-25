@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Layout, ArrowLeft } from 'lucide-react';
-import Footer from '../components/ui/Footer';
+import Footer from '../../components/ui/Footer';
 
 export default function TermsPage() {
   return (

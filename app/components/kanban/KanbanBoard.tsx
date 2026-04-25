@@ -609,7 +609,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
   return (
     <div className="flex-1 overflow-hidden h-full pb-2 flex flex-col">
       {/* Board Toolbar */}
-      <div className="flex items-center justify-between px-2 mb-3 md:mb-4 shrink-0">
+      <div className="flex items-center justify-between px-4 md:px-8 mb-3 md:mb-4 shrink-0">
         <div className="flex items-center gap-1.5 bg-bg-subtle p-1 rounded-lg border border-border-default self-start">
           <button 
             onClick={() => setFilterOnlyMe(false)}
@@ -642,7 +642,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex-1 flex gap-3 md:gap-6 px-2 overflow-x-auto overflow-y-hidden no-scrollbar snap-x snap-mandatory pb-4 min-h-0 touch-pan-x">
+        <div className="flex-1 flex gap-2 md:gap-4 px-2 md:px-8 overflow-x-auto pb-4 min-h-0 touch-pan-x custom-scrollbar snap-x snap-mandatory sm:snap-none">
           {board?.columns.map((col) => {
             const columnTasks = tasks.filter(t => t.status === col.id);
             const displayTasks = filterOnlyMe 
@@ -662,7 +662,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                 isLocked={col.id === 'reviewed' && !isOwnerOrCreator}
                 isCollapsed={collapsedCols.includes(col.id)}
                 onToggleCollapse={() => toggleColumnCollapse(col.id)}
-                isCompact={col.id === 'reviewed'}
+                isCompact={true}
                 highlightedTaskId={highlightedTaskId}
               />
             );

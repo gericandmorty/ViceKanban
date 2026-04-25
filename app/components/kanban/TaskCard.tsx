@@ -102,7 +102,7 @@ const TaskCard = memo(({ task, onDelete, onClick, isOwnerOrCreator, isSortingAct
       {...attributes}
       {...listeners}
       onClick={onClick}
-      className={`bg-background border rounded-lg shadow-sm hover:border-accent group mb-3 transition-all hover:shadow-md ${
+      className={`w-full bg-background border rounded-lg shadow-sm hover:border-accent group mb-3 transition-all hover:shadow-md ${
         isCompact ? 'p-2' : 'p-3'
       } ${
         isHighlighted 

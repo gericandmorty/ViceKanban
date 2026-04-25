@@ -731,7 +731,13 @@ export default function DashboardPage() {
           </div>
         ) : (
           /* Organization Workspace View */
-          <div className="w-full flex-1 min-h-0 max-w-full mx-auto py-2 md:py-4 px-2 md:pr-4 md:pl-6 overflow-y-auto flex flex-col custom-scrollbar">
+          <div className={`w-full flex-1 min-h-0 mx-auto flex flex-col custom-scrollbar ${
+            (activeTab === 'Board' && projectIdFromUrl) 
+              ? 'max-w-full overflow-hidden' 
+              : activeTab === 'Gantt Chart'
+                ? 'max-w-full overflow-hidden p-4 md:p-8'
+                : 'max-w-7xl px-4 md:px-10 py-4 md:py-8 overflow-y-auto'
+          }`}>
             {!detailedOrg || (detailedOrg._id !== orgIdFromUrl) ? (
               <div className="flex-1 flex items-center justify-center">
                 <div className="flex flex-col items-center gap-2">
@@ -764,7 +770,7 @@ export default function DashboardPage() {
                   />
                 ) : (
                   /* Projects Selection List in Org */
-                  <div className="space-y-4 overflow-y-auto h-full pr-1">
+                  <div className="space-y-6 mt-4">
                     <div className="flex items-center justify-between">
                       <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">Projects</h2>
                       {isMounted && isAdmin && (

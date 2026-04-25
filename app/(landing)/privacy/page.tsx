@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Layout, ArrowLeft } from 'lucide-react';
-import Footer from '../components/ui/Footer';
+import Footer from '../../components/ui/Footer';
 
 export default function PrivacyPage() {
   return (
@@ -19,11 +19,11 @@ export default function PrivacyPage() {
           <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> Back to ViceKanBan
         </Link>
       </header>
-      
+
       <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-12 md:py-20 leading-relaxed">
         <h1 className="text-3xl font-extrabold text-foreground mb-3 tracking-tight">Privacy Policy</h1>
         <p className="mb-10 text-sm text-foreground/60">Effective date: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
-        
+
         <div className="space-y-12">
           <section className="space-y-4">
             <h2 className="text-xl font-bold text-foreground border-b border-border-default pb-2">Data We Collect</h2>

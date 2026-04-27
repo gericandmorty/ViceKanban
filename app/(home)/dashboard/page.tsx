@@ -334,12 +334,14 @@ export default function DashboardPage() {
   const handleSelectOrg = (id: string) => {
     // Explicitly navigate to the org root, ensuring any previous projectId is stripped
     router.push(`/dashboard?orgId=${id}`);
+    router.refresh();
     setActiveTab('Board');
     closeSidebar(); // Ensure sidebar closes on mobile selection
   };
 
   const handleSelectProject = (projectId: string) => {
     router.push(`/dashboard?orgId=${orgIdFromUrl}&projectId=${projectId}`);
+    router.refresh();
   };
 
   const handleGoHome = () => {
@@ -424,6 +426,7 @@ export default function DashboardPage() {
                             if (projectIdFromUrl || activeTab !== 'Board') {
                               e.preventDefault();
                               router.push(`/dashboard?orgId=${orgIdFromUrl}`);
+                              router.refresh();
                             }
                             setActiveTab('Board');
                             closeSidebar();
@@ -442,6 +445,7 @@ export default function DashboardPage() {
                                 if (activeTab !== 'Board') {
                                   e.preventDefault();
                                   router.push(`/dashboard?orgId=${orgIdFromUrl}&projectId=${projectIdFromUrl}`);
+                                  router.refresh();
                                 }
                                 setActiveTab('Board');
                               }}

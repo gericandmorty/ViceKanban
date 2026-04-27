@@ -122,6 +122,12 @@ For inquiries or professional collaboration, please reach out to the core develo
 
 ---
 
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
 <p align="center">
   Built for the Developer Community.
 </p>

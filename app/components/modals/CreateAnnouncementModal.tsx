@@ -17,10 +17,10 @@ interface CreateAnnouncementModalProps {
 }
 
 const ANNOUNCEMENT_TYPES = [
-  { id: 'maintenance', color: '#f85149' },
-  { id: 'system', color: '#2f81f7' },
-  { id: 'feature', color: '#f78166' },
-  { id: 'update', color: '#3fb950' },
+  { id: 'priority', color: '#f85149', label: 'Priority' },
+  { id: 'high', color: '#2f81f7', label: 'High' },
+  { id: 'medium', color: '#f78166', label: 'Medium' },
+  { id: 'low', color: '#3fb950', label: 'Low' },
 ];
 
 export default function CreateAnnouncementModal({ 
@@ -33,7 +33,7 @@ export default function CreateAnnouncementModal({
 }: CreateAnnouncementModalProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [type, setType] = useState('update');
+  const [type, setType] = useState('low');
   const [isLoading, setIsLoading] = useState(false);
   
   // Image states
@@ -48,14 +48,14 @@ export default function CreateAnnouncementModal({
       if (editingAnnouncement) {
         setTitle(editingAnnouncement.title || '');
         setContent(editingAnnouncement.content || '');
-        setType(editingAnnouncement.type || 'update');
+        setType(editingAnnouncement.type || 'low');
         setExistingImageUrl(editingAnnouncement.imageUrl || null);
         setRemoveExistingImage(false);
       } else {
         // Reset for new announcement
         setTitle('');
         setContent('');
-        setType('update');
+        setType('low');
         setExistingImageUrl(null);
         setRemoveExistingImage(false);
       }
@@ -229,7 +229,7 @@ export default function CreateAnnouncementModal({
                             backgroundColor: t.color,
                             borderColor: type === t.id ? 'var(--text-foreground)' : 'transparent',
                           }}
-                          title={t.id.charAt(0).toUpperCase() + t.id.slice(1)}
+                          title={t.label}
                         />
                       ))}
                     </div>

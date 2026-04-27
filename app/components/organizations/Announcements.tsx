@@ -47,14 +47,14 @@ interface AnnouncementsProps {
 
 const getTypeColor = (type: string) => {
   switch (type.toLowerCase()) {
-    case 'maintenance':
+    case 'priority':
       return '#f85149';
-    case 'system':
+    case 'high':
       return '#2f81f7';
-    case 'feature':
+    case 'medium':
       return '#f78166';
     default:
-      return '#3fb950';
+      return '#3fb950'; // low
   }
 };
 

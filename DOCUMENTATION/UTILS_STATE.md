@@ -7,9 +7,9 @@ We use a centralized `apiFetch` wrapper instead of raw `fetch`.
 
 ## 2. Authentication State
 Authentication is "Stateless" on the frontend react-side, relying on cookies:
-- **`access_token`**: Stored in HTTP-accessible cookies for API requests.
-- **`user_name` / `user_id`**: Stored in cookies to persist UI state (profile name, etc.) across refreshes.
-- **`js-cookie`**: Used for client-side cookie management.
+- **`access_token`**: Stored in standard cookies for API requests (JWT is naturally secure/unreadable).
+- **Sensitive Identifiers (`user_name` / `user_id`)**: Stored using a custom `setObfuscatedCookie` and `getObfuscatedCookie` utility from `app/utils/cookieUtils.ts`. This safely hides PII in the browser DevTools using base64 encoding while persisting UI state across refreshes.
+- **`js-cookie`**: The underlying engine for client-side cookie management.
 
 ## 3. Theme Management (`app/context/ThemeContext.tsx`)
 A Global React Context manages the light/dark mode preference.

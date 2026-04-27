@@ -318,6 +318,7 @@ export default function Announcements({ orgId, isAdmin, isOwner }: Announcements
         announcements={announcements as any}
         initialIndex={stackIndex}
       />
+      <div className="h-40" />
     </div>
   );
 }

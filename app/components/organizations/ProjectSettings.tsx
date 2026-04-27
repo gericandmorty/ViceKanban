@@ -181,6 +181,7 @@ export default function ProjectSettings({ project, orgId, isAdmin, isOrgOwner, i
         itemType="project"
         isLoading={isDeleting}
       />
+      <div className="h-40" />
     </div>
   );
 }

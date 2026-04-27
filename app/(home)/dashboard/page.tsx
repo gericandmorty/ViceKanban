@@ -731,13 +731,18 @@ export default function DashboardPage() {
           </div>
         ) : (
           /* Organization Workspace View */
-          <div className={`w-full flex-1 min-h-0 mx-auto flex flex-col custom-scrollbar ${
-            (activeTab === 'Board' && projectIdFromUrl) 
-              ? 'max-w-full overflow-hidden' 
-              : activeTab === 'Gantt Chart'
-                ? 'max-w-full overflow-hidden p-4 md:p-8'
-                : 'max-w-7xl px-4 md:px-10 py-4 md:py-8 overflow-y-auto'
+          <div className={`w-full flex-1 min-h-0 flex flex-col custom-scrollbar ${
+            (activeTab === 'Board' && projectIdFromUrl) || activeTab === 'Gantt Chart'
+              ? 'overflow-hidden' 
+              : 'overflow-y-auto'
           }`}>
+            <div className={`flex flex-col min-h-0 w-full ${
+              (activeTab === 'Board' && projectIdFromUrl)
+                ? 'flex-1 max-w-full overflow-hidden'
+                : activeTab === 'Gantt Chart'
+                  ? 'flex-1 max-w-full overflow-hidden p-4 md:p-8'
+                  : 'max-w-7xl mx-auto px-4 md:px-10 py-6 md:py-10 pb-64'
+            }`}>
             {!detailedOrg || (detailedOrg._id !== orgIdFromUrl) ? (
               <div className="flex-1 flex items-center justify-center">
                 <div className="flex flex-col items-center gap-2">
@@ -770,7 +775,7 @@ export default function DashboardPage() {
                   />
                 ) : (
                   /* Projects Selection List in Org */
-                  <div className="space-y-6 mt-4">
+                  <div className="space-y-6 mt-4 mb-12">
                     <div className="flex items-center justify-between">
                       <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">Projects</h2>
                       {isMounted && isAdmin && (
@@ -826,6 +831,8 @@ export default function DashboardPage() {
                         </div>
                       )}
                     </div>
+                    {/* Explicit Spacing for and "Airy" feel at the bottom */}
+                    <div className="h-40" />
                   </div>
                 )}
               </div>
@@ -850,6 +857,7 @@ export default function DashboardPage() {
                 />
               )
             )}
+            </div>
           </div>
         )}
       </div>

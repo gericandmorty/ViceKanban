@@ -25,6 +25,7 @@ import CreateAnnouncementModal from '@/app/components/modals/CreateAnnouncementM
 import CreateOrgModal from '@/app/components/modals/CreateOrgModal';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
+import { setObfuscatedCookie } from '@/app/utils/cookieUtils';
 import { useSidebar } from '@/app/context/SidebarContext';
 import { apiFetch } from '@/app/utils/api';
 import Loading from '@/app/components/ui/Loading';
@@ -60,7 +61,7 @@ export default function Sidebar() {
         const randomString = Array.from({length: 32}, () => Math.floor(Math.random() * 16).toString(16)).join('');
         setAdminToken(randomString);
         
-        Cookies.set('user_name', data.username);
+        setObfuscatedCookie('user_name', data.username);
       }
     } catch (error) {
       console.error('Failed to fetch user data:', error);

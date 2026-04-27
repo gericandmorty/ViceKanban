@@ -16,7 +16,7 @@ import {
   UserMinus,
   Trash2
 } from 'lucide-react';
-import Cookies from 'js-cookie';
+import { getObfuscatedCookie } from '@/app/utils/cookieUtils';
 import toast from 'react-hot-toast';
 import ConfirmationModal from '../ui/ConfirmationModal';
 import Image from 'next/image';
@@ -164,7 +164,7 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
     }
   };
 
-  const currentUserId = Cookies.get('user_id');
+  const currentUserId = getObfuscatedCookie('user_id');
   const userRole = org.members.find(m => m.user._id === currentUserId)?.role;
   const isOwner = userRole === 'owner';
   const isCoOwner = userRole === 'co-owner';

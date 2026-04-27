@@ -27,10 +27,10 @@ interface AnnouncementStackModalProps {
 
 const getTypeColor = (type: string) => {
   switch (type.toLowerCase()) {
-    case 'maintenance': return '#f85149'; // Red
-    case 'system': return '#2f81f7'; // Blue
-    case 'feature': return '#f78166'; // Orange
-    default: return '#3fb950'; // Green
+    case 'priority': return '#f85149'; // Red
+    case 'high': return '#2f81f7'; // Blue
+    case 'medium': return '#f78166'; // Orange
+    default: return '#3fb950'; // Green (low)
   }
 };
 

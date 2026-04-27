@@ -11,7 +11,7 @@ import {
   Clock,
   Trash2
 } from 'lucide-react';
-import Cookies from 'js-cookie';
+import { getObfuscatedCookie } from '@/app/utils/cookieUtils';
 import Image from 'next/image';
 
 interface Task {
@@ -54,7 +54,7 @@ interface TaskCardProps {
 }
 
 const TaskCard = memo(({ task, onDelete, onClick, isOwnerOrCreator, isSortingActive, isCompact, isHighlighted, isProjectLocked }: TaskCardProps) => {
-  const currentUserId = Cookies.get('user_id');
+  const currentUserId = getObfuscatedCookie('user_id');
   const isOwner = currentUserId === task.creator._id;
   const assignees = task.assignees && task.assignees.length > 0 ? task.assignees : task.assignee ? [task.assignee] : [];
   const canDrag = !isProjectLocked && (isOwnerOrCreator || isOwner || assignees.some((assignee) => assignee._id === currentUserId));

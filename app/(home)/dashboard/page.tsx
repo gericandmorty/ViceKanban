@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { getObfuscatedCookie, setObfuscatedCookie } from '@/app/utils/cookieUtils';
 import {
   Plus,
   Layout,
@@ -35,7 +36,7 @@ import Announcements from '@/app/components/organizations/Announcements';
 import GanttChart from '@/app/components/organizations/GanttChart';
 import AnnouncementDetailModal from '@/app/components/modals/AnnouncementDetailModal';
 import AnnouncementStackModal from '@/app/components/modals/AnnouncementStackModal';
-import Cookies from 'js-cookie';
+
 import { useSearchParams, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { useSidebar } from '@/app/context/SidebarContext';
@@ -86,7 +87,7 @@ export default function DashboardPage() {
       if (response.ok) {
         const data = await response.json();
         setUsername(data.username);
-        Cookies.set('user_name', data.username);
+        setObfuscatedCookie('user_name', data.username);
       }
     } catch (error) {
       console.error('Failed to fetch user data in dashboard:', error);
@@ -152,7 +153,7 @@ export default function DashboardPage() {
     fetchOrganizations();
     fetchInvitations();
     fetchUserProfile(); // Ensure name is loaded from API even if cookie is missing
-    const storedUsername = Cookies.get('user_name');
+    const storedUsername = getObfuscatedCookie('user_name');
     if (storedUsername) setUsername(storedUsername);
 
     const handleOrgChange = () => {
@@ -363,7 +364,7 @@ export default function DashboardPage() {
   const currentProject = projects.find(p => p._id === projectIdFromUrl);
 
   // Permission Checks
-  const currentUserId = Cookies.get('user_id');
+  const currentUserId = getObfuscatedCookie('user_id');
   const isOrgOwner = detailedOrg?.owner?._id === currentUserId || detailedOrg?.owner === currentUserId;
   const isCoOwner = detailedOrg?.members?.some((m: any) => (m.user?._id || m.user) === currentUserId && m.role === 'co-owner');
   const isAdmin = isOrgOwner || isCoOwner;

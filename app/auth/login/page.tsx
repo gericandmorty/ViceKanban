@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Layout, Loader2, AlertCircle, Eye, EyeOff, Clock } from 'lucide-react';
 import Cookies from 'js-cookie';
+import { setObfuscatedCookie } from '@/app/utils/cookieUtils';
 import { API_URL } from '@/app/utils/api';
 import Footer from '../../components/ui/Footer';
 
@@ -74,8 +75,8 @@ function LoginContent() {
       // Store auth info
       const expiryTime = Date.now() + 8 * 60 * 60 * 1000; // 8 hours from now
       Cookies.set('access_token', data.access_token, { expires: 1 / 3 }); // ~8 hours
-      Cookies.set('user_name', data.username, { expires: 1 / 3 });
-      Cookies.set('user_id', data.userId, { expires: 1 / 3 });
+      setObfuscatedCookie('user_name', data.username, { expires: 1 / 3 });
+      setObfuscatedCookie('user_id', data.userId, { expires: 1 / 3 });
       localStorage.setItem('session_expiry', expiryTime.toString());
 
       router.push('/dashboard');

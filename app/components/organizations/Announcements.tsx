@@ -16,7 +16,7 @@ import {
   Trash2,
   Pencil
 } from 'lucide-react';
-import Cookies from 'js-cookie';
+import { getObfuscatedCookie } from '@/app/utils/cookieUtils';
 import { apiFetch } from '@/app/utils/api';
 import CreateAnnouncementModal from '../modals/CreateAnnouncementModal';
 import AnnouncementDetailModal from '../modals/AnnouncementDetailModal';
@@ -47,19 +47,19 @@ interface AnnouncementsProps {
 
 const getTypeColor = (type: string) => {
   switch (type.toLowerCase()) {
-    case 'maintenance':
+    case 'priority':
       return '#f85149';
-    case 'system':
+    case 'high':
       return '#2f81f7';
-    case 'feature':
+    case 'medium':
       return '#f78166';
     default:
-      return '#3fb950';
+      return '#3fb950'; // low
   }
 };
 
 export default function Announcements({ orgId, isAdmin, isOwner }: AnnouncementsProps) {
-  const currentUserId = Cookies.get('user_id');
+  const currentUserId = getObfuscatedCookie('user_id');
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { apiFetch } from '@/app/utils/api';
 import { Loader2, Check, AlertCircle, User } from 'lucide-react';
-import Cookies from 'js-cookie';
+import { setObfuscatedCookie } from '@/app/utils/cookieUtils';
 
 interface ChangeUsernameFormProps {
   currentUsername: string;
@@ -94,7 +94,7 @@ export default function ChangeUsernameForm({ currentUsername, onSuccess }: Chang
 
       setSuccess('Username updated successfully!');
       // Update cookie
-      Cookies.set('user_name', trimmed, { expires: 1/3 });
+      setObfuscatedCookie('user_name', trimmed, { expires: 1/3 });
       
       if (onSuccess) {
         onSuccess(trimmed);

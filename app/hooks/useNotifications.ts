@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import Cookies from 'js-cookie';
+import { getObfuscatedCookie } from '@/app/utils/cookieUtils';
 import { API_URL } from '@/app/utils/api';
 import toast from 'react-hot-toast';
 
@@ -41,8 +42,8 @@ export function useNotifications() {
   useEffect(() => {
     fetchNotifications();
 
-    const userId = Cookies.get('user_id');
-    const token = Cookies.get('access_token');
+    const userId = getObfuscatedCookie('user_id');
+    const token = getObfuscatedCookie('access_token');
 
     if (!userId || !token) return;
 

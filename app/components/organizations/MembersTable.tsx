@@ -479,6 +479,7 @@ export default function MembersTable({ org, onRefresh }: MembersTableProps) {
         confirmText="Remove Member"
         type="danger"
       />
+      <div className="h-40" />
     </div>
   );
 }

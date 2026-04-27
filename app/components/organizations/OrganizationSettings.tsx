@@ -324,6 +324,7 @@ export default function OrganizationSettings({ org, isOwner, isAdmin, onRefresh 
         itemType="organization"
         isLoading={isDeleting}
       />
+      <div className="h-40" />
     </div>
   );
 }

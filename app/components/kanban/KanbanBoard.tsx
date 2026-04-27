@@ -607,7 +607,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
   }
 
   return (
-    <div className="flex-1 overflow-hidden h-full pb-2 flex flex-col">
+    <div className="flex-1 overflow-hidden h-full pb-2 pt-4 flex flex-col">
       {/* Board Toolbar */}
       <div className="flex items-center justify-between px-4 md:px-8 mb-3 md:mb-4 shrink-0">
         <div className="flex items-center gap-1.5 bg-bg-subtle p-1 rounded-lg border border-border-default self-start">

@@ -10,7 +10,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Cookies from 'js-cookie';
+
 import { API_URL, apiFetch } from '@/app/utils/api';
 
 interface CreateProjectModalProps {

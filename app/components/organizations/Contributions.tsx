@@ -16,7 +16,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { API_URL, apiFetch } from '@/app/utils/api';
-import Cookies from 'js-cookie';
+import { getObfuscatedCookie } from '@/app/utils/cookieUtils';
 import Loading from '@/app/components/ui/Loading';
 
 interface ContributionStats {
@@ -126,8 +126,7 @@ export default function Contributions({ orgId }: { orgId: string }) {
       default: return 'bg-gray-500/10 text-gray-500 border-gray-500/20';
     }
   };
-
-  const currentUserId = Cookies.get('user_id');
+  const currentUserId = getObfuscatedCookie('user_id');
 
   if (isLoading && page === 1 && !debouncedSearch) {
     return (

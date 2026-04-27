@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Layout, Loader2, AlertCircle, CheckCircle2, Eye, EyeOff } from 'lucide-react';
-import Cookies from 'js-cookie';
+
+import { setObfuscatedCookie } from '@/app/utils/cookieUtils';
 import { API_URL } from '@/app/utils/api';
 import Footer from '../../components/ui/Footer';
 
@@ -104,7 +105,7 @@ export default function RegisterPage() {
         throw new Error(data.message || 'Registration failed');
       }
 
-      Cookies.set('user_name', data.username, { expires: 1 });
+      setObfuscatedCookie('user_name', data.username, { expires: 1 });
       setIsSuccess(true);
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please try again.');

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader2, Layout, Upload, Trash2, Image as ImageIcon } from 'lucide-react';
-import Cookies from 'js-cookie';
+
 import { API_URL, apiFetch } from '@/app/utils/api';
 import Image from 'next/image';
 

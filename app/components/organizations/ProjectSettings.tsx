@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Save, Loader2, Type, FileText, AlertTriangle, Trash2 } from 'lucide-react';
-import Cookies from 'js-cookie';
+
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { API_URL, apiFetch } from '@/app/utils/api';

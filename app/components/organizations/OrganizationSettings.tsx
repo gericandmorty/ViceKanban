@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Settings, Save, Loader2, Layout, Type, FileText, Upload, Trash2, Image as ImageIcon } from 'lucide-react';
-import Cookies from 'js-cookie';
+
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import ConfirmationModal from '../ui/ConfirmationModal';

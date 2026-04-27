@@ -21,12 +21,13 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy 
 } from '@dnd-kit/sortable';
+import { getObfuscatedCookie } from '@/app/utils/cookieUtils';
 import KanbanColumn from './KanbanColumn';
 import TaskCard from './TaskCard';
 import { Loader2, Plus, X, Type, FileText, User as UserIcon, Trash2, MessageSquare, Send, CornerDownRight, Maximize2, Kanban, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Cookies from 'js-cookie';
 import toast from 'react-hot-toast';
+import Cookies from 'js-cookie';
 import { API_URL, apiFetch } from '@/app/utils/api';
 import { compressImage } from '@/app/utils/imageUtils';
 import ConfirmationModal from '../ui/ConfirmationModal';
@@ -112,7 +113,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
   const [isUpdatingTask, setIsUpdatingTask] = useState(false);
   const [isImageExpanded, setIsImageExpanded] = useState(false);
 
-  const currentUserId = Cookies.get('user_id');
+  const currentUserId = getObfuscatedCookie('user_id');
   const isOrgOwner = currentUserId === orgOwnerId;
   const isCoOwner = members?.find(m => (m.user?._id || m.user) === currentUserId)?.role === 'co-owner';
   const canEditDates = isOrgOwner || isCoOwner;
@@ -1597,7 +1598,7 @@ export default function KanbanBoard({ projectId, isOwnerOrCreator, orgOwnerId, m
                <div className="px-6 py-4 border-t border-border-default bg-bg-subtle flex justify-between items-center shadow-sm">
                 <div className="flex items-center gap-2">
                   {(() => {
-                    const currentUserId = Cookies.get('user_id');
+                    const currentUserId = getObfuscatedCookie('user_id');
                     const isTaskCreator = inspectingTask.creator._id === currentUserId;
                     const isCurrentUserOwner = currentUserId === orgOwnerId;
                     const isTaskCreatedByOwner = inspectingTask.creator._id === orgOwnerId;

@@ -11,16 +11,23 @@ interface ChangeUsernameFormProps {
 }
 
 export default function ChangeUsernameForm({ currentUsername, onSuccess }: ChangeUsernameFormProps) {
-  const [newUsername, setNewUsername] = useState(currentUsername);
+  const [newUsername, setNewUsername] = useState(currentUsername || '');
   const [isChecking, setIsChecking] = useState(false);
   const [isTaken, setIsTaken] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Sync state with prop if it changes
+  useEffect(() => {
+    if (currentUsername) {
+      setNewUsername(currentUsername);
+    }
+  }, [currentUsername]);
 
   // Debounced username check
   useEffect(() => {
-    const trimmed = newUsername.trim();
+    const trimmed = (newUsername || '').trim();
     const usernameRegex = /^[a-zA-Z0-9._]+$/;
     const isBasicValid = trimmed.length >= 3 && !trimmed.includes(' ') && usernameRegex.test(trimmed);
 
@@ -32,7 +39,7 @@ export default function ChangeUsernameForm({ currentUsername, onSuccess }: Chang
     const timer = setTimeout(async () => {
       setIsChecking(true);
       try {
-        const response = await apiFetch(`/auth/check-username?username=${newUsername.trim()}`);
+        const response = await apiFetch(`/auth/check-username?username=${(newUsername || '').trim()}`);
         if (response.ok) {
           const data = await response.json();
           setIsTaken(data.exists);
@@ -106,7 +113,7 @@ export default function ChangeUsernameForm({ currentUsername, onSuccess }: Chang
     }
   };
 
-  const hasChanges = newUsername.trim() !== currentUsername && newUsername.trim() !== '';
+  const hasChanges = (newUsername || '').trim() !== (currentUsername || '') && (newUsername || '').trim() !== '';
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">

@@ -13,6 +13,7 @@ import {
   Search,
   X,
   ChevronRight,
+  ChevronDown,
   ExternalLink
 } from 'lucide-react';
 import { API_URL, apiFetch } from '@/app/utils/api';
@@ -50,6 +51,13 @@ export default function Contributions({ orgId }: { orgId: string }) {
   const [selectedMember, setSelectedMember] = useState<MemberContribution | null>(null);
   const [memberTasks, setMemberTasks] = useState<any[]>([]);
   const [isFetchingTasks, setIsFetchingTasks] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>(['todo', 'in_progress']);
+
+  const toggleCategory = (id: string) => {
+    setExpandedCategories(prev => 
+      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+    );
+  };
 
   // 500ms Debounce for search
   useEffect(() => {
@@ -176,7 +184,7 @@ export default function Contributions({ orgId }: { orgId: string }) {
               animate={{ opacity: 1 }}
               transition={{ delay: (idx % 9) * 0.03 }}
               onClick={() => fetchMemberTasks(member)}
-              className={`bg-background border rounded-md overflow-hidden flex flex-col transition-all cursor-pointer group hover:border-accent/50 ${
+              className={`bg-background border rounded-md overflow-hidden flex flex-col transition-all cursor-pointer group hover:border-accent/50 hover:scale-[1.01] hover:shadow-lg ${
                 isMe 
                 ? 'border-accent shadow-[0_0_12px_rgba(var(--accent-rgb),0.15)] ring-1 ring-accent/30' 
                 : 'border-border-default'
@@ -229,6 +237,9 @@ export default function Contributions({ orgId }: { orgId: string }) {
                   <TrendingUp size={14} className="text-green-500" />
                   <span className="text-[11px] text-foreground/40">Working on <span className="text-foreground font-semibold">{total}</span> total tasks</span>
                 </div>
+                <span className="text-[10px] text-foreground/20 group-hover:text-accent/50 transition-colors italic">
+                  Click to view details
+                </span>
               </div>
             </motion.div>
           );
@@ -305,74 +316,92 @@ export default function Contributions({ orgId }: { orgId: string }) {
             </div>
 
             {/* Modal Content */}
-            <div className="flex-1 overflow-x-auto p-6">
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {isFetchingTasks ? (
                 <div className="h-64 flex flex-col items-center justify-center">
                   <Loading size="lg" message="Fetching active tasks..." />
                 </div>
               ) : memberTasks.length > 0 ? (
-                <div className="flex gap-6 min-w-[1000px] h-full pb-2">
+                <div className="space-y-4">
                   {[
-                    { id: 'todo', label: 'To Do', icon: <Clock size={16} />, tasks: memberTasks.filter(t => t.status === 'todo') },
-                    { id: 'in_progress', label: 'In Progress', icon: <PlayCircle size={16} />, tasks: memberTasks.filter(t => t.status === 'in_progress') },
-                    { id: 'done', label: 'Done', icon: <CheckCircle2 size={16} />, tasks: memberTasks.filter(t => t.status === 'done') },
-                    { id: 'reviewed', label: 'Reviewed', icon: <ShieldCheck size={16} />, tasks: memberTasks.filter(t => t.status === 'reviewed') }
-                  ].map((column) => (
-                    <div key={column.id} className="flex-1 flex flex-col min-w-[240px] bg-bg-subtle/20 rounded-xl border border-border-default overflow-hidden">
-                      {/* Column Header */}
-                      <div className="px-4 py-3 border-b border-border-default bg-bg-subtle/30 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-foreground/60">{column.icon}</span>
-                          <span className="text-[13px] font-bold text-foreground">{column.label}</span>
-                        </div>
-                        <span className="text-[11px] font-bold bg-bg-subtle px-2 py-0.5 rounded-full text-foreground/40 border border-border-default">
-                          {column.tasks.length}
-                        </span>
-                      </div>
+                    { id: 'todo', label: 'To Do', icon: <Clock size={16} />, color: 'text-blue-500', tasks: memberTasks.filter(t => t.status === 'todo') },
+                    { id: 'in_progress', label: 'In Progress', icon: <PlayCircle size={16} />, color: 'text-amber-500', tasks: memberTasks.filter(t => t.status === 'in_progress') },
+                    { id: 'done', label: 'Done', icon: <CheckCircle2 size={16} />, color: 'text-green-500', tasks: memberTasks.filter(t => t.status === 'done') },
+                    { id: 'reviewed', label: 'Reviewed', icon: <ShieldCheck size={16} />, color: 'text-purple-500', tasks: memberTasks.filter(t => t.status === 'reviewed') }
+                  ].map((category) => {
+                    const isExpanded = expandedCategories.includes(category.id);
+                    const hasTasks = category.tasks.length > 0;
+                    
+                    return (
+                      <div key={category.id} className="border border-border-default rounded-xl overflow-hidden bg-bg-subtle/10">
+                        {/* Category Header */}
+                        <button 
+                          onClick={() => toggleCategory(category.id)}
+                          className="w-full px-5 py-4 flex items-center justify-between hover:bg-bg-subtle/30 transition-colors text-left"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className={category.color}>{category.icon}</span>
+                            <span className="text-sm font-bold text-foreground">{category.label}</span>
+                            <span className="text-[11px] font-bold bg-bg-subtle px-2 py-0.5 rounded-full text-foreground/40 border border-border-default">
+                              {category.tasks.length}
+                            </span>
+                          </div>
+                          {hasTasks && (
+                            isExpanded ? <ChevronDown size={18} className="text-foreground/40" /> : <ChevronRight size={18} className="text-foreground/40" />
+                          )}
+                        </button>
 
-                      {/* Task List */}
-                      <div className="flex-1 overflow-y-auto p-3 space-y-3 scrollbar-thin scrollbar-thumb-foreground/10 scrollbar-track-transparent hover:scrollbar-thumb-foreground/20 transition-colors">
-                        {column.tasks.length > 0 ? (
-                          column.tasks.map((task) => (
-                            <div 
-                              key={task._id} 
-                              className="group p-3 bg-background border border-border-default rounded-lg hover:border-accent/40 hover:shadow-sm transition-all flex flex-col gap-2"
-                            >
-                              <div className="flex items-start justify-between gap-2">
-                                <span className="text-[10px] text-foreground/30 font-bold uppercase tracking-tight truncate">
-                                  {task.project?.name}
-                                </span>
-                                {task.priority === 'urgent' && (
-                                   <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                                )}
-                              </div>
-                              <h4 className="text-[13px] font-semibold text-foreground leading-tight line-clamp-2">
-                                {task.title}
-                              </h4>
-                              {task.dueDate && (
-                                <div className="flex items-center gap-1.5 mt-1">
-                                  <Clock size={10} className="text-foreground/20" />
-                                  <span className="text-[10px] text-foreground/30">
-                                    {new Date(task.dueDate).toLocaleDateString()}
+                        {/* Task List */}
+                        {isExpanded && hasTasks && (
+                          <div className="p-4 pt-0 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 animate-in slide-in-from-top-2 duration-200">
+                            {category.tasks.map((task) => (
+                              <div 
+                                key={task._id} 
+                                className="p-4 bg-background border border-border-default rounded-lg hover:border-accent/40 hover:shadow-md transition-all flex flex-col gap-3 group"
+                              >
+                                <div className="flex items-start justify-between gap-2">
+                                  <span className="text-[10px] text-foreground/30 font-bold uppercase tracking-widest truncate">
+                                    {task.project?.name}
                                   </span>
+                                  {task.priority === 'urgent' && (
+                                     <div className="px-1.5 py-0.5 rounded-full bg-red-500/10 text-red-500 text-[9px] font-bold uppercase animate-pulse">
+                                       Urgent
+                                     </div>
+                                  )}
                                 </div>
-                              )}
-                            </div>
-                          ))
-                        ) : (
-                          <div className="h-full flex items-center justify-center py-10 opacity-20 filter grayscale">
-                             <Activity size={24} />
+                                <h4 className="text-[14px] font-semibold text-foreground leading-snug group-hover:text-accent transition-colors">
+                                  {task.title}
+                                </h4>
+                                <div className="flex items-center justify-between mt-1">
+                                  {task.dueDate && (
+                                    <div className="flex items-center gap-1.5">
+                                      <Clock size={12} className="text-foreground/20" />
+                                      <span className="text-[11px] text-foreground/40 font-medium">
+                                        {new Date(task.dueDate).toLocaleDateString()}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
                           </div>
                         )}
+                        
+                        {isExpanded && !hasTasks && (
+                           <div className="px-5 py-8 flex flex-col items-center justify-center opacity-30">
+                              <Activity size={24} className="mb-2" />
+                              <span className="text-xs font-medium">No tasks in this stage</span>
+                           </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="py-20 flex flex-col items-center justify-center text-center">
                   <Activity size={48} className="text-foreground/5 mb-4" />
-                  <p className="font-semibold text-foreground/60">No active tasks assigned</p>
-                  <p className="text-sm text-foreground/30 mt-1">This member currently has no tasks in this organization.</p>
+                  <p className="font-semibold text-foreground/60 text-lg">No active tasks assigned</p>
+                  <p className="text-sm text-foreground/30 mt-1 max-w-xs mx-auto">This member currently has no tasks in this organization's projects.</p>
                 </div>
               )}
             </div>
@@ -389,7 +418,7 @@ export default function Contributions({ orgId }: { orgId: string }) {
           </motion.div>
         </div>
       )}
-      <div className="h-40" />
+      <div className="h-12" />
     </div>
   );
 }
